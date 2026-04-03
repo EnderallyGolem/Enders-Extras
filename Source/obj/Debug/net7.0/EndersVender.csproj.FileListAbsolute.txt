@@ -1,0 +1,6 @@
+C:\Program Files (x86)\Steam\steamapps\common\Celeste\Mods\EndersVender\Source\obj\Debug\net7.0\EndersVender.csproj.AssemblyReference.cache
+C:\Program Files (x86)\Steam\steamapps\common\Celeste\Mods\EndersVender\Source\obj\Debug\net7.0\EndersVender.GeneratedMSBuildEditorConfig.editorconfig
+C:\Program Files (x86)\Steam\steamapps\common\Celeste\Mods\EndersVender\Source\obj\Debug\net7.0\EndersVender.AssemblyInfoInputs.cache
+C:\Program Files (x86)\Steam\steamapps\common\Celeste\Mods\EndersVender\Source\obj\Debug\net7.0\EndersVender.AssemblyInfo.cs
+C:\Program Files (x86)\Steam\steamapps\common\Celeste\Mods\EndersVender\Source\obj\Debug\net7.0\EndersVender.csproj.CoreCompileInputs.cache
+C:\Program Files (x86)\Steam\steamapps\common\Celeste\Mods\EndersVender\Source\obj\Debug\net7.0\EndersVender.sourcelink.json

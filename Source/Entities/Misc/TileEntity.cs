@@ -1,0 +1,353 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Monocle;
+using Microsoft.Xna.Framework;
+using Celeste.Mod.Entities;
+using System.Runtime.CompilerServices;
+using System.ComponentModel.Design.Serialization;
+using Celeste.Mod.EndersExtras.Utils;
+
+namespace Celeste.Mod.EndersExtras.Entities.Misc;
+[Tracked]
+[CustomEntity("EndersExtras/TileEntity")]
+
+// This is largely PLAGIARIZED from VivHelper because i really needed a good tile entity =[
+public class TileEntity : Solid
+{
+    private EntityID id;
+    private TileGrid tiles;
+
+    private readonly char tileType;
+    private readonly char tiletypeOffscreen;
+    private readonly bool backgroundTiles;
+    private bool tileTypeMix = false;
+    private readonly bool allowMergeDifferentType;
+    private readonly bool allowMerge;
+    private readonly bool extendOffscreen;
+    private readonly bool noEdges;
+    private readonly bool collidable;
+    private readonly Color colour;
+
+    private readonly bool locationSeeded;
+
+    private readonly List<bool> offDirecBoolList;
+
+    private TileEntity master;
+
+    public List<TileEntity> Group;
+
+    public Point GroupBoundsMin;
+    public Point GroupBoundsMax;
+
+    private readonly bool dashBlock;
+    private readonly bool dashBlockPermament;
+    private readonly string dashBlockBreakSound;
+
+    public bool HasGroup
+    {
+        get;
+        private set;
+    }
+
+    public bool isMasterOfGroup
+    {
+        get;
+        private set;
+    }
+
+    private TileEntity getMasterOfGroup;
+
+    public TileEntity(Vector2 position, float width, float height, EntityID id, char tileType, char tiletypeOffscreen, int depth, bool backgroundTiles, bool collidable, string colourStr, bool allowMergeDifferentType = false, bool allowMerge = true, 
+        bool extendOffscreen = false, bool noEdges = false, List<bool> offDirecBoolList = null, bool locationSeeded = false,
+        bool dashBlock = false, bool dashBlockPermament = false, String dashBlockBreakSound = "")
+    : base(position, width, height, safe: true)
+    {
+        
+        this.tileType = tileType;
+        this.tiletypeOffscreen = tiletypeOffscreen;
+        this.backgroundTiles = backgroundTiles;
+        Depth = Calc.Clamp(depth, -300000, 20000);
+        this.allowMergeDifferentType = allowMergeDifferentType;
+        this.allowMerge = allowMerge;
+        this.extendOffscreen = extendOffscreen;
+        this.noEdges = noEdges;
+        this.offDirecBoolList = offDirecBoolList ?? new List<bool>([true, true, true, true, true, true, true, true]); //Start at top, go CW
+        this.locationSeeded = locationSeeded;
+
+        this.dashBlock = dashBlock;
+        this.dashBlockPermament = dashBlockPermament;
+        this.dashBlockBreakSound = dashBlockBreakSound;
+        this.collidable = collidable;
+        this.colour = Calc.HexToColorWithAlpha(colourStr);
+
+        this.id = id;
+
+        if (collidable)
+        {
+            Add(new LightOcclude());
+        }
+        else
+        {
+            Collidable = false;
+        }
+
+        if (!SurfaceIndex.TileToIndex.TryGetValue(tileType, out SurfaceSoundIndex))
+            SurfaceSoundIndex = SurfaceIndex.Brick;
+
+        OnDashCollide = OnDashed;
+    }
+
+
+    private Vector2 relativePos;
+
+    public TileEntity(EntityData data, Vector2 offset, EntityID id)
+        : this(data.Position + offset, data.Width, data.Height, id, data.Char("tiletype", '3'), data.Char("tiletypeOffscreen", '◯'), data.Int("Depth", -9000), data.Bool("backgroundTiles", false), data.Bool("collidable", true), data.Attr("colour", "ffffffff"), data.Bool("allowMergeDifferentType", false), data.Bool("allowMerge", true), data.Bool("extendOffscreen", true), data.Bool("noEdges", false),
+              [data.Bool("offU", true), data.Bool("offUR", true), data.Bool("offR", true), data.Bool("offDR", true), data.Bool("offD", true), data.Bool("offDL", true), data.Bool("offL", true), data.Bool("offUL", true)], data.Bool("locationSeeded", false),
+              data.Bool("dashBlock", false), data.Bool("dashBlockPermament", true), data.Attr("dashBlockBreakSound", "")
+        )
+    {
+        relativePos = data.Position;
+
+        int surfaceSoundIndexSet = data.Int("surfaceSoundIndex", -1);
+        if (surfaceSoundIndexSet >= 0) { SurfaceSoundIndex = surfaceSoundIndexSet; }
+    }
+
+    public override void Awake(Scene scene)
+    {
+        base.Awake(scene);
+        if (!HasGroup)
+        {
+            isMasterOfGroup = true;
+            Group = [];
+            GroupBoundsMin = new Point((int)X, (int)Y);
+            GroupBoundsMax = new Point((int)Right, (int)Bottom);
+            AddToGroupAndFindChildren(this);
+            _ = Scene;
+
+            Rectangle rectangle = new Rectangle(GroupBoundsMin.X / 8 - 1, GroupBoundsMin.Y / 8 - 1, (GroupBoundsMax.X - GroupBoundsMin.X) / 8 + 3, (GroupBoundsMax.Y - GroupBoundsMin.Y) / 8 + 3);
+            VirtualMap<char> virtualMap = new VirtualMap<char>(rectangle.Width, rectangle.Height, '0');
+
+
+            Level level = SceneAs<Level>();
+            Rectangle roomRect = level.Bounds;
+
+            bool noEdgesAny = noEdges;
+
+            foreach (TileEntity item in Group)
+            {
+                if (item.noEdges)
+                {
+                    noEdgesAny = true;
+                }
+
+                int num = (int)(item.X / 8f - rectangle.X);
+                int num2 = (int)(item.Y / 8f - rectangle.Y);
+                int num3 = (int)(item.Width / 8f);
+                int num4 = (int)(item.Height / 8f);
+
+                //If group size reaches the screen edge and extendOffscreen is enabled, increase width/height by 1 or decrease starting x/y by 1
+                if (item.extendOffscreen)
+                {
+                    //Logger.Log(LogLevel.Info, "EndersExtras/Misc/TileEntity", "Identifying if edge of room:");
+                    //Logger.Log(LogLevel.Info, "EndersExtras/Misc/TileEntity", $"LEFT > {(num + rectangle.X)} == {(int) roomRect.Left/8}");
+                    //Logger.Log(LogLevel.Info, "EndersExtras/Misc/TileEntity", $"RIGHT > {(num + num3 + rectangle.X)} == {(int) roomRect.Right/8}");
+                    //Logger.Log(LogLevel.Info, "EndersExtras/Misc/TileEntity", $"TOP > {(num2 + rectangle.Y)} == {(int) roomRect.Top/8}");
+                    //Logger.Log(LogLevel.Info, "EndersExtras/Misc/TileEntity", $"BOTTOM > {(num2 + num4 + rectangle.Y)} == {(int) roomRect.Bottom/8}");
+                    if (num + rectangle.X == roomRect.Left / 8)
+                    {
+                        num--;
+                        num3++;
+                    }
+                    if (num + num3 + rectangle.X == roomRect.Right / 8)
+                    {
+                        num3++;
+                    }
+                    if (num2 + rectangle.Y == roomRect.Top / 8)
+                    {
+                        num2--;
+                        num4++;
+                    }
+                    if (num2 + num4 + rectangle.Y == roomRect.Bottom / 8)
+                    {
+                        num4++;
+                    }
+                }
+
+                for (int i = num; i < num + num3; i++)
+                {
+                    for (int j = num2; j < num2 + num4; j++)
+                    {
+                        virtualMap[i, j] = item.tileType;
+                        Vector2 tilePos = new Vector2(i + rectangle.X, j + rectangle.Y) * 8;
+                        //Logger.Log(LogLevel.Info, "EndersExtras/Misc/TileEntity", $"{tilePos.X}/{roomRect.Left}/{roomRect.Right} {tilePos.Y}/{roomRect.Top}/{roomRect.Bottom}");
+
+                        Vector2 offDirection = new Vector2(0, 0);
+                        if (tilePos.X < roomRect.Left) { offDirection.X = -1; }
+                        if (tilePos.X >= roomRect.Right) { offDirection.X = 1; }
+                        if (tilePos.Y < roomRect.Top) { offDirection.Y = -1; }
+                        if (tilePos.Y >= roomRect.Bottom) { offDirection.Y = 1; }
+
+                        //Logger.Log(LogLevel.Info, "EndersExtras/Misc/TileEntity", $"Exceed screen in direction {offDirection.X} {offDirection.Y}");
+
+                        if (offDirection != Vector2.Zero && (
+                             item.offDirecBoolList[0] && offDirection == new Vector2(0, -1) ||  //U
+                             item.offDirecBoolList[1] && offDirection == new Vector2(1, -1) ||  //UR
+                             item.offDirecBoolList[2] && offDirection == new Vector2(1, 0) ||  //R
+                             item.offDirecBoolList[3] && offDirection == new Vector2(1, 1) ||  //DR
+                             item.offDirecBoolList[4] && offDirection == new Vector2(0, 1) ||  //D
+                             item.offDirecBoolList[5] && offDirection == new Vector2(-1, 1) ||  //DL
+                             item.offDirecBoolList[6] && offDirection == new Vector2(-1, 0) ||  //L
+                             item.offDirecBoolList[7] && offDirection == new Vector2(-1, -1)     //UL;
+                           ))
+                        {
+                            //Logger.Log(LogLevel.Info, "EndersExtras/Misc/TileEntity", $"offscreen stuff");
+                            virtualMap[i, j] = item.tiletypeOffscreen;
+                        }
+                    }
+                }
+            }
+            //Logger.Log(LogLevel.Info, "EndersExtras/Misc/TileEntity", $"{virtualMap}");
+            if (locationSeeded) { Calc.PushRandom((int)(relativePos.X * relativePos.Y + Width + Height)); }
+            Autotiler tiler = backgroundTiles ? GFX.BGAutotiler : GFX.FGAutotiler;
+            tiles = tiler.GenerateMap(virtualMap, new Autotiler.Behaviour
+            {
+                EdgesExtend = false,
+                EdgesIgnoreOutOfLevel = noEdgesAny,
+                PaddingIgnoreOutOfLevel = false,
+            }).TileGrid;
+            tiles.Position = new Vector2(GroupBoundsMin.X - X - 8, GroupBoundsMin.Y - Y - 8);
+            tiles.Color = colour;
+            tiles.VisualExtend = 32;
+            Add(tiles);
+            if (locationSeeded) { Calc.PopRandom(); }
+        }
+    }
+
+    private void AddToGroupAndFindChildren(TileEntity from, List<Entity> entities = null)
+    {
+        // This function is repeatedly ran by the master until all the nearby blocks are found!
+
+        from.getMasterOfGroup = this;
+        //Logger.Log(LogLevel.Info, "EndersExtras/Misc/TileEntity", $"{id}: set {getMasterOfGroup.id} as master");
+
+        if (from.X < GroupBoundsMin.X)
+        {
+            GroupBoundsMin.X = (int)from.X;
+        }
+        if (from.Y < GroupBoundsMin.Y)
+        {
+            GroupBoundsMin.Y = (int)from.Y;
+        }
+        if (from.Right > GroupBoundsMax.X)
+        {
+            GroupBoundsMax.X = (int)from.Right;
+        }
+        if (from.Bottom > GroupBoundsMax.Y)
+        {
+            GroupBoundsMax.Y = (int)from.Bottom;
+        }
+        from.HasGroup = true;
+        Group.Add(from);
+        if (from != this)
+        {
+            from.master = this;
+        }
+        // Implement variable entities so that it doesn't pull from hash per tileentity in the chain
+        if (entities == null && !Scene.Tracker.TryGetEntities<TileEntity>(out entities))
+        {
+            return;
+        }
+        foreach (TileEntity entity in entities)
+        {
+            if (allowMerge && entity.allowMerge && !entity.HasGroup && entity.dashBlock == dashBlock && entity.colour == colour && entity.backgroundTiles == backgroundTiles
+                && (Scene.CollideCheckForce(new Rectangle((int)from.X - 1, (int)from.Y, (int)from.Width + 2, (int)from.Height), entity) || Scene.CollideCheckForce(new Rectangle((int)from.X, (int)from.Y - 1, (int)from.Width, (int)from.Height + 2), entity)))
+            {
+                if (allowMergeDifferentType && entity.allowMergeDifferentType)
+                {
+                    tileTypeMix = true;
+                    AddToGroupAndFindChildren(entity, entities);
+                }
+                else if (entity.tileType == tileType && !tileTypeMix)
+                {
+                    AddToGroupAndFindChildren(entity, entities);
+                }
+
+            }
+        }
+    }
+    public void Break(Vector2 from, Vector2 direction, bool playSound = true)
+    {
+        if (playSound && dashBlockBreakSound != "")
+        {
+            Audio.Play(dashBlockBreakSound, Position);
+        }
+
+        if (isMasterOfGroup)
+        {
+            foreach (TileEntity tileEntity in Group)
+            {
+                for (int i = 0; (float)i < tileEntity.Width / 8f; i++)
+                {
+                    for (int j = 0; (float)j < tileEntity.Height / 8f; j++)
+                    {
+                        base.Scene.Add(Engine.Pooler.Create<Debris>().Init(tileEntity.Position + new Vector2(4 + i * 8, 4 + j * 8), tileEntity.tileType, true).BlastFrom(from));
+                    }
+                }
+
+                if (tileEntity.dashBlockPermament)
+                {
+                    tileEntity.RemoveAndFlagAsGone();
+                }
+                else
+                {
+                    tileEntity.RemoveSelf();
+                }
+            }
+        }
+        else if (getMasterOfGroup is TileEntity)
+        {
+            getMasterOfGroup.Break(from, direction, false);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public void RemoveAndFlagAsGone()
+    {
+        RemoveSelf();
+        SceneAs<Level>().Session.DoNotLoad.Add(id);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private DashCollisionResults OnDashed(Player player, Vector2 direction)
+    {
+        if (!dashBlock)
+        {
+            if (player.StateMachine.State == 5) //Get out of the booster
+            {
+                player.StateMachine.State = 0;
+            }
+            return DashCollisionResults.NormalCollision;
+        }
+
+        Break(player.Center, direction);
+        return DashCollisionResults.Rebound;
+    }
+}
+
+public static class Extensions
+{
+    public static bool TryGetEntities<T>(this Tracker self, out List<Entity> entities)
+    {
+        return self.TryGetEntities(typeof(T), out entities);
+    }
+    public static bool TryGetEntities(this Tracker self, Type type, out List<Entity> entities)
+    {
+        entities = null;
+        if (self.Entities.TryGetValue(type, out entities))
+            return true;
+        return false;
+    }
+}
