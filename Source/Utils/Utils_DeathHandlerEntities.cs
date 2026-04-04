@@ -80,7 +80,7 @@ namespace Celeste.Mod.EndersExtras.Utils
                 List<Vector2> deathHandlerSpawnPoints = [];
                 foreach (DeathHandlerRespawnPoint deathHandlerSpawnPointEntity in level.Tracker.GetEntities<DeathHandlerRespawnPoint>())
                 {
-                    if (deathHandlerSpawnPointEntity.disabled == false)
+                    if (deathHandlerSpawnPointEntity.disabled == false && deathHandlerSpawnPointEntity.Active)
                     {
                         Vector2 deathHandlerSpawnPointPos = deathHandlerSpawnPointEntity.entityPosSpawnPoint;
                         deathHandlerSpawnPoints.Add(deathHandlerSpawnPointPos);
@@ -88,7 +88,7 @@ namespace Celeste.Mod.EndersExtras.Utils
                 }
                 foreach (DeathHandlerThrowableRespawnPoint deathHandlerThrowableSpawnPointEntity in level.Tracker.GetEntities<DeathHandlerThrowableRespawnPoint>())
                 {
-                    if (deathHandlerThrowableSpawnPointEntity.disabled == false)
+                    if (deathHandlerThrowableSpawnPointEntity.disabled == false && deathHandlerThrowableSpawnPointEntity.Active)
                     {
                         Vector2 deathHandlerThrowableSpawnPointPos = deathHandlerThrowableSpawnPointEntity.entityPosSpawnPoint;
                         deathHandlerSpawnPoints.Add(deathHandlerThrowableSpawnPointPos);

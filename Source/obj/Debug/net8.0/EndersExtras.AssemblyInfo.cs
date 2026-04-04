@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EndersExtras")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+68cc5154ec838f7098604a6e77c67ead93a74985")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6f67cadc382586b9a5b54cd93fbb2e0a32443a0c")]
 [assembly: System.Reflection.AssemblyProductAttribute("EndersExtras")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EndersExtras")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
