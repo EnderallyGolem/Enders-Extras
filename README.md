@@ -1,5 +1,5 @@
 # Ender's Extras 
-[Source code](---)
+[Source code](https://github.com/EnderallyGolem/Enders-Extras)
 [Gamebanana page](---)
 
 # Features

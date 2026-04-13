@@ -14,7 +14,7 @@ namespace Celeste.Mod.EndersExtras.Entities.DeathHandler;
 [CustomEntity("EndersExtras/DeathHandlerBypassZone")]
 public class DeathHandlerBypassZone : Entity
 {
-    float altVisibility = 0;
+    private float altVisibility = 0;
 
     internal readonly MTexture glassImage;
     internal readonly MTexture glassAltImage;
