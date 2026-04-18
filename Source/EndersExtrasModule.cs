@@ -8,6 +8,7 @@ using MonoMod.RuntimeDetour;
 using System;
 using System.Collections;
 using System.Reflection;
+using Celeste.Mod.EndHelper.Utils;
 
 // Update: MMHook_Celeste, MonoMod.Cecil, MonoMod.Core
 
@@ -54,12 +55,17 @@ public class EndersExtrasModule : EverestModule {
     private static ILHook Loadhook_Player_OrigDie;
     public override void Load()
     {
+        Everest.Events.Level.OnEnter += EnterMapFunc;
         Everest.Events.AssetReload.OnReloadLevel += AssetReloadLevelFunc;
+        Everest.Events.AssetReload.OnBeforeReload += ReloadBeginFunc;
+        Everest.Events.AssetReload.OnAfterReload += ReloadCompleteFunc;
         Everest.Events.Level.OnBeforeUpdate += OnBeforeLevelUpdate;
         On.Celeste.Level.TransitionRoutine += Hook_TransitionRoutine;
         On.Celeste.LevelLoader.StartLevel += Hook_StartMapFromBeginning;
 
+
         On.Celeste.Player.Die += Hook_OnPlayerDeath;
+        On.Celeste.Player.IntroRespawnBegin += Hook_OnPlayerRespawn;
         MethodInfo ILOrigDie = typeof(Player).GetMethod("orig_Die", BindingFlags.Public | BindingFlags.Instance);
         Loadhook_Player_OrigDie = new ILHook(ILOrigDie, Hook_ILOrigDie);
 
@@ -73,21 +79,28 @@ public class EndersExtrasModule : EverestModule {
 
     public override void Unload()
     {
+        Everest.Events.Level.OnEnter -= EnterMapFunc;
         Everest.Events.AssetReload.OnReloadLevel -= AssetReloadLevelFunc;
+        Everest.Events.AssetReload.OnBeforeReload -= ReloadBeginFunc;
+        Everest.Events.AssetReload.OnAfterReload -= ReloadCompleteFunc;
         Everest.Events.Level.OnBeforeUpdate -= OnBeforeLevelUpdate;
         On.Celeste.Level.TransitionRoutine -= Hook_TransitionRoutine;
         On.Celeste.LevelLoader.StartLevel -= Hook_StartMapFromBeginning;
 
         On.Celeste.Player.Die -= Hook_OnPlayerDeath;
+        On.Celeste.Player.IntroRespawnBegin -= Hook_OnPlayerRespawn;
         Loadhook_Player_OrigDie?.Dispose(); Loadhook_Player_OrigDie = null;
 
         On.Celeste.Editor.MapEditor.Update -= Hook_UsingMapEditor;
 
         On.Celeste.Glitch.Apply -= Hook_GlitchEffectApply;
 
-        EndersBlenderIntegration.Unload();
-        SpeedrunToolIntegration.Unload();
+        UnloadTempHooks();
+    }
 
+    private static void UnloadTempHooks()
+    {
+        Utils_CassetteManager.DisableHooks();
         Utils_DeathHandlerEntities.DisableHooks();
     }
 
@@ -101,12 +114,43 @@ public class EndersExtrasModule : EverestModule {
             Utils_DeathHandlerEntities.ResetFullResetAndBypassBetweenRooms(level);
         }
 
+        if (EndersExtrasModule.Session.enableRoomSwapFuncs)
+        {
+            // This only exists so it updates when you respawn from debug. It umm still requires a transition/respawn to work lol
+            // Also runs if SessionResetCause is ReenterMap
+            Utils_RoomSwap.ReupdateAllRooms(level);
+
+            if (lastSessionResetCause == SessionResetCause.Debug || lastSessionResetCause == SessionResetCause.ReenterMap)
+            {
+                // Check if require double reload - if room the player is in is in a grid
+                String currentRoom = level.Session.LevelData.Name;
+                foreach (String gridID in EndersExtrasModule.Session.roomSwapOrderList.Keys)
+                {
+                    String roomSwapPrefix = EndersExtrasModule.Session.roomSwapPrefix[gridID];
+                    if (currentRoom.Contains(roomSwapPrefix))
+                    {
+                        // Is in one! Reload level again and break out of the loop.
+                        level.Reload();
+                    }
+                }
+            }
+        }
+
 
         if (timeSinceSessionReset <= 1)
         {
             timeSinceSessionReset = 2;
         }
     }
+
+
+    private static void EnterMapFunc(global::Celeste.Session session, bool fromSaveData)
+    {
+        // Disable level-dependent hooks if enabled
+        UnloadTempHooks();
+    }
+
+    public static bool reloadComplete;
     public static void AssetReloadLevelFunc(global::Celeste.Level level)
     {
         // Yeah this exists solely so reloading a map midway through it doesn't break.
@@ -119,6 +163,15 @@ public class EndersExtrasModule : EverestModule {
             lastSessionResetCause = SessionResetCause.ReenterMap;
         }
     }
+    private static void ReloadCompleteFunc(bool silent)
+    {
+        reloadComplete = true;
+    }
+    private static void ReloadBeginFunc(bool silent)
+    {
+        reloadComplete = false;
+    }
+
     public static void Hook_UsingMapEditor(On.Celeste.Editor.MapEditor.orig_Update orig, global::Celeste.Editor.MapEditor self)
     {
         timeSinceSessionReset = 0;
@@ -199,6 +252,14 @@ public class EndersExtrasModule : EverestModule {
                 conditionalBirdTutorial.UpdateConditionTracking_Death();
             }
         }
+    }
+
+    public static void Hook_OnPlayerRespawn(On.Celeste.Player.orig_IntroRespawnBegin orig, global::Celeste.Player self)
+    {
+        //Update the room-swap rooms. This is kind of here as a failsafe,
+        //and also otherwise warping with debug mode permamently empty the swap rooms.
+        Utils_RoomSwap.ReupdateAllRooms();
+        orig(self);
     }
 
     public static void Hook_GlitchEffectApply(On.Celeste.Glitch.orig_Apply orig, VirtualRenderTarget source, float timer, float seed, float amplitude)

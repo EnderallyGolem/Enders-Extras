@@ -170,4 +170,10 @@ function DeathHandlerBypassZone.sprite(room, entity)
     return sprites
 end
 
+function DeathHandlerBypassZone.onRotate(room, entity, direction)
+    local oldWidth = entity.width
+    entity.width = entity.height
+    entity.height = oldWidth
+end
+
 return DeathHandlerBypassZone

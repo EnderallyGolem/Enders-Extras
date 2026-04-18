@@ -30,7 +30,11 @@ namespace Celeste.Mod.EndersExtras.Utils
         }
         internal static void DisableHooks()
         {
-            if (EnabledDeathHandler) UnloadHooks();
+            if (EnabledDeathHandler)
+            {
+                UnloadHooks();
+                EnabledDeathHandler = false;
+            }
         }
 
 

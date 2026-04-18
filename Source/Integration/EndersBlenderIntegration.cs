@@ -21,7 +21,7 @@ namespace Celeste.Mod.EndersExtras.Integration
         {
             typeof(EndersBlenderImport).ModInterop();
             ModInstalled = EndersBlenderImport.GetEnableEntityChecks is not null;
-            Logger.Log(LogLevel.Info, "EndersExtras/EnderBlenderIntegration", $"initialise stuff perhaps. {ModInstalled}");
+            //Logger.Log(LogLevel.Info, "EndersExtras/EnderBlenderIntegration", $"initialise stuff perhaps. {ModInstalled}");
         }
 
         internal static void Unload()

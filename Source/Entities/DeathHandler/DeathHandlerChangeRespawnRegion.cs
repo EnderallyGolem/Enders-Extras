@@ -74,7 +74,7 @@ public class DeathHandlerChangeRespawnRegion : Entity
 
         if (killOnEnter) Add(new LedgeBlocker());
 
-        // Schuled to add renderer
+        // Scheduled to add renderer
         if (visibleArea) scheduleAddRendererTick = true;
     }
 

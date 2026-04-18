@@ -16,10 +16,9 @@ public class DeathHandlerBypassZone : Entity
 {
     private float altVisibility = 0;
 
-    internal readonly MTexture glassImage;
-    internal readonly MTexture glassAltImage;
-    internal readonly MTexture borderTexture;
-    internal readonly EntityID entityID;
+    private readonly MTexture glassImage;
+    private readonly MTexture glassAltImage;
+    private readonly MTexture borderTexture;
 
     internal enum BypassEffect { Activate, Deactivate, Toggle, None }
     private readonly BypassEffect mainEffect;
@@ -45,7 +44,6 @@ public class DeathHandlerBypassZone : Entity
         Utils_DeathHandlerEntities.EnableDeathHandler();
 
         Depth = 9500;
-        entityID = id;
 
         mainEffect = ConvertToBypassEffect(data.Attr("effect"));
         altEffect = ConvertToBypassEffect(data.Attr("altEffect"));
