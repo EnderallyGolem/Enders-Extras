@@ -56,7 +56,7 @@ public class DeathHandlerBypassZone : Entity
         String glassActivateTexture = Utils_General.TrimPath
             (data.Attr("glassActivateTexture"), "Graphics/Atlases/Gameplay/objects/EndersExtras/DeathHandlerBypassZone/stainedglass_activate");
         String glassDeactivateTexture = Utils_General.TrimPath
-            (data.Attr("glassActivateTexture"), "Graphics/Atlases/Gameplay/objects/EndersExtras/DeathHandlerBypassZone/stainedglass_deactivate");
+            (data.Attr("glassDeactivateTexture"), "Graphics/Atlases/Gameplay/objects/EndersExtras/DeathHandlerBypassZone/stainedglass_deactivate");
         String glassToggleTexture = Utils_General.TrimPath
             (data.Attr("glassToggleTexture"), "Graphics/Atlases/Gameplay/objects/EndersExtras/DeathHandlerBypassZone/stainedglass_toggle");
         String glassNoneTexture = Utils_General.TrimPath
