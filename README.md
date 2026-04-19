@@ -76,7 +76,7 @@ It's recommended to use this with Seemless Respawns using Blender's Gameplay Twe
 - Manual Resets (clicking retry), which are full-resets that further reset the player's state
 - The death-bypass component can be given to the player, which
 	- makes "dying" not result in a respawn
-	- allows "dream jumping" from dying if you were dashing, in a feather, or were bird-flung when dying
+	- gives coyote from dying if you were dashing (or in a booster), in a feather, or were bird-flung when dying
 	- Full-resets do not remove the player's death-bypass. The player instantly respawns at a full-reset spawnpoint with all momentum.
 	
 Entities included:

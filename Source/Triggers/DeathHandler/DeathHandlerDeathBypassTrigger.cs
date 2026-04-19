@@ -94,7 +94,7 @@ public class DeathHandlerDeathBypassTrigger : Trigger
         {
             return false;
         }
-        if (!allowPreventChange && entity.Components.Get<DeathBypass>() is DeathBypass deathBypass && deathBypass.preventChange)
+        if (!allowPreventChange && entity.Components.Get<DeathBypass>() is { preventChange: true })
         {
             return false;
         }

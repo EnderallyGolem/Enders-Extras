@@ -75,7 +75,7 @@ namespace Celeste.Mod.EndersExtras.Utils
         static readonly Random rnd = new Random();
 
         const float waveSpeed = 0.6f;
-        const float waveStrength = 1f;
+        const float waveStrength = 0.7f;
         const float fadeOutTime = 3f;
         const int maxRippleCount = 15; // For shader badly made garbage reasons: This should be MAX 20
         const int inverseFractionSpawnChance = 15; // Eg: 10 means 1/10 chance of spawning a ripple per frame
@@ -224,8 +224,8 @@ namespace Celeste.Mod.EndersExtras.Utils
         internal static bool enableShader = false; // Enabled when BeginEntityRender is called
 
         const float waveSpeed = 0.16f;
-        const float waveStrength = 1.5f;
-        const float fadeOutTime = 2f;
+        const float waveStrength = 0.7f;
+        const float fadeOutTime = 2.3f;
         const float rippleCycleTime = 2.4f;
         const int distanceBetweenRipple = 25;
 
