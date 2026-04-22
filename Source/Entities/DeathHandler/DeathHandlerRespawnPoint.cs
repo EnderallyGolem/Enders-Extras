@@ -202,12 +202,6 @@ public class DeathHandlerRespawnPoint : Entity
         }
     }
 
-    public override void Render()
-    {
-        base.Render();
-    }
-
-
     public void ChangeActiveness(bool? newActiveness = null)
     {
         if (newActiveness == null)

@@ -136,7 +136,7 @@ namespace Celeste.Mod.EndersExtras.Utils
             EndersExtrasModule.Session.allowTriggerEffect[gridID] = true;
         }
 
-        internal static bool ModifyRooms(String modifyType, bool isSilent, Player player, Level level, String gridID, int teleportDelayMilisecond = 0, int teleportDisableMilisecond = 200, bool flashEffect = false)
+        internal static bool ModifyRooms(String modifyType, bool isSilent, Player? player, Level level, String gridID, int teleportDelayMilisecond = 0, int teleportDisableMilisecond = 200, bool flashEffect = false)
         {
             bool succeedModify = false;
 
@@ -149,7 +149,7 @@ namespace Celeste.Mod.EndersExtras.Utils
             String roomSwapPrefix = EndersExtrasModule.Session.roomSwapPrefix[gridID];
             String roomTemplatePrefix = EndersExtrasModule.Session.roomTemplatePrefix[gridID];
 
-            String currentTemplateRoomName = GetTemplateRoomFromSwapRoom(currentRoomName);
+            string? currentTemplateRoomName = GetTemplateRoomFromSwapRoom(currentRoomName);
 
             if (EndersExtrasModule.Session.allowTriggerEffect[gridID])
             {
@@ -166,7 +166,7 @@ namespace Celeste.Mod.EndersExtras.Utils
                 {
                     case "Reset":
                         {
-                            List<List<string>> initial = null;
+                            List<List<string>>? initial = null;
                             if (EndersExtrasModule.Session.roomSwapOrderList.TryGetValue(gridID, out List<List<string>> value))
                             {
                                 initial = new List<List<string>>(Utils_General.DeepCopyJSON(value));
@@ -533,7 +533,7 @@ namespace Celeste.Mod.EndersExtras.Utils
                     }
                 }
                 //Logger.Log(LogLevel.Info, "EndersExtras/Utils_RoomSwap", "Updating rooms...");
-                swapEffects();
+                SwapEffects();
             }
 
             async void TeleportToRoom(String teleportToRoomName, Player player, Level level)
@@ -606,7 +606,7 @@ namespace Celeste.Mod.EndersExtras.Utils
                 return currentRoomName; //This shouldn't happen...
             }
 
-            String GetTemplateRoomFromSwapRoom(String swapRoomName)
+            String? GetTemplateRoomFromSwapRoom(String swapRoomName)
             {
                 if (swapRoomName.StartsWith(roomSwapPrefix))
                 {
@@ -625,7 +625,7 @@ namespace Celeste.Mod.EndersExtras.Utils
                 return null;
             }
 
-            void swapEffects()
+            void SwapEffects()
             {
                 RoomModificationEventTrigger(gridID);
 

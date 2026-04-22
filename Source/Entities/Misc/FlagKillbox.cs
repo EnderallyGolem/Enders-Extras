@@ -29,6 +29,7 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
         [MethodImpl(MethodImplOptions.NoInlining)]
         public override void Update()
         {
+            bool collidableOverride = Collidable;
             base.Update();
 
             Level level = SceneAs<Level>();
@@ -39,12 +40,12 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
                 flagAllow = Utils_General.AreFlagsEnabled(level.Session, requireFlag, true);
             }
 
-            if (!Collidable)
+            if (!collidableOverride)
             {
                 Player player = base.Scene.Tracker.GetEntity<Player>();
                 if (player != null && player.Bottom < base.Top - triggerPixels && flagAllow)
                 {
-                    Collidable = true;
+                    collidableOverride = true;
                 }
             }
             else
@@ -52,9 +53,11 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
                 Player entity2 = base.Scene.Tracker.GetEntity<Player>();
                 if ((entity2 != null && entity2.Top > base.Bottom + 32f) || !flagAllow)
                 {
-                    Collidable = false;
+                    collidableOverride = false;
                 }
             }
+
+            Collidable = collidableOverride;
         }
     }
 }

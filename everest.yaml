@@ -1,11 +1,7 @@
 - DLL: bin/EndersExtras.dll
   Name: EndersExtras
-  Version: 0.1.0
+  Version: 1.0.0
   Dependencies:
-    - Name: Everest
-      Version: 1.6249.0
-    - Name: Everest
-      Version: 1.6249.0
     - Name: Everest
       Version: 1.6249.0
   OptionalDependencies:

@@ -96,10 +96,10 @@ public class DeathHandlerChangeRespawnRegionRenderer : Entity
     public bool dirty;
 
 
-    private bool render_fullResetKill = false;
-    private bool render_fullResetNormal = false;
-    private bool render_resetKill = false;
-    private bool render_resetNormal = false;
+    private bool renderFullResetKill = false;
+    private bool renderFullResetNormal = false;
+    private bool renderResetKill = false;
+    private bool renderResetNormal = false;
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     public DeathHandlerChangeRespawnRegionRenderer()
@@ -299,19 +299,19 @@ public class DeathHandlerChangeRespawnRegionRenderer : Entity
         }
 
         // Check if rendering is necessary
-        render_fullResetKill = false;
-        render_fullResetNormal = false;
-        render_resetKill = false;
-        render_resetNormal = false;
+        renderFullResetKill = false;
+        renderFullResetNormal = false;
+        renderResetKill = false;
+        renderResetNormal = false;
 
         foreach (DeathHandlerChangeRespawnRegion item in list)
         {
             if (!item.visibleArea) continue;
             //Logger.Log(LogLevel.Info, "EndersExtras/DeathHandlerChangeRespawnRegionRenderer", $">> for {item}: fullreset {item.fullReset} killOnEnter {item.killOnEnter}");
-            if (item.fullReset && item.killOnEnter) render_fullResetKill = true;
-            if (item.fullReset && !item.killOnEnter) render_fullResetNormal = true;
-            if (!item.fullReset && item.killOnEnter) render_resetKill = true;
-            if (!item.fullReset && !item.killOnEnter) render_resetNormal = true;
+            if (item.fullReset && item.killOnEnter) renderFullResetKill = true;
+            if (item.fullReset && !item.killOnEnter) renderFullResetNormal = true;
+            if (!item.fullReset && item.killOnEnter) renderResetKill = true;
+            if (!item.fullReset && !item.killOnEnter) renderResetNormal = true;
         }
     }
 
@@ -368,10 +368,10 @@ public class DeathHandlerChangeRespawnRegionRenderer : Entity
         Rectangle cameraRect = level.Camera.GetRect();
         Rectangle cameraRectInflated = cameraRect; cameraRectInflated.Inflate(16, 16);
 
-        if (render_fullResetKill) RenderSet(true, true);
-        if (render_fullResetNormal) RenderSet(true, false);
-        if (render_resetKill) RenderSet(false, true);
-        if (render_resetNormal) RenderSet(false, false);
+        if (renderFullResetKill) RenderSet(true, true);
+        if (renderFullResetNormal) RenderSet(true, false);
+        if (renderResetKill) RenderSet(false, true);
+        if (renderResetNormal) RenderSet(false, false);
 
         void RenderSet(bool fullReset, bool killOnEnter)
         {

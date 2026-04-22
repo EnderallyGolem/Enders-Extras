@@ -15,6 +15,7 @@ local tileEntity = {
                 Depth = -10000,
                 extendOffscreen = true,
                 collidable = true,
+                occludeLight = true,
                 colour = "ffffffff",
                 allowMerge = true,
                 allowMergeDifferentType = true,
@@ -40,8 +41,8 @@ local tileEntity = {
 tileEntity.fieldOrder = {
     "x", "y", "width", "height",
     "tiletype", "tiletypeOffscreen",
-    "backgroundTiles", "collidable", "allowMerge", "allowMergeDifferentType",
-    "Depth", "locationSeeded", "colour", "surfaceSoundIndex",
+    "backgroundTiles", "collidable", "occludeLight", "allowMerge", "allowMergeDifferentType",
+    "locationSeeded", "Depth", "colour", "surfaceSoundIndex",
     "dashBlock", "dashBlockPermament", "dashBlockBreakSound",
     "offUL", "offU", "offUR", "offR", "offDR", "offD", "offDL", "offL",
     "noEdges", "extendOffscreen"
@@ -56,6 +57,7 @@ local function canMergeGlobally(a, b)
     if not (a.allowMerge and b.allowMerge) then return false end
     if a.dashBlock ~= b.dashBlock then return false end
     if a.colour ~= b.colour then return false end
+    if a.backgroundTiles ~= b.backgroundTiles then return false end
     if not (a.tiletype == b.tiletype or (a.allowMergeDifferentType and b.allowMergeDifferentType)) then
         return false
     end
@@ -128,6 +130,9 @@ function tileEntity.sprite(room, entity)
         local color = utils.getColor(entity.colour or {1, 1, 1, 1})
         for i = 1, #returnSprite do
             returnSprite[i]:setColor(color)
+            if #relevantBlocks ~= 1 then
+                returnSprite[i]:addPosition(entity.x % 8, entity.y % 8) -- For odd-grid tiles
+            end
         end
         return returnSprite
     end

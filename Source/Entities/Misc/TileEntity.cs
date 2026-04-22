@@ -18,7 +18,7 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc;
 public class TileEntity : Solid
 {
     private EntityID id;
-    private TileGrid tiles;
+    private TileGrid? tiles;
 
     private readonly char tileType;
     private readonly char tiletypeOffscreen;
@@ -28,16 +28,15 @@ public class TileEntity : Solid
     private readonly bool allowMerge;
     private readonly bool extendOffscreen;
     private readonly bool noEdges;
-    private readonly bool collidable;
     private readonly Color colour;
 
     private readonly bool locationSeeded;
 
     private readonly List<bool> offDirecBoolList;
 
-    private TileEntity master;
+    private TileEntity? master;
 
-    public List<TileEntity> Group;
+    public List<TileEntity>? Group;
 
     public Point GroupBoundsMin;
     public Point GroupBoundsMax;
@@ -45,6 +44,9 @@ public class TileEntity : Solid
     private readonly bool dashBlock;
     private readonly bool dashBlockPermament;
     private readonly string dashBlockBreakSound;
+
+    private readonly bool attachable;
+    private readonly bool canBeAttached;
 
     public bool HasGroup
     {
@@ -58,10 +60,10 @@ public class TileEntity : Solid
         private set;
     }
 
-    private TileEntity getMasterOfGroup;
+    private TileEntity? getMasterOfGroup;
 
-    public TileEntity(Vector2 position, float width, float height, EntityID id, char tileType, char tiletypeOffscreen, int depth, bool backgroundTiles, bool collidable, string colourStr, bool allowMergeDifferentType = false, bool allowMerge = true, 
-        bool extendOffscreen = false, bool noEdges = false, List<bool> offDirecBoolList = null, bool locationSeeded = false,
+    public TileEntity(Vector2 position, float width, float height, EntityID id, char tileType, char tiletypeOffscreen, int depth, bool backgroundTiles, bool collidable, bool occludeLight, string colourStr, bool allowMergeDifferentType = false, bool allowMerge = true,
+        bool extendOffscreen = false, bool noEdges = false, List<bool>? offDirecBoolList = null, bool locationSeeded = false,
         bool dashBlock = false, bool dashBlockPermament = false, String dashBlockBreakSound = "")
     : base(position, width, height, safe: true)
     {
@@ -80,18 +82,15 @@ public class TileEntity : Solid
         this.dashBlock = dashBlock;
         this.dashBlockPermament = dashBlockPermament;
         this.dashBlockBreakSound = dashBlockBreakSound;
-        this.collidable = collidable;
         this.colour = Calc.HexToColorWithAlpha(colourStr);
 
         this.id = id;
 
-        if (collidable)
-        {
-            Add(new LightOcclude());
-        }
-        else
+        if (occludeLight) Add(new LightOcclude());
+        if (!collidable)
         {
             Collidable = false;
+            AllowStaticMovers = false;
         }
 
         if (!SurfaceIndex.TileToIndex.TryGetValue(tileType, out SurfaceSoundIndex))
@@ -100,11 +99,10 @@ public class TileEntity : Solid
         OnDashCollide = OnDashed;
     }
 
-
     private Vector2 relativePos;
 
     public TileEntity(EntityData data, Vector2 offset, EntityID id)
-        : this(data.Position + offset, data.Width, data.Height, id, data.Char("tiletype", '3'), data.Char("tiletypeOffscreen", '◯'), data.Int("Depth", -9000), data.Bool("backgroundTiles", false), data.Bool("collidable", true), data.Attr("colour", "ffffffff"), data.Bool("allowMergeDifferentType", false), data.Bool("allowMerge", true), data.Bool("extendOffscreen", true), data.Bool("noEdges", false),
+        : this(data.Position + offset, data.Width, data.Height, id, data.Char("tiletype", '3'), data.Char("tiletypeOffscreen", '◯'), data.Int("Depth", -9000), data.Bool("backgroundTiles", false), data.Bool("collidable", true), data.Bool("occludeLight", true), data.Attr("colour", "ffffffff"), data.Bool("allowMergeDifferentType", false), data.Bool("allowMerge", true), data.Bool("extendOffscreen", true), data.Bool("noEdges", false),
               [data.Bool("offU", true), data.Bool("offUR", true), data.Bool("offR", true), data.Bool("offDR", true), data.Bool("offD", true), data.Bool("offDL", true), data.Bool("offL", true), data.Bool("offUL", true)], data.Bool("locationSeeded", false),
               data.Bool("dashBlock", false), data.Bool("dashBlockPermament", true), data.Attr("dashBlockBreakSound", "")
         )
@@ -223,10 +221,11 @@ public class TileEntity : Solid
             tiles.VisualExtend = 32;
             Add(tiles);
             if (locationSeeded) { Calc.PopRandom(); }
+
         }
     }
 
-    private void AddToGroupAndFindChildren(TileEntity from, List<Entity> entities = null)
+    private void AddToGroupAndFindChildren(TileEntity from, List<Entity>? entities = null)
     {
         // This function is repeatedly ran by the master until all the nearby blocks are found!
 

@@ -1,12 +1,12 @@
+C:\Program Files (x86)\Steam\steamapps\common\Celeste\Mods\EndersExtras\Source\bin\Debug\net8.0\EndersExtras.deps.json
+C:\Program Files (x86)\Steam\steamapps\common\Celeste\Mods\EndersExtras\Source\bin\Debug\net8.0\EndersExtras.dll
+C:\Program Files (x86)\Steam\steamapps\common\Celeste\Mods\EndersExtras\Source\bin\Debug\net8.0\EndersExtras.pdb
 C:\Program Files (x86)\Steam\steamapps\common\Celeste\Mods\EndersExtras\Source\obj\Debug\net8.0\EndersExtras.csproj.AssemblyReference.cache
 C:\Program Files (x86)\Steam\steamapps\common\Celeste\Mods\EndersExtras\Source\obj\Debug\net8.0\EndersExtras.GeneratedMSBuildEditorConfig.editorconfig
 C:\Program Files (x86)\Steam\steamapps\common\Celeste\Mods\EndersExtras\Source\obj\Debug\net8.0\EndersExtras.AssemblyInfoInputs.cache
 C:\Program Files (x86)\Steam\steamapps\common\Celeste\Mods\EndersExtras\Source\obj\Debug\net8.0\EndersExtras.AssemblyInfo.cs
 C:\Program Files (x86)\Steam\steamapps\common\Celeste\Mods\EndersExtras\Source\obj\Debug\net8.0\EndersExtras.csproj.CoreCompileInputs.cache
 C:\Program Files (x86)\Steam\steamapps\common\Celeste\Mods\EndersExtras\Source\obj\Debug\net8.0\EndersExtras.sourcelink.json
-C:\Program Files (x86)\Steam\steamapps\common\Celeste\Mods\EndersExtras\Source\bin\Debug\net8.0\EndersExtras.deps.json
-C:\Program Files (x86)\Steam\steamapps\common\Celeste\Mods\EndersExtras\Source\bin\Debug\net8.0\EndersExtras.dll
-C:\Program Files (x86)\Steam\steamapps\common\Celeste\Mods\EndersExtras\Source\bin\Debug\net8.0\EndersExtras.pdb
 C:\Program Files (x86)\Steam\steamapps\common\Celeste\Mods\EndersExtras\Source\obj\Debug\net8.0\EndersExtras.dll
 C:\Program Files (x86)\Steam\steamapps\common\Celeste\Mods\EndersExtras\Source\obj\Debug\net8.0\refint\EndersExtras.dll
 C:\Program Files (x86)\Steam\steamapps\common\Celeste\Mods\EndersExtras\Source\obj\Debug\net8.0\EndersExtras.pdb

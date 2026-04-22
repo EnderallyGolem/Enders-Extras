@@ -9,7 +9,7 @@ mods.EndersVendor.name=Ender's Vendor
 
 # Tile Entity
 entities.EndersExtras/TileEntity.placements.name.normal=Tile Entity
-entities.EndersExtras/TileEntity.placements.description.normal=Modified VivHelper Custom Depth Tile Entity
+entities.EndersExtras/TileEntity.placements.description.normal=A highly customisable tile entity.
 entities.EndersExtras/TileEntity.attributes.description.depth=Entity depth. Connected tiles will have the same depth.
 entities.EndersExtras/TileEntity.attributes.description.tiletypeOffscreen=The portion of the entity that is outside a room will show up as this.\nSet this to an invisible tile ("fake air") and extend the tiles offscreen to allow seemless room transitions.\nAlternatively, add <Tileset id="◯" copy="y" path="EndersExtras/fakeAir" sound="0"/> to your ForegroundTiles.xml (◯ is U+25EF).
 entities.EndersExtras/TileEntity.attributes.description.extendOffscreen=If the tiles are placed at the edge of the room, they will be extended one tile outside the room.
@@ -22,7 +22,8 @@ entities.EndersExtras/TileEntity.attributes.description.dashBlock=Turns the Tile
 entities.EndersExtras/TileEntity.attributes.name.dashBlockPermament=Dash Block Permanent
 entities.EndersExtras/TileEntity.attributes.description.dashBlockPermament=For Dash Blocks: If the block stays broken after room reload.\nIf connected blocks are partially permanent and partially not,\nonly the non-permanent parts will reappear on reload.
 entities.EndersExtras/TileEntity.attributes.description.dashBlockBreakSound=For Dash Blocks: Sound event which plays when broken.\nIf connected, the sound will depend on which segment was broken.
-entities.EndersExtras/TileEntity.attributes.description.collidable=Affects whether the tile entity is solid, and if it blocks light.
+entities.EndersExtras/TileEntity.attributes.description.collidable=Affects whether the tile entity is solid, and if staticmovers can be attached to the solid.
+entities.EndersExtras/TileEntity.attributes.description.occludeLight=Affects whether the tile entity blocks light.
 entities.EndersExtras/TileEntity.attributes.description.colour=Colour of the Tile Entity. (White = normal)\nDifferent coloured entities cannot connect.
 entities.EndersExtras/TileEntity.attributes.description.backgroundTiles=Use background tiles instead of foreground tiles.\nThis is purely visual - you might still want to change the Depth (BG: 10000, FG: -10000) and Collidable.\nForeground and background tiles cannot be connected.\nReopen this menu to update the Tiletype selections!
 entities.EndersExtras/TileEntity.attributes.description.offU=The offscreen tiletype will be used if it extends offscreen to the top.
@@ -105,19 +106,15 @@ entities.EndersExtras/DeathCountGate.attributes.description.silent=Prevents this
 
 ### TRIGGERS ###
 
-
-
-### MISC
-
 # IncrementalFlagTrigger
 triggers.EndersExtras/IncrementalFlagTrigger.placements.name.normal=Incremental Flag
 triggers.EndersExtras/IncrementalFlagTrigger.placements.description.normal=Trigger that creates or increments a Flag with a number.\nEg: Make entering a region adds flagNum2 and removes flagNum1 if flagNum1 is set.\n(This also creates a counter, for tracking purposes.)
 triggers.EndersExtras/IncrementalFlagTrigger.attributes.description.flag=The flag name, without the number.\nThe trigger will create the flag [flag][number] upon entering.
-triggers.EndersExtras/IncrementalFlagTrigger.attributes.description.setValue=The flag number.\nThe trigger will create the flag [flag][number] upon entering.\nIf set to 0, the flag will be removed.
+triggers.EndersExtras/IncrementalFlagTrigger.attributes.description.setValue=The flag number.\nThe trigger will create the flag [flag][number] upon entering.\nIf set to 0, the flag will be set to [flag]0 regardless if setOnlyIfOneBelow is enabled.
 triggers.EndersExtras/IncrementalFlagTrigger.attributes.description.setOnlyIfOneBelow=If enabled, the flag number is only set if at the previous number.\nEg: Set flagNum3 only if flagNum2.\nDoes nothing if Set Value is 0.
 triggers.EndersExtras/IncrementalFlagTrigger.attributes.description.requireFlag=If specified, the incremental flag is only set if THIS flag is enabled.\nA list of flags in the format "flagA, flagB, !flagC | flagD, flagE" can be specified.\nThis means (flagA and flagB and not flagC) or (flagD and flagE).
 triggers.EndersExtras/IncrementalFlagTrigger.attributes.description.singleUse=Trigger can only be used once (until the player dies).\nIf the trigger is entered but the flag isn't changed, it does NOT count as being used.
-triggers.EndersExtras/IncrementalFlagTrigger.attributes.description.temporary=Removes the flag upon room reload.
+triggers.EndersExtras/IncrementalFlagTrigger.attributes.description.temporary=Sets the flag to [flag]0 upon room reload.
 
 
 
@@ -282,7 +279,7 @@ triggers.EndersExtras/RoomSwapChangeRespawnTrigger.attributes.name.checkSolid=Ch
 
 
 
-### Cassette stuff lol
+### Cassette Beat Blocks
 
 # Cassette Manager Trigger
 triggers.EndersExtras/CassetteManagerTrigger.placements.name.normal=Cassette Manager
@@ -328,3 +325,37 @@ entities.EndersExtras/CassetteBeatGate.attributes.description.particleColour2=2n
 entities.EndersExtras/CassetteBeatGate.attributes.description.changeInsteadOfSet=If Move Loop Beat and Move Cycle Beats should specify change in node number, rather than setting it.\nFormat is changed to [beatNum]|[Change in nodeNum], negative changes means go to previous node.
 entities.EndersExtras/CassetteBeatGate.attributes.description.loopNodes=If going above the highest node loops you back to the first node (and vice versa), rather than capping there.
 entities.EndersExtras/CassetteBeatGate.attributes.description.requireFlag=If specified, the block will only move if this flag is enabled.\nA list of flags in the format "flagA, flagB, !flagC | flagD, flagE" can be specified.\nThis means (flagA and flagB and not flagC) or (flagD and flagE).
+
+
+
+
+
+
+
+
+
+
+### Sound Ripple
+
+# Bell
+entities.EndersExtras/SoundRippleBell.placements.name.normal=Sound Ripple Bell
+entities.EndersExtras/SoundRippleBell.placements.description.normal=When rung, creates a sound waves that shows the location of nearby entities, even in the dark.\n(You might want to use Communual Helper's GlowController to remove glow from entities.)
+entities.EndersExtras/SoundRippleBell.attributes.description.type=The type of bell, affecting the visual, sound, and ripple range.
+entities.EndersExtras/SoundRippleBell.attributes.description.depth=The depth of the entity.
+entities.EndersExtras/SoundRippleBell.attributes.description.onlyPlayerRing=If true, only the player can ring the bell. \nIf false, all actors can ring the bell.
+entities.EndersExtras/SoundRippleBell.attributes.description.cooldown=Cooldown (in seconds) where the bell cannot be rung.\nIf set to 0, the bell will be single-use.\nIf set to negative, the bell will automatically ring at regular intervals.
+entities.EndersExtras/SoundRippleBell.attributes.description.radius=Radius (in tiles) of the sound wave range. Set to 0 to use the default value based on the bell size (6, 14, 24).\nNote that regions outside the screen boundary cannot be lit up.
+entities.EndersExtras/SoundRippleBell.attributes.description.pitchScale=The pitch the bell sound will be multiplied by (1 plays the normal sound).
+entities.EndersExtras/SoundRippleBell.attributes.description.pitchVariation=The percentage (0 to 1) which the pitch will be varied by. 0 means no variation.
+
+# Seeker
+entities.EndersExtras/SoundRippleSeeker.placements.name.normal=Sound Ripple Seeker
+entities.EndersExtras/SoundRippleSeeker.placements.description.normal=A seeker with the option to not detect the player if they are behind a background and away from sound sources.
+entities.EndersExtras/SoundRippleSeeker.attributes.description.hasSpotlight=If false, does not light up the nearby region. \n(True is the same functionality as normal seekers.)
+entities.EndersExtras/SoundRippleSeeker.attributes.name.cannotDetectTileEntity=Hide in Tile Entity
+entities.EndersExtras/SoundRippleSeeker.attributes.description.cannotDetectTileEntity=If true, the seeker cannot detect a player through EndersExtras Tile Entities, \nunless a Sound Ripple Bell was rung nearby recently. \n(True is the same functionality as normal seekers.)
+
+
+entities.EndersExtras/SoundRippleWatchtower.placements.name.normal=Sound Ripple Watchtower
+entities.EndersExtras/SoundRippleWatchtower.placements.description.normal=A watchtower which continously creates sound waves.
+entities.EndersExtras/SoundRippleSeeker.attributes.description.onlyY=If the watchtower can only scroll vertically.

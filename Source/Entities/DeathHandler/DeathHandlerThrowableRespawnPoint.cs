@@ -539,10 +539,7 @@ public class DeathHandlerThrowableRespawnPoint : Actor
     [MethodImpl(MethodImplOptions.NoInlining)]
     public void OnCollideH(CollisionData data)
     {
-        if (data.Hit is DashSwitch)
-        {
-            (data.Hit as DashSwitch).OnDashCollide(null, Vector2.UnitX * Math.Sign(Speed.X));
-        }
+        (data.Hit as DashSwitch)?.OnDashCollide(null, Vector2.UnitX * Math.Sign(Speed.X));
 
         Audio.Play("event:/game/05_mirror_temple/crystaltheo_hit_side", Position);
         if (Math.Abs(Speed.X) > 100f)
@@ -556,10 +553,7 @@ public class DeathHandlerThrowableRespawnPoint : Actor
     [MethodImpl(MethodImplOptions.NoInlining)]
     public void OnCollideV(CollisionData data)
     {
-        if (data.Hit is DashSwitch)
-        {
-            (data.Hit as DashSwitch).OnDashCollide(null, Vector2.UnitY * Math.Sign(Speed.Y));
-        }
+        (data.Hit as DashSwitch)?.OnDashCollide(null, Vector2.UnitY * Math.Sign(Speed.Y));
 
         if (Speed.Y > 0f)
         {

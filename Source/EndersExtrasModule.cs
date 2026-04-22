@@ -8,14 +8,16 @@ using MonoMod.RuntimeDetour;
 using System;
 using System.Collections;
 using System.Reflection;
+using Celeste.Mod.EndersExtras.Entities.SoundRipple;
 using Celeste.Mod.EndHelper.Utils;
+// ReSharper disable PossibleInvalidCastExceptionInForeachLoop
 
 // Update: MMHook_Celeste, MonoMod.Cecil, MonoMod.Core
 
 namespace Celeste.Mod.EndersExtras;
 
 public class EndersExtrasModule : EverestModule {
-    public static EndersExtrasModule Instance { get; private set; }
+    public static EndersExtrasModule Instance { get; private set; } = null!;
 
     public override Type SettingsType => typeof(EndersExtrasModuleSettings);
     public static EndersExtrasModuleSettings Settings => (EndersExtrasModuleSettings) Instance._Settings;
@@ -34,12 +36,14 @@ public class EndersExtrasModule : EverestModule {
 #else
         // release builds use info logging to reduce spam in log files
         Logger.SetLogLevel(nameof(EndersExtrasModule), LogLevel.Info);
+
+        //Logger.Log(LogLevel.Info, "EndersExtras/Main", $"....");
 #endif
     }
 
     //Custom spritebank
     public static SpriteBank SpriteBank => Instance._CustomEntitySpriteBank;
-    private SpriteBank _CustomEntitySpriteBank;
+    private SpriteBank _CustomEntitySpriteBank = null!;
     public override void LoadContent(bool firstLoad)
     {
         base.LoadContent(firstLoad);
@@ -62,6 +66,8 @@ public class EndersExtrasModule : EverestModule {
         Everest.Events.Level.OnBeforeUpdate += OnBeforeLevelUpdate;
         On.Celeste.Level.TransitionRoutine += Hook_TransitionRoutine;
         On.Celeste.LevelLoader.StartLevel += Hook_StartMapFromBeginning;
+
+        On.Celeste.Seeker.CanSeePlayer += Hook_SeekerSeePlayer;
 
 
         On.Celeste.Player.Die += Hook_OnPlayerDeath;
@@ -86,6 +92,8 @@ public class EndersExtrasModule : EverestModule {
         Everest.Events.Level.OnBeforeUpdate -= OnBeforeLevelUpdate;
         On.Celeste.Level.TransitionRoutine -= Hook_TransitionRoutine;
         On.Celeste.LevelLoader.StartLevel -= Hook_StartMapFromBeginning;
+
+        On.Celeste.Seeker.CanSeePlayer -= Hook_SeekerSeePlayer;
 
         On.Celeste.Player.Die -= Hook_OnPlayerDeath;
         On.Celeste.Player.IntroRespawnBegin -= Hook_OnPlayerRespawn;
@@ -205,6 +213,16 @@ public class EndersExtrasModule : EverestModule {
         orig(self);
     }
 
+
+    private static bool Hook_SeekerSeePlayer(On.Celeste.Seeker.orig_CanSeePlayer orig, Seeker self, Player player)
+    {
+        bool returnVal = orig(self, player);
+        if (self is SoundRippleSeeker s) returnVal = s.CanSeePlayerHook(player, returnVal);
+        return returnVal;
+    }
+
+
+
     private static IEnumerator Hook_TransitionRoutine(
         On.Celeste.Level.orig_TransitionRoutine orig, global::Celeste.Level self, global::Celeste.LevelData next, Vector2 direction
     )
@@ -219,10 +237,8 @@ public class EndersExtrasModule : EverestModule {
         Level level = self.SceneAs<Level>();
         PlayerDeadBody origMethod = orig(self, direction, evenIfInvincible, registerDeathInStats);
 
-        if (origMethod is not null)
-        {
-            DeathCountGate.OnPlayerDeathStatic(level);
-        }
+        // DeathCountGate - Track death count
+        if (origMethod is not null) DeathCountGate.OnPlayerDeathStatic(level);
 
         return origMethod;
     }
@@ -265,10 +281,7 @@ public class EndersExtrasModule : EverestModule {
     public static void Hook_GlitchEffectApply(On.Celeste.Glitch.orig_Apply orig, VirtualRenderTarget source, float timer, float seed, float amplitude)
     {
         // Does not work if applied at the start/end of level render
+        if (Engine.Scene is Level level) Utils_Shaders.ApplyShaders(level);
         orig(source, timer, seed, amplitude);
-        if (Engine.Scene is Level level)
-        {
-            Utils_Shaders.ApplyShaders(level);
-        }
     }
 }

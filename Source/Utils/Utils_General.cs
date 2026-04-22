@@ -113,16 +113,18 @@ namespace Celeste.Mod.EndersExtras.Utils
         /// Convert an OrderedDictionary to a Dictionary<TKey, TValue>
         /// </summary>
         /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
         /// <param name="source"></param>
         /// <returns></returns>
-        public static Dictionary<TKey, TValue> ConvertFromOrderedDictionary<TKey, TValue>(OrderedDictionary source)
+        public static Dictionary<TKey, TValue> ConvertFromOrderedDictionary<TKey, TValue>(OrderedDictionary source) where TKey : notnull
         {
             Dictionary<TKey, TValue> result = new Dictionary<TKey, TValue>();
 
             foreach (DictionaryEntry entry in source)
             {
                 TKey key = (TKey)Convert.ChangeType(entry.Key, typeof(TKey));
-                TValue value = (TValue)Convert.ChangeType(entry.Value, typeof(TValue));
+                TValue value = (TValue)Convert.ChangeType(entry.Value, typeof(TValue))!;
                 result[key] = value;
             }
             return result;
@@ -569,7 +571,26 @@ namespace Celeste.Mod.EndersExtras.Utils
             return new Point((int)vector2.X, (int)vector2.Y);
         }
 
-        public static Entity GetNearestGenericEntity(this Level level, Vector2 nearestTo, Entity excludeEntity)
+        public static T? GetNearestEntity<T>(this Level level, Vector2 nearestTo) where T : Entity
+        {
+            EntityList entityList = level.Entities;
+            T closestEntity = null;
+            float num = 0f;
+            foreach (Entity entity in entityList)
+            {
+                if (entity is not T entity1) continue;
+                float num2 = Vector2.DistanceSquared(nearestTo, entity1.Position);
+                if (closestEntity == null || num2 < num)
+                {
+                    closestEntity = entity1;
+                    num = num2;
+                }
+            }
+
+            return closestEntity;
+        }
+
+        public static Entity? GetNearestGenericEntity(this Level level, Vector2 nearestTo, Entity excludeEntity)
         {
             EntityList entityList = level.Entities;
             Entity closestEntity = null;
@@ -589,7 +610,7 @@ namespace Celeste.Mod.EndersExtras.Utils
             return closestEntity;
         }
 
-        public static Entity GetNearestEntityExcluding<T>(this Tracker tracker, Vector2 nearestTo, Entity excludeEntity) where T : Entity
+        public static Entity? GetNearestEntityExcluding<T>(this Tracker tracker, Vector2 nearestTo, Entity excludeEntity) where T : Entity
         {
             List<Entity> entities = tracker.GetEntities<T>();
             T val = null;

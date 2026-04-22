@@ -152,7 +152,6 @@ public class RoomSwapMapUpgrade : Entity
         Vector2 effectPos = Position;
 
         player.Stamina = 110f;
-        Session session = (Scene as Level).Session;
         level.Shake();
         Celeste.Freeze(0.1f);
         float num = player.Speed.Angle();

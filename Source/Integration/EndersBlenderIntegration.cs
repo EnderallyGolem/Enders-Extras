@@ -9,9 +9,9 @@ namespace Celeste.Mod.EndersExtras.Integration
     [ModImportName("EndersBlender.DeathHandler")]
     public static class EndersBlenderImport
     {
-        public static Func<bool> GetEnableEntityChecks;
-        public static Func<bool> GetNextRespawnFullReset;
-        public static Func<bool> GetManualReset;
+        public static Func<bool>? GetEnableEntityChecks;
+        public static Func<bool>? GetNextRespawnFullReset;
+        public static Func<bool>? GetManualReset;
     }
 
     public static class EndersBlenderIntegration

@@ -97,3 +97,12 @@ Entities included:
 	- Can be set to affect all entities, or all entities except players.
 - Reload Bypass Trigger
 	- Allows giving entities inside Death-Bypass upon loading the room
+
+
+####### Sound Ripples
+- Sound Ripple Bell creates a sound wave that gives nearby entities an outline that can be seen even in darkness.
+- The effect lasts for a second, but only shows the entity at the time when it is hit
+- 3 sizes of the Sound Ripple Bell (with different sound ranges)
+- Sound Ripple Seeker can be used to integrate together with the bells. They're regular seekers that can't detect the
+player if they're within a Tile Entity, and they are not detected by a Sound Ripple Bell.
+- Sound Ripple Watchtower can be used to view rooms in the dark (normal watchtower that constantly creates sound waves)
