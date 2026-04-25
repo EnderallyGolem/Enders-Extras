@@ -91,7 +91,7 @@ public class DeathHandlerChangeRespawnRegionRenderer : Entity
 
     public List<DeathHandlerChangeRespawnRegion> list = new List<DeathHandlerChangeRespawnRegion>();
     public List<Edge> edges = new List<Edge>();
-    public VirtualMap<bool> tiles;
+    public VirtualMap<bool>? tiles;
     public Rectangle levelTileBounds;
     public bool dirty;
 

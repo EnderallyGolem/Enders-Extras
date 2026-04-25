@@ -13,10 +13,14 @@ SoundRippleBell.placements = {
         type = "medium",
         depth = -9000,
         onlyPlayerRing = false,
-        cooldown = 1.0,
+        cooldown = 0.8,
         radius = 0.0,
+        volumeScale = 1.0,
         pitchScale = 1.0,
         pitchVariation = 0.0,
+        flashIntensity = 1,
+        distortIntensity = 1,
+        clearPreviousRipples = false,
     }
 }
 
@@ -30,13 +34,17 @@ SoundRippleBell.fieldInformation = {
         }
     },
     depth = { fieldType = "integer"},
+    volumeScale = { fieldType = "number", minimumValue = 0 },
     pitchScale = { fieldType = "number", minimumValue = 0 },
     pitchVariation = { fieldType = "number", minimumValue = 0, maximumValue = 1 },
+    flashIntensity = { fieldType = "number", minimumValue = 0 },
+    distortIntensity = { fieldType = "number", minimumValue = 0 },
 }
 
 SoundRippleBell.fieldOrder = {
     "x", "y", "depth",
-    "type", "cooldown", "radius", "pitchScale", "pitchVariation", "onlyPlayerRing",
+    "type", "cooldown", "radius", "pitchScale", "pitchVariation", "volumeScale",  "flashIntensity", "distortIntensity",
+    "onlyPlayerRing", "clearPreviousRipples"
 }
 
 function SoundRippleBell.texture(room, entity)

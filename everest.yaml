@@ -5,10 +5,10 @@
     - Name: Everest
       Version: 1.6249.0
   OptionalDependencies:
+    - Name: EndersBlender # Death Handler
+      Version: 1.2.0
     - Name: SpeedrunTool # Ensure stuff don't break with states
       Version: 3.23.0
-    - Name: EndersBlender # Death Handler. Wait that's my mod!
-      Version: 1.2.0
     - Name: FrostHelper # Checking for the existence of frost helper custom spinners
       Version: 1.70.1
     - Name: QuantumMechanics # Cassette Manager

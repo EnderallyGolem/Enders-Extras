@@ -45,9 +45,6 @@ public class TileEntity : Solid
     private readonly bool dashBlockPermament;
     private readonly string dashBlockBreakSound;
 
-    private readonly bool attachable;
-    private readonly bool canBeAttached;
-
     public bool HasGroup
     {
         get;
@@ -113,6 +110,10 @@ public class TileEntity : Solid
         if (surfaceSoundIndexSet >= 0) { SurfaceSoundIndex = surfaceSoundIndexSet; }
     }
 
+    // Fixes issues with rounding for non-grid-aligned tile entities.
+    // I was going to add more to this but bundling the int together already fixes it
+    private static int SafeDiv8(float num) { return (int)(num / 8); }
+
     public override void Awake(Scene scene)
     {
         base.Awake(scene);
@@ -125,7 +126,7 @@ public class TileEntity : Solid
             AddToGroupAndFindChildren(this);
             _ = Scene;
 
-            Rectangle rectangle = new Rectangle(GroupBoundsMin.X / 8 - 1, GroupBoundsMin.Y / 8 - 1, (GroupBoundsMax.X - GroupBoundsMin.X) / 8 + 3, (GroupBoundsMax.Y - GroupBoundsMin.Y) / 8 + 3);
+            Rectangle rectangle = new Rectangle(SafeDiv8(GroupBoundsMin.X) - 1, SafeDiv8(GroupBoundsMin.Y) - 1, SafeDiv8(GroupBoundsMax.X - GroupBoundsMin.X) + 3, SafeDiv8(GroupBoundsMax.Y - GroupBoundsMin.Y) + 3);
             VirtualMap<char> virtualMap = new VirtualMap<char>(rectangle.Width, rectangle.Height, '0');
 
 
@@ -141,10 +142,10 @@ public class TileEntity : Solid
                     noEdgesAny = true;
                 }
 
-                int num = (int)(item.X / 8f - rectangle.X);
-                int num2 = (int)(item.Y / 8f - rectangle.Y);
-                int num3 = (int)(item.Width / 8f);
-                int num4 = (int)(item.Height / 8f);
+                int num = (int)(SafeDiv8(item.X) - rectangle.X);
+                int num2 = (int)(SafeDiv8(item.Y) - rectangle.Y);
+                int num3 = SafeDiv8(item.Width);
+                int num4 = SafeDiv8(item.Height);
 
                 //If group size reaches the screen edge and extendOffscreen is enabled, increase width/height by 1 or decrease starting x/y by 1
                 if (item.extendOffscreen)
@@ -154,21 +155,21 @@ public class TileEntity : Solid
                     //Logger.Log(LogLevel.Info, "EndersExtras/Misc/TileEntity", $"RIGHT > {(num + num3 + rectangle.X)} == {(int) roomRect.Right/8}");
                     //Logger.Log(LogLevel.Info, "EndersExtras/Misc/TileEntity", $"TOP > {(num2 + rectangle.Y)} == {(int) roomRect.Top/8}");
                     //Logger.Log(LogLevel.Info, "EndersExtras/Misc/TileEntity", $"BOTTOM > {(num2 + num4 + rectangle.Y)} == {(int) roomRect.Bottom/8}");
-                    if (num + rectangle.X == roomRect.Left / 8)
+                    if (num + rectangle.X == SafeDiv8(roomRect.Left))
                     {
                         num--;
                         num3++;
                     }
-                    if (num + num3 + rectangle.X == roomRect.Right / 8)
+                    if (num + num3 + rectangle.X == SafeDiv8(roomRect.Right))
                     {
                         num3++;
                     }
-                    if (num2 + rectangle.Y == roomRect.Top / 8)
+                    if (num2 + rectangle.Y == SafeDiv8(roomRect.Top))
                     {
                         num2--;
                         num4++;
                     }
-                    if (num2 + num4 + rectangle.Y == roomRect.Bottom / 8)
+                    if (num2 + num4 + rectangle.Y == SafeDiv8(roomRect.Bottom))
                     {
                         num4++;
                     }
@@ -338,11 +339,11 @@ public class TileEntity : Solid
 
 public static class Extensions
 {
-    public static bool TryGetEntities<T>(this Tracker self, out List<Entity> entities)
+    public static bool TryGetEntities<T>(this Tracker self, out List<Entity>? entities)
     {
         return self.TryGetEntities(typeof(T), out entities);
     }
-    public static bool TryGetEntities(this Tracker self, Type type, out List<Entity> entities)
+    public static bool TryGetEntities(this Tracker self, Type type, out List<Entity>? entities)
     {
         entities = null;
         if (self.Entities.TryGetValue(type, out entities))

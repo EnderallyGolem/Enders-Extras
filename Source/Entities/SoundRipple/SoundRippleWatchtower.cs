@@ -30,11 +30,7 @@ public class SoundRippleWatchtower(EntityData data, Vector2 offset) : Lookout(da
             {
                 counter = 0;
                 SoundEcho.enableShader = true;
-
-                float xPos = 0.5f * (SceneAs<Level>().Camera.Right + SceneAs<Level>().Camera.Left);
-                float yPos = 0.5f * (SceneAs<Level>().Camera.Top + SceneAs<Level>().Camera.Bottom);
-
-                SoundEcho.AddEchoSource(new Vector2(xPos, yPos), 30*8);
+                SoundEcho.AddEchoSource(SceneAs<Level>().Camera.GetCenter(), 30*8);
                 SceneAs<Level>().Flash(Color.White*0.02f, false);
                 SceneAs<Level>().Displacement.AddBurst(this.Center, 0.4f, 12f, 8*6, 0.4f);
                 SceneAs<Level>().Displacement.AddBurst(this.Center, 0.5f, 12f, 8*14, 0.5f);

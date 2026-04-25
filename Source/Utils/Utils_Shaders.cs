@@ -376,6 +376,8 @@ namespace Celeste.Mod.EndersExtras.Utils
             EchoSources.Add(newEcho);
         }
 
+        internal static void ClearEchos() { nextClearShader = true; }
+
         // Note: This renders on top of the existing texture
         private const float EchoStrength = 0.6f;
         private const float ContrastThreshold = 0.7f;
@@ -431,7 +433,8 @@ namespace Celeste.Mod.EndersExtras.Utils
                 {
                     foreach (Entity entity in level.Entities)
                     {
-                        if (entity.Visible && entity is not BackgroundTiles && entity is not Actor && !entity.TagCheck(Tags.HUD) && !entity.TagCheck(TagsExt.SubHUD) &&
+                        if (entity.Visible && entity is not BackgroundTiles && entity is not Actor && entity is not Decal && entity is not Trigger &&
+                            !entity.TagCheck(Tags.HUD) && !entity.TagCheck(TagsExt.SubHUD) &&
                             (entity.Collidable || entity is CrystalStaticSpinner ||
                              (FrostHelperIntegration.ModInstalled && FrostHelperIntegration.CheckIfCustomSpinner(entity) )
                             ))

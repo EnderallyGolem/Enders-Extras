@@ -24,19 +24,25 @@
 	- Flag enabled (either as a seperate condition, or required for the above 2 conditions to increment)
 	- If on screen
 
-###### Misc
-- Connectable Outline
-	- Can be attached, and can be toggled by flag.
-	
-- Incremental Flag Trigger
-	- Increments a counter when you reach the trigger with a specific value, which then sets a flag
-	
 - Flag Killbox
+	- Flag dependent and adjustable height dependent killbox
 
 - Temple Gate (Death Count)
 	- Opens and closes the gate depending on the death count in the map or room.
 	- With Death Handler, has extra options regarding full resets and manual retrys.
+
+- Connectable Outline
+	- Can be attached, and can be toggled by flag.
 	
+	
+- Incremental Flag Trigger
+	- Increments a counter when you reach the trigger with a specific value, which then sets a flag <flagname><num> and removes the previous number.
+	
+- Camera Spline Target Trigger
+	- Causes the camera to target the closest point on a spline made using nodes.
+	- Can be set to scroll in one direction and/or avoid skipping parts of the spline.
+	- Can be set to kill the player on leaving the screen horizontally or/and downwards.
+	- Lerping can be set to be based on the distance from the nearest part of the spline.
 	
 	
 	
@@ -100,9 +106,26 @@ Entities included:
 
 
 ####### Sound Ripples
-- Sound Ripple Bell creates a sound wave that gives nearby entities an outline that can be seen even in darkness.
-- The effect lasts for a second, but only shows the entity at the time when it is hit
+- Sound Ripple Bell creates a sound ripple that gives nearby entities an outline that can be seen even in darkness.
+- The effect lasts for about a second, and only shows the entity at the time when it is hit.
 - 3 sizes of the Sound Ripple Bell (with different sound ranges)
 - Sound Ripple Seeker can be used to integrate together with the bells. They're regular seekers that can't detect the
 player if they're within a Tile Entity, and they are not detected by a Sound Ripple Bell.
-- Sound Ripple Watchtower can be used to view rooms in the dark (normal watchtower that constantly creates sound waves)
+- Sound Ripple Watchtower can be used to view rooms in the dark (normal watchtower that constantly creates sound ripples)
+
+
+
+
+### Misc Features
+
+####### Chapter Select Overrides
+- On the map select screen, the map name can be overridden, and the chapter number can be removed, centering the map name.
+	- The map name shown is overridden with the dialog endersextras_mapname_(map dialog id).
+	- The chapter number can be removed with the dialog endersextras_removechapternum_(map dialog id). This can be set to anything.
+	- This lets you change (or remove) the map name without affecting how it appears in other places, such as the file select.
+	- Example:
+		EndersExtras_1=Ender's Extras
+		EndersExtras_1_EndersExtrasTestMap=Test Rack
+		poem_EndersExtras_1_EndersExtrasTestMap_A=Insert Poem Here
+		endersextras_mapname_EndersExtras_1_EndersExtrasTestMap=Basemen- i mean Test Rack
+		endersextras_removechapternum_EndersExtras_1_EndersExtrasTestMap=This removes the chapter number and centers the text. Any text can go here!

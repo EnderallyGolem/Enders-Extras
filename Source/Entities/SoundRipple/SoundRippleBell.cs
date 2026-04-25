@@ -13,10 +13,9 @@ namespace Celeste.Mod.EndersExtras.Entities.SoundRipple;
 [CustomEntity("EndersExtras/SoundRippleBell")]
 public class SoundRippleBell : Entity
 {
-    private readonly MTexture bellTexture;
     private readonly Image image;
-    private readonly SoundSource bellSFX;
     private readonly float revealRadius;
+    private readonly float volumeScale;
     private readonly float pitchScale;
     private readonly float pitchVariation;
 
@@ -25,9 +24,13 @@ public class SoundRippleBell : Entity
 
     private readonly bool onlyPlayerRing;
     private readonly float cooldown;
+    private readonly bool clearPreviousRipples;
 
     private float cooldownTimer;
     private readonly String soundEvent;
+
+    private readonly float flashIntensity;
+    private readonly float distortIntensity;
 
     private const int height = 28;
     private const int width = 26;
@@ -50,9 +53,14 @@ public class SoundRippleBell : Entity
         onlyPlayerRing = data.Bool("onlyPlayerRing", false);
         cooldown = data.Float("cooldown", 0.3f);
         revealRadius = data.Float("radius", 0f) * 8;
+        volumeScale = data.Float("volumeScale", 1);
         pitchScale = data.Float("pitchScale", 1);
         pitchVariation = data.Float("pitchVariation", 0f);
+        clearPreviousRipples = data.Bool("clearPreviousRipples", false);
+        flashIntensity = data.Float("flashIntensity", 1);
+        distortIntensity = data.Float("distortIntensity", 1);
 
+        MTexture bellTexture;
         switch (type1)
         {
             case "small":
@@ -69,6 +77,11 @@ public class SoundRippleBell : Entity
                 bellTexture = GFX.Game["objects/EndersExtras/SoundRipple/soundripplebell_gold"];
                 soundEvent = "event:/Custom/EndersExtras/bell_large";
                 if (revealRadius <= 0) revealRadius = 8 * RangeLarge;
+                break;
+            default:
+                bellTexture = GFX.Game["objects/EndersExtras/SoundRipple/soundripplebell_bronze"];
+                soundEvent = "event:/Custom/EndersExtras/bell_small";
+                if (revealRadius <= 0) revealRadius = 8 * RangeSmall;
                 break;
         }
 
@@ -162,27 +175,28 @@ public class SoundRippleBell : Entity
         rotAmplitude = (float)Math.PI/2 * 5/4;
         if (!swingRight) rotSineWave.StartUp(); else rotSineWave.StartDown();
 
+        // Ask the shader to clear the screen if clearPreviousRipples is true
+        if (clearPreviousRipples) SoundEcho.ClearEchos();
+
         // Ask the shader to add an echo
         SoundEcho.AddEchoSource(this.Center, revealRadius);
         //Logger.Log(LogLevel.Info, "EndersExtras/SoundRippleBell", $"Create echo at ({this.Center})");
 
         EventInstance bell = Audio.Play(soundEvent, Position);
-        float camXPos = 0.5f * (SceneAs<Level>().Camera.Right + SceneAs<Level>().Camera.Left);
-        float camYPos = 0.5f * (SceneAs<Level>().Camera.Top + SceneAs<Level>().Camera.Bottom);
-        float cameraBellDistance = Vector2.Distance(Position, new Vector2(camXPos, camYPos));
+        float cameraBellDistance = Vector2.Distance(Position, SceneAs<Level>().Camera.GetCenter());
 
-        float volumeScale = (float)Math.Clamp(2 - cameraBellDistance * 0.125 * 1 / 22, 0, 1);
+        float bellIntensityScale = (float)Math.Clamp(2 - cameraBellDistance * 0.125 * 1 / 22, 0, 1);
 
         Random rng = new Random();
         float pitchScaleFinal = 1 - ((2*rng.NextFloat()-1) * pitchVariation);
 
-        bell.setVolume(volumeScale);
+        bell.setVolume(bellIntensityScale * volumeScale);
         bell.setPitch(pitchScaleFinal * pitchScale);
 
-        SceneAs<Level>().Flash(Color.White*0.02f*volumeScale, false);
-        SceneAs<Level>().Displacement.AddBurst(this.Center, 0.4f, 12f, 8*RangeSmall, 0.4f);
-        if (revealRadius >= 8*RangeMedium) SceneAs<Level>().Displacement.AddBurst(this.Center, 0.5f, 12f, 8*RangeMedium, 0.5f);
-        if (revealRadius >= 8*RangeLarge) SceneAs<Level>().Displacement.AddBurst(this.Center, 0.6f, 12f, 8*RangeLarge, 0.6f);
+        SceneAs<Level>().Flash(Color.White*0.02f*bellIntensityScale*flashIntensity, false);
+        SceneAs<Level>().Displacement.AddBurst(this.Center, 0.4f, 12f, 8*RangeSmall, 0.4f*distortIntensity);
+        if (revealRadius >= 8*RangeMedium) SceneAs<Level>().Displacement.AddBurst(this.Center, 0.5f, 12f, 8*RangeMedium, 0.5f*distortIntensity);
+        if (revealRadius >= 8*RangeLarge) SceneAs<Level>().Displacement.AddBurst(this.Center, 0.6f, 12f, 8*RangeLarge, 0.6f*distortIntensity);
 
         // Reset cooldown
         if (cooldown != 0)

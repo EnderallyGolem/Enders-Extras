@@ -106,7 +106,7 @@ entities.EndersExtras/DeathCountGate.attributes.description.silent=Prevents this
 
 ### TRIGGERS ###
 
-# IncrementalFlagTrigger
+# Incremental Flag Trigger
 triggers.EndersExtras/IncrementalFlagTrigger.placements.name.normal=Incremental Flag
 triggers.EndersExtras/IncrementalFlagTrigger.placements.description.normal=Trigger that creates or increments a Flag with a number.\nEg: Make entering a region adds flagNum2 and removes flagNum1 if flagNum1 is set.\n(This also creates a counter, for tracking purposes.)
 triggers.EndersExtras/IncrementalFlagTrigger.attributes.description.flag=The flag name, without the number.\nThe trigger will create the flag [flag][number] upon entering.
@@ -115,6 +115,25 @@ triggers.EndersExtras/IncrementalFlagTrigger.attributes.description.setOnlyIfOne
 triggers.EndersExtras/IncrementalFlagTrigger.attributes.description.requireFlag=If specified, the incremental flag is only set if THIS flag is enabled.\nA list of flags in the format "flagA, flagB, !flagC | flagD, flagE" can be specified.\nThis means (flagA and flagB and not flagC) or (flagD and flagE).
 triggers.EndersExtras/IncrementalFlagTrigger.attributes.description.singleUse=Trigger can only be used once (until the player dies).\nIf the trigger is entered but the flag isn't changed, it does NOT count as being used.
 triggers.EndersExtras/IncrementalFlagTrigger.attributes.description.temporary=Sets the flag to [flag]0 upon room reload.
+
+
+# Camera Spline Target Trigger
+triggers.EndersExtras/CameraSplineTargetTrigger.placements.name.normal=Camera Spline Target
+triggers.EndersExtras/CameraSplineTargetTrigger.placements.description.normal=Creates a spline from placed nodes. The camera will target the closest part of the spline to the player.\nThe spline used is the same one used for watchtowers. It is viewable with hitboxes on.
+triggers.EndersExtras/CameraSplineTargetTrigger.attributes.description.innerRadius=The inner radius (in tiles) of the lerp.\nWhen within the inner radius, the inner lerp amount is applied.\nBetween the inner radius and outer radius, the lerp amount will smoothly transition.
+triggers.EndersExtras/CameraSplineTargetTrigger.attributes.description.outerRadius=The outer radius (in tiles) of the lerp.\nWhen outside the outer radius, the outer lerp amount is applied.\nBetween the inner radius and outer radius, the lerp amount will smoothly transition.
+triggers.EndersExtras/CameraSplineTargetTrigger.attributes.description.innerLerp=The lerp amount (0 to 1) when the player is within the inner radius.\nWhen within the inner radius, the inner lerp amount is applied.\nBetween the inner radius and outer radius, the lerp amount will smoothly transition.
+triggers.EndersExtras/CameraSplineTargetTrigger.attributes.description.outerLerp=The lerp amount (0 to 1) when the player is outside the radius.\nWhen outside the outer radius, the outer lerp amount is applied.\nBetween the inner radius and outer radius, the lerp amount will smoothly transition.
+triggers.EndersExtras/CameraSplineTargetTrigger.attributes.description.requireFlag=If specified, the trigger will only target the spline if this flag is enabled.\nThe trigger acts as though the player isn't in its range otherwise.\nA list of flags in the format "flagA, flagB, !flagC | flagD, flagE" can be specified.\nThis means (flagA and flagB and not flagC) or (flagD and flagE).
+triggers.EndersExtras/CameraSplineTargetTrigger.attributes.description.catchupStrength=Sets how fast the camera is smoothened between the current position and the closest point to the spline.\n1 = Instant, 0 = Camera does not move.
+triggers.EndersExtras/CameraSplineTargetTrigger.attributes.description.dependOnlyOnX=When determining the closest spline location and lerp amount, only the player's and the spline's X coordinate will be used. 
+triggers.EndersExtras/CameraSplineTargetTrigger.attributes.description.dependOnlyOnY=When determining the closest spline location and lerp amount, only the player's and the spline's Y coordinate will be used. 
+triggers.EndersExtras/CameraSplineTargetTrigger.attributes.description.coverScreen=If true, this trigger will be activated no matter if the player is inside the trigger or not.
+triggers.EndersExtras/CameraSplineTargetTrigger.attributes.description.oneWay=If true, the camera target can only move forward through the spline.\nPassed portions of the spline are no longer considered part of the spline for calculations.
+triggers.EndersExtras/CameraSplineTargetTrigger.attributes.description.killOffscreenHorizontal=Kills the player if they're horizontally offscreen. The player must be both currently offscreen, and be still offscreen when the camera catches up to die.\nThis will mainly be useful for One-Way spline paths.
+triggers.EndersExtras/CameraSplineTargetTrigger.attributes.description.killOffscreenVertical=Kills the player if they're below (not above) the screen. The player must be both currently offscreen and be still offscreen when the camera catches up to die.
+triggers.EndersExtras/CameraSplineTargetTrigger.attributes.description.considerCameraOffset=If true, camera offsets will affect the location the camera targets on the spline.\nEg: If the camera X is set to 0.5 (24 pixels to the right), the camera would target the spline location closest to 24 pixels to the right of the player.
+triggers.EndersExtras/CameraSplineTargetTrigger.attributes.description.nodeSearchRange=When checking for the nearest location to the spline, it will only search for nodes within this range.\nEg: If the camera is inbetween node 2 and 3 (node progress 2.5) and restrictNodeSearch = 0.5, only portions between node 2 and 3 will be searched.\nEffectively, this prevents the camera from jumping far between nodes.\nSet to 0 to search the whole spline.\nNote that when entering the trigger (or when the flag is enabled), the whole spline will still be searched to find the starting location.
 
 
 
@@ -339,23 +358,28 @@ entities.EndersExtras/CassetteBeatGate.attributes.description.requireFlag=If spe
 
 # Bell
 entities.EndersExtras/SoundRippleBell.placements.name.normal=Sound Ripple Bell
-entities.EndersExtras/SoundRippleBell.placements.description.normal=When rung, creates a sound waves that shows the location of nearby entities, even in the dark.\n(You might want to use Communual Helper's GlowController to remove glow from entities.)
+entities.EndersExtras/SoundRippleBell.placements.description.normal=When rung, creates a sound ripple that shows the location of nearby entities, even in the dark.\nBackground tiles, triggers, decals, and entities with Collidable set to false are not shown.\nActors are highlighted in red.\n(You might want to use Communual Helper's GlowController to remove glow from entities.)
 entities.EndersExtras/SoundRippleBell.attributes.description.type=The type of bell, affecting the visual, sound, and ripple range.
 entities.EndersExtras/SoundRippleBell.attributes.description.depth=The depth of the entity.
 entities.EndersExtras/SoundRippleBell.attributes.description.onlyPlayerRing=If true, only the player can ring the bell. \nIf false, all actors can ring the bell.
 entities.EndersExtras/SoundRippleBell.attributes.description.cooldown=Cooldown (in seconds) where the bell cannot be rung.\nIf set to 0, the bell will be single-use.\nIf set to negative, the bell will automatically ring at regular intervals.
-entities.EndersExtras/SoundRippleBell.attributes.description.radius=Radius (in tiles) of the sound wave range. Set to 0 to use the default value based on the bell size (6, 14, 24).\nNote that regions outside the screen boundary cannot be lit up.
-entities.EndersExtras/SoundRippleBell.attributes.description.pitchScale=The pitch the bell sound will be multiplied by (1 plays the normal sound).
+entities.EndersExtras/SoundRippleBell.attributes.description.radius=Radius (in tiles) of the sound ripple range. Set to 0 to use the default value based on the bell size (6, 14, 24).\nNote that regions outside the screen boundary cannot be lit up.
+entities.EndersExtras/SoundRippleBell.attributes.description.volumeScale=The volume the bell sound will be multiplied by (1 plays the normal volume).
+entities.EndersExtras/SoundRippleBell.attributes.description.pitchScale=The pitch the bell sound will be multiplied by (1 plays the normal pitch).
 entities.EndersExtras/SoundRippleBell.attributes.description.pitchVariation=The percentage (0 to 1) which the pitch will be varied by. 0 means no variation.
+entities.EndersExtras/SoundRippleBell.attributes.description.clearPreviousRipples=If enabled, all previous sound ripples will be cleared when this bell is rung.
+entities.EndersExtras/SoundRippleBell.attributes.description.flashIntensity=Scales the intensity of the screen flash when the bell is rung. Set to 0 to disable.
+entities.EndersExtras/SoundRippleBell.attributes.description.distortIntensity=Scales the intensity of the distortion effect when the bell is rung. Set to 0 to disable.
 
 # Seeker
 entities.EndersExtras/SoundRippleSeeker.placements.name.normal=Sound Ripple Seeker
-entities.EndersExtras/SoundRippleSeeker.placements.description.normal=A seeker with the option to not detect the player if they are behind a background and away from sound sources.
+entities.EndersExtras/SoundRippleSeeker.placements.description.normal=A seeker with the option to not detect the player if they are behind a background and away from sound ripple sources.
 entities.EndersExtras/SoundRippleSeeker.attributes.description.hasSpotlight=If false, does not light up the nearby region. \n(True is the same functionality as normal seekers.)
-entities.EndersExtras/SoundRippleSeeker.attributes.name.cannotDetectTileEntity=Hide in Tile Entity
-entities.EndersExtras/SoundRippleSeeker.attributes.description.cannotDetectTileEntity=If true, the seeker cannot detect a player through EndersExtras Tile Entities, \nunless a Sound Ripple Bell was rung nearby recently. \n(True is the same functionality as normal seekers.)
+entities.EndersExtras/SoundRippleSeeker.attributes.description.dieInBarrier=If true, the seeker will die if forced into Seeker Barriers.
+entities.EndersExtras/SoundRippleSeeker.attributes.description.cannotDetectTileEntity=Tile Entity Blocks View
+entities.EndersExtras/SoundRippleSeeker.attributes.description.cannotDetectTileEntity=If true, the seeker cannot detect a player through EndersExtras Tile Entities (regardless if they are collidable or background), \nunless a Sound Ripple Bell was rung nearby recently. (True is the same functionality as normal seekers.)
 
 
 entities.EndersExtras/SoundRippleWatchtower.placements.name.normal=Sound Ripple Watchtower
-entities.EndersExtras/SoundRippleWatchtower.placements.description.normal=A watchtower which continously creates sound waves.
+entities.EndersExtras/SoundRippleWatchtower.placements.description.normal=A watchtower which continously creates sound ripples.
 entities.EndersExtras/SoundRippleSeeker.attributes.description.onlyY=If the watchtower can only scroll vertically.

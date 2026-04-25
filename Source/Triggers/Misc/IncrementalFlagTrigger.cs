@@ -49,16 +49,25 @@ public class IncrementalFlagTrigger : Trigger
     {
         if (!Utils_General.AreFlagsEnabled(player.level.Session, requireFlag, true)) 
             return;
-        if (setOnlyIfOneBelow && setValue != 0 && !(GetFlagCounter() == setValue - 1))
+        if (setOnlyIfOneBelow && setValue != 0 && GetFlagCounter() != setValue - 1)
             return;
 
         SetFlagCounter(setValue);
 
         if (singleUse) RemoveSelf();
+        base.OnEnter(player);
     }
 
     public override void OnStay(Player player)
     {
+        if (!Utils_General.AreFlagsEnabled(player.level.Session, requireFlag, true))
+            return;
+        if (setOnlyIfOneBelow && setValue != 0 && GetFlagCounter() != setValue - 1)
+            return;
+
+        SetFlagCounter(setValue);
+
+        if (singleUse) RemoveSelf();
         base.OnStay(player);
     }
 
@@ -67,7 +76,7 @@ public class IncrementalFlagTrigger : Trigger
         base.OnLeave(player);
     }
 
-    internal void SetFlagCounter(int value)
+    private void SetFlagCounter(int value)
     {
         Level level = SceneAs<Level>();
 
@@ -78,7 +87,7 @@ public class IncrementalFlagTrigger : Trigger
         level.Session.SetFlag($"{flag}{value}", true);
     }
 
-    internal int GetFlagCounter()
+    private int GetFlagCounter()
     {
         Level level = SceneAs<Level>();
         return level.Session.GetCounter(flag);

@@ -10,6 +10,8 @@ using System.Collections;
 using System.Reflection;
 using Celeste.Mod.EndersExtras.Entities.SoundRipple;
 using Celeste.Mod.EndHelper.Utils;
+using MonoMod.Utils;
+
 // ReSharper disable PossibleInvalidCastExceptionInForeachLoop
 
 // Update: MMHook_Celeste, MonoMod.Cecil, MonoMod.Core
@@ -67,16 +69,17 @@ public class EndersExtrasModule : EverestModule {
         On.Celeste.Level.TransitionRoutine += Hook_TransitionRoutine;
         On.Celeste.LevelLoader.StartLevel += Hook_StartMapFromBeginning;
 
-        On.Celeste.Seeker.CanSeePlayer += Hook_SeekerSeePlayer;
-
-
         On.Celeste.Player.Die += Hook_OnPlayerDeath;
-        On.Celeste.Player.IntroRespawnBegin += Hook_OnPlayerRespawn;
         MethodInfo ILOrigDie = typeof(Player).GetMethod("orig_Die", BindingFlags.Public | BindingFlags.Instance);
-        Loadhook_Player_OrigDie = new ILHook(ILOrigDie, Hook_ILOrigDie);
+        Loadhook_Player_OrigDie = new ILHook(ILOrigDie!, Hook_ILOrigDie);
+        On.Celeste.Player.IntroRespawnBegin += Hook_OnPlayerRespawn;
+        //On.Celeste.OuiChapterPanel.
+        On.Celeste.OuiChapterPanel.Render += Hook_OuiChapterPanelRender;
+        IL.Celeste.OuiChapterPanel.Render += ILHook_OuiChapterPanelRender;
+        On.Celeste.OuiChapterPanel._FixTitleLength += Hook_OuiChapterPanelFixTitleLength;
 
+        On.Celeste.Seeker.CanSeePlayer += Hook_SeekerSeePlayer;
         On.Celeste.Editor.MapEditor.Update += Hook_UsingMapEditor;
-
         On.Celeste.Glitch.Apply += Hook_GlitchEffectApply;
 
         EndersBlenderIntegration.Load();
@@ -93,14 +96,15 @@ public class EndersExtrasModule : EverestModule {
         On.Celeste.Level.TransitionRoutine -= Hook_TransitionRoutine;
         On.Celeste.LevelLoader.StartLevel -= Hook_StartMapFromBeginning;
 
-        On.Celeste.Seeker.CanSeePlayer -= Hook_SeekerSeePlayer;
-
         On.Celeste.Player.Die -= Hook_OnPlayerDeath;
-        On.Celeste.Player.IntroRespawnBegin -= Hook_OnPlayerRespawn;
         Loadhook_Player_OrigDie?.Dispose(); Loadhook_Player_OrigDie = null;
+        On.Celeste.Player.IntroRespawnBegin -= Hook_OnPlayerRespawn;
+        On.Celeste.OuiChapterPanel.Render -= Hook_OuiChapterPanelRender;
+        IL.Celeste.OuiChapterPanel.Render -= ILHook_OuiChapterPanelRender;
+        On.Celeste.OuiChapterPanel._FixTitleLength -= Hook_OuiChapterPanelFixTitleLength;
 
+        On.Celeste.Seeker.CanSeePlayer -= Hook_SeekerSeePlayer;
         On.Celeste.Editor.MapEditor.Update -= Hook_UsingMapEditor;
-
         On.Celeste.Glitch.Apply -= Hook_GlitchEffectApply;
 
         UnloadTempHooks();
@@ -130,7 +134,7 @@ public class EndersExtrasModule : EverestModule {
 
             if (lastSessionResetCause == SessionResetCause.Debug || lastSessionResetCause == SessionResetCause.ReenterMap)
             {
-                // Check if require double reload - if room the player is in is in a grid
+                // Check if require double reload - if room the player is in a grid
                 String currentRoom = level.Session.LevelData.Name;
                 foreach (String gridID in EndersExtrasModule.Session.roomSwapOrderList.Keys)
                 {
@@ -180,6 +184,13 @@ public class EndersExtrasModule : EverestModule {
         reloadComplete = false;
     }
 
+
+    private static bool Hook_SeekerSeePlayer(On.Celeste.Seeker.orig_CanSeePlayer orig, Seeker self, Player player)
+    {
+        bool returnVal = orig(self, player);
+        if (self is SoundRippleSeeker s) returnVal = s.CanSeePlayerHook(player, returnVal);
+        return returnVal;
+    }
     public static void Hook_UsingMapEditor(On.Celeste.Editor.MapEditor.orig_Update orig, global::Celeste.Editor.MapEditor self)
     {
         timeSinceSessionReset = 0;
@@ -212,16 +223,6 @@ public class EndersExtrasModule : EverestModule {
         Utils_Shaders.LoadCustomShaders(forceReload: true);
         orig(self);
     }
-
-
-    private static bool Hook_SeekerSeePlayer(On.Celeste.Seeker.orig_CanSeePlayer orig, Seeker self, Player player)
-    {
-        bool returnVal = orig(self, player);
-        if (self is SoundRippleSeeker s) returnVal = s.CanSeePlayerHook(player, returnVal);
-        return returnVal;
-    }
-
-
 
     private static IEnumerator Hook_TransitionRoutine(
         On.Celeste.Level.orig_TransitionRoutine orig, global::Celeste.Level self, global::Celeste.LevelData next, Vector2 direction
@@ -276,6 +277,69 @@ public class EndersExtrasModule : EverestModule {
         //and also otherwise warping with debug mode permamently empty the swap rooms.
         Utils_RoomSwap.ReupdateAllRooms();
         orig(self);
+    }
+
+    private static void Hook_OuiChapterPanelRender(On.Celeste.OuiChapterPanel.orig_Render orig, OuiChapterPanel self)
+    {
+        string dialogId = ("endersextras_removechapternum_" + self.Area.GetSID()).DialogKeyify();
+        if (Dialog.Has(dialogId))
+        {
+            bool originalInterludeSafe = self.Data.Interlude_Safe; self.Data.Interlude_Safe = true;
+            orig(self);
+            self.Data.Interlude_Safe = originalInterludeSafe;
+            return;
+        }
+        orig(self);
+    }
+
+    private static void ILHook_OuiChapterPanelRender(ILContext il)
+    {
+        ILCursor cursor = new ILCursor(il);
+
+        // Locate string text = Dialog.Clean(AreaData.Get(this.Area).Name);
+        // This text will be replaced if possible
+        // Also umm collabutils also hooks this same place so lemme just split my hook checks
+        #pragma warning disable CL0006
+        if (cursor.TryGotoNext(MoveType.After,
+                instr => instr.MatchLdarg0(),
+                instr => instr.MatchLdfld<OuiChapterPanel>("Area"),
+                instr => instr.MatchCall<AreaData>("Get"),
+                instr => instr.MatchLdfld<AreaData>("Name"),
+                instr => true,
+                instr => true
+            )
+         && (cursor.TryGotoNext(MoveType.After,
+                instr => instr.MatchLdnull(),
+                instr => instr.MatchCall(typeof(Dialog), "Clean")
+            )))
+        #pragma warning restore CL0006
+        {
+            cursor.Emit(Mono.Cecil.Cil.OpCodes.Ldarg_0);
+            cursor.EmitDelegate<Func<string, OuiChapterPanel, string>>(OuiChapterSelectReplacementMapName);
+        }
+    }
+
+    private static String OuiChapterSelectReplacementMapName(String originalText, OuiChapterPanel panel)
+    {
+        // Override chapter name
+        string dialogId = ("endersextras_mapname_" + panel.Area.GetSID()).DialogKeyify();
+        if (Dialog.Has(dialogId)) {
+            return Dialog.Clean(dialogId);
+        }
+        return originalText;
+    }
+
+    private static float Hook_OuiChapterPanelFixTitleLength(On.Celeste.OuiChapterPanel.orig__FixTitleLength orig, OuiChapterPanel panel, float vanillaValue)
+    {
+        float returnLength = orig(panel, vanillaValue);
+
+        string dialogId = ("endersextras_mapname_" + panel.Area.GetSID()).DialogKeyify();
+        if (Dialog.Has(dialogId))
+        {
+            float x = ActiveFont.Measure(Dialog.Clean(dialogId)).X;
+            return vanillaValue - Math.Max(0.0f, (float) ((double) x + (double) vanillaValue - 490.0));
+        }
+        return returnLength;
     }
 
     public static void Hook_GlitchEffectApply(On.Celeste.Glitch.orig_Apply orig, VirtualRenderTarget source, float timer, float seed, float amplitude)

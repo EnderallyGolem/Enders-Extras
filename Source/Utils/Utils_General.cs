@@ -370,9 +370,9 @@ namespace Celeste.Mod.EndersExtras.Utils
         /// <summary>
         /// Checks if the specified flag is enabled, negation if ! is in front. Returns boolIfEmpty (default true) if empty.
         /// </summary>
-        /// <param name="session"></param>
-        /// <param name="flagStringList"></param>
-        /// <param name="boolIfEmpty"></param>
+        /// <param name="session">The level's session.</param>
+        /// <param name="flagStringList">The string that contains boolean flag logic.</param>
+        /// <param name="boolIfEmpty">Whether to return true if flagStringList is empty.</param>
         /// <returns></returns>
         public static bool AreFlagsEnabled(Session session, string flagStringList, bool boolIfEmpty = true)
         {
@@ -678,6 +678,68 @@ namespace Celeste.Mod.EndersExtras.Utils
         public static bool Match(this EntityID left, EntityID right)
         {
             return (left.Key == right.Key) && (left.ID == right.ID);
+        }
+
+
+        /// <summary>
+        /// Get the center of the camera
+        /// </summary>
+        /// <param name="camera"></param>
+        /// <returns></returns>
+        public static Vector2 GetCenter(this Camera camera)
+        {
+            float xPos = 0.5f * (camera.Left + camera.Right);
+            float yPos = 0.5f * (camera.Top + camera.Bottom);
+            return new Vector2(xPos, yPos);
+        }
+
+        /// <summary>
+        /// Given a position for where the center of the camera could be, returns the top left coordinate of the camera.
+        /// </summary>
+        /// <param name="camera">The level's camera.</param>
+        /// <param name="centerPos">The center position of a point in which a camera could be.</param>
+        /// <returns></returns>
+        public static Vector2 ConvertCenterToCorner(this Camera camera, Vector2 centerPos)
+        {
+            float xOffset = 0.5f * (camera.Right - camera.Left);
+            float yOffset = 0.5f * (camera.Bottom - camera.Top);
+            return centerPos - new Vector2(xOffset, yOffset);
+        }
+        /// <summary>
+        /// Given a position for where the corner of the camera could be, returns the center coordinate of the camera.
+        /// </summary>
+        /// <param name="camera">The level's camera.</param>
+        /// <param name="cornerPos">The top-left position of a point in which a camera could be.</param>
+        /// <returns></returns>
+        public static Vector2 ConvertCornerToCenter(this Camera camera, Vector2 cornerPos)
+        {
+            float xOffset = 0.5f * (camera.Right - camera.Left);
+            float yOffset = 0.5f * (camera.Bottom - camera.Top);
+            return cornerPos + new Vector2(xOffset, yOffset);
+        }
+        /// <summary>
+        /// Given a position for where the center of the camera could be, returns the rectangle for that camera.
+        /// </summary>
+        /// <param name="camera">The level's camera.</param>
+        /// <param name="centerPos">The center position of a point in which a camera could be.</param>
+        /// <returns></returns>
+        public static Rectangle ConvertCenterToRect(this Camera camera, Vector2 centerPos)
+        {
+            float xOffset = 0.5f * (camera.Right - camera.Left);
+            float yOffset = 0.5f * (camera.Bottom - camera.Top);
+            Vector2 cornerPos = centerPos - new Vector2(xOffset, yOffset);
+            return camera.ConvertCornerToRect(cornerPos);
+        }
+
+        /// <summary>
+        /// Given a position for where the corner of the camera could be, returns the rectangle for that camera.
+        /// </summary>
+        /// <param name="camera">The level's camera.</param>
+        /// <param name="cornerPos">The top-left position of a point in which a camera could be.</param>
+        /// <returns></returns>
+        public static Rectangle ConvertCornerToRect(this Camera camera, Vector2 cornerPos)
+        {
+            return new Rectangle((int)cornerPos.X, (int)cornerPos.Y, (int)(camera.Right - camera.Left), (int)(camera.Bottom - camera.Top));
         }
     }
 }

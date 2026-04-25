@@ -10,8 +10,13 @@ SoundRippleSeeker.placements = {
     placementType = "point",
     data = {
         hasSpotlight = false,
-        cannotDetectTileEntity = true
-    }
+        cannotDetectTileEntity = true,
+        dieInBarrier = false,
+    },
+    fieldOrder = {
+        "x", "y",
+        "hasSpotlight", "diesInBarrier", "cannotDetectTileEntity"
+    },
 }
 
 return SoundRippleSeeker

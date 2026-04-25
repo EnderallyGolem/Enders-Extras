@@ -8,7 +8,9 @@ EndersExtras_Settings=Ender's Extra's Settings
 
 EndersExtras_1=Ender's Extras
 EndersExtras_1_EndersExtrasTestMap=Test Rack
-poem_EndersExtras_1_EndersExtrasTestMap_A=test
+poem_EndersExtras_1_EndersExtrasTestMap_A=Insert Poem Here
+endersextras_mapname_EndersExtras_1_EndersExtrasTestMap=Basemen- i mean Test Rack
+endersextras_removechapternum_EndersExtras_1_EndersExtrasTestMap=This removes the chapter number and centers the text. Any text can go here!
 
 
 # NOTES:

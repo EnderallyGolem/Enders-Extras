@@ -13,12 +13,14 @@ namespace Celeste.Mod.EndersExtras.Entities.SoundRipple;
 [CustomEntity("EndersExtras/SoundRippleSeeker")]
 public class SoundRippleSeeker : Seeker
 {
-    private bool hasSpotlight;
-    private bool cannotDetectTileEntity;
+    private readonly bool hasSpotlight;
+    private readonly bool cannotDetectTileEntity;
+    private readonly bool dieInBarrier;
     public SoundRippleSeeker(EntityData data, Vector2 offset) : base(data.Position + offset, data.NodesOffset(offset))
     {
         hasSpotlight = data.Bool("hasSpotlight", false);
         cannotDetectTileEntity = data.Bool("cannotDetectTileEntity", true);
+        dieInBarrier = data.Bool("dieInBarrier", false);
         if (!hasSpotlight) Light.Color *= 0;
     }
 
@@ -27,6 +29,34 @@ public class SoundRippleSeeker : Seeker
         base.Update();
         this.canSeePlayer = false;
         if (!hasSpotlight) Light.Color *= 0;
+        if (dieInBarrier) KillIfInBarrier();
+    }
+
+    private void KillIfInBarrier()
+    {
+        Level level = SceneAs<Level>();
+        List<Entity> seekerBarriers = level.Tracker.GetEntities<SeekerBarrier>();
+        foreach (var e in seekerBarriers)
+        {
+            SeekerBarrier barrier = (SeekerBarrier)e;
+            barrier.Collidable = true;
+            if (barrier.CollideCheck(this)) Kys();
+            barrier.Collidable = false;
+        }
+    }
+
+    private void Kys()
+    {
+        Entity entity = new Entity(this.Position);
+        entity.Add((Component) new DeathEffect(Color.HotPink, new Vector2?(this.Center - this.Position))
+        {
+            OnEnd = (System.Action) (entity.RemoveSelf)
+        });
+        entity.Depth = -1000000;
+        this.Scene.Add(entity);
+        Audio.Play("event:/game/05_mirror_temple/seeker_death", this.Position);
+        this.RemoveSelf();
+        this.dead = true;
     }
 
     internal bool CanSeePlayerHook(Player? player, bool returnVal)

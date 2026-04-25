@@ -12,7 +12,7 @@ using System.Reflection;
 
 [assembly: System.Runtime.CompilerServices.IgnoresAccessChecksToAttribute("Celeste")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("EndersExtras")]
-[assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
+[assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+98d4d0369278119883b6c562643135e6a1a5cae5")]
 [assembly: System.Reflection.AssemblyProductAttribute("EndersExtras")]

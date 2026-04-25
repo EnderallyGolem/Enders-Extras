@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Monocle;
 using System;
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Celeste.Mod.EndHelper.Utils;
 
@@ -12,6 +13,7 @@ namespace Celeste.Mod.EndersExtras.Entities.DeathHandler;
 [Tracked(false)]
 [TrackedAs(typeof(DeathHandlerRespawnPoint))]
 [CustomEntity("EndersExtras/DeathHandlerThrowableRespawnPoint")]
+[SuppressMessage("ReSharper", "PossibleInvalidCastExceptionInForeachLoop")]
 public class DeathHandlerThrowableRespawnPoint : Actor
 {
     internal bool faceLeft = false;
@@ -30,24 +32,21 @@ public class DeathHandlerThrowableRespawnPoint : Actor
 
     private readonly ParticleType P_Impact;
 
-    public Vector2 Speed;
+    private Vector2 Speed;
+    private Holdable Hold;
 
-    public bool OnPedestal;
-
-    public Holdable Hold;
-
-    public Sprite sprite;
-    public bool dead;
-    public Level Level;
-    public Collision onCollideH;
-    public Collision onCollideV;
-    public float noGravityTimer;
-    public Vector2 prevLiftSpeed;
-    public Vector2 previousPosition;
-    public HoldableCollider hitSeeker;
-    public float swatTimer;
-    public bool shattering;
-    public float hardVerticalHitSoundCooldown;
+    private Sprite sprite;
+    private bool dead;
+    private Level Level = null!;
+    private Collision? onCollideH;
+    private Collision? onCollideV;
+    private float noGravityTimer;
+    private Vector2 prevLiftSpeed;
+    private Vector2 previousPosition;
+    private HoldableCollider? hitSeeker;
+    private float swatTimer;
+    private bool shattering;
+    private float hardVerticalHitSoundCooldown;
 
     public DeathHandlerThrowableRespawnPoint(EntityData data, Vector2 offset, EntityID id) : base(data.Position + offset)
     {
@@ -66,7 +65,7 @@ public class DeathHandlerThrowableRespawnPoint : Actor
         if (faceLeft) sprite.FlipX = true;
         orig_ctor(Position);
 
-        Hold.SpeedSetter = delegate (Vector2 speed)
+        Hold!.SpeedSetter = delegate (Vector2 speed)
         {
             Speed = speed;
         };
@@ -108,7 +107,7 @@ public class DeathHandlerThrowableRespawnPoint : Actor
 
     public override void Added(Scene scene)
     {
-        (scene as Level).Session.SetFlag(flagWhenSpawnpoint, false, true);
+        (scene as Level)!.Session.SetFlag(flagWhenSpawnpoint, false, true);
         base.Added(scene);
 
         if (fullReset) sprite.Play("fullreset_inactive");
@@ -274,7 +273,7 @@ public class DeathHandlerThrowableRespawnPoint : Actor
 
     public override void Removed(Scene scene)
     {
-        (scene as Level).Session.SetFlag(flagWhenSpawnpoint, false, true);
+        (scene as Level)!.Session.SetFlag(flagWhenSpawnpoint, false, true);
         base.Removed(scene);
     }
 
@@ -294,12 +293,6 @@ public class DeathHandlerThrowableRespawnPoint : Actor
         }
 
         hardVerticalHitSoundCooldown -= Engine.DeltaTime;
-        if (OnPedestal)
-        {
-            base.Depth = 8999;
-            return;
-        }
-
         base.Depth = 100;
         if (Hold.IsHeld)
         {
