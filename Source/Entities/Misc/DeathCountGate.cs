@@ -348,8 +348,9 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
         static internal void OnTransitionStatic(Level level)
         {
             // Transition Listeners didn't work =/
-            foreach (DeathCountGate deathCountGate in level.Tracker.GetEntities<DeathCountGate>())
+            foreach (var entity in level.Tracker.GetEntities<DeathCountGate>())
             {
+                DeathCountGate deathCountGate = (DeathCountGate)entity;
                 deathCountGate.OnTransition(level);
             }
         }

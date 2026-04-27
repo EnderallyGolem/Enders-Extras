@@ -79,6 +79,7 @@ public class EndersExtrasModule : EverestModule {
         On.Celeste.Seeker.CanSeePlayer += Hook_SeekerSeePlayer;
         On.Celeste.Editor.MapEditor.Update += Hook_UsingMapEditor;
         On.Celeste.Glitch.Apply += Hook_GlitchEffectApply;
+        On.Celeste.Dialog.Clean += Hook_DialogClean;
 
         EndersBlenderIntegration.Load();
         SpeedrunToolIntegration.Load();
@@ -104,6 +105,7 @@ public class EndersExtrasModule : EverestModule {
         On.Celeste.Seeker.CanSeePlayer -= Hook_SeekerSeePlayer;
         On.Celeste.Editor.MapEditor.Update -= Hook_UsingMapEditor;
         On.Celeste.Glitch.Apply -= Hook_GlitchEffectApply;
+        On.Celeste.Dialog.Clean -= Hook_DialogClean;
 
         UnloadTempHooks();
     }
@@ -344,5 +346,12 @@ public class EndersExtrasModule : EverestModule {
         // Does not work if applied at the start/end of level render
         if (Engine.Scene is Level level) Utils_Shaders.ApplyShaders(level);
         orig(source, timer, seed, amplitude);
+    }
+
+    internal static bool dialogCleanForceEnglish = false;
+    private static string Hook_DialogClean(On.Celeste.Dialog.orig_Clean orig, String name, Language language)
+    {
+        if (dialogCleanForceEnglish) { return orig(name, Dialog.OrderedLanguages[0]); } // Used by SettingsNPC
+        return orig(name, language);
     }
 }

@@ -8,15 +8,15 @@ namespace Celeste.Mod.EndersExtras.Integration
     [ModImportName("SpeedrunTool.SaveLoad")]
     public static class SpeedrunToolImport
     {
-        public static Func<Action<Dictionary<Type, Dictionary<string, object>>, Level>, Action<Dictionary<Type, Dictionary<string, object>>, Level>, Action, Action<Level>, Action<Level>, Action, object> RegisterSaveLoadAction;
-        public static Action<Monocle.Entity, bool> IgnoreSaveState;
-        public static Action<object> Unregister;
+        public static Func<Action<Dictionary<Type, Dictionary<string, object>>, Level>?, Action<Dictionary<Type, Dictionary<string, object>>, Level>?, Action?, Action<Level>?, Action<Level>?, Action?, object>? RegisterSaveLoadAction;
+        public static Action<Monocle.Entity, bool>? IgnoreSaveState;
+        public static Action<object>? Unregister;
     }
 
     public static class SpeedrunToolIntegration
     {
         public static bool SpeedrunToolInstalled;
-        private static object action;
+        private static object? action;
         internal static void Load()
         {
             typeof(SpeedrunToolImport).ModInterop();

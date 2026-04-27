@@ -36,29 +36,6 @@ entities.EndersExtras/TileEntity.attributes.description.offL=The offscreen tilet
 entities.EndersExtras/TileEntity.attributes.description.offUL=The offscreen tiletype will be used if it extends offscreen to the top left.
 
 
-
-# Connectable Outline
-entities.EndersExtras/ConnectableOutline.placements.name.normal=Connectable Outline
-entities.EndersExtras/ConnectableOutline.placements.description.normal=Visual outline that can be connected to other outlines, or attached to an entity.
-entities.EndersExtras/ConnectableOutline.attributes.description.texturePath=Texture of the outline.\nThe texture uses the same format as cassette blocks.\nYou can remove the "_filled" for a hollow version of the default texture.
-entities.EndersExtras/ConnectableOutline.attributes.description.colour=The colour of the outline.
-entities.EndersExtras/ConnectableOutline.attributes.description.connectLayer=Only outlines of the same connect layer number will be connected.\nSet to -1 to disable connections.
-entities.EndersExtras/ConnectableOutline.attributes.description.depth=Rendering depth of the outline.
-entities.EndersExtras/ConnectableOutline.attributes.description.attachable=If true, the outline will be attached to the nearest entity, or entity closest to its node if a node is added.
-entities.EndersExtras/ConnectableOutline.attributes.description.visibleFlag=If specified, the outline is only visible if this flag is enabled.\nA list of flags in the format "flagA, flagB, !flagC | flagD, flagE" can be specified.\nThis means (flagA and flagB and not flagC) or (flagD and flagE).
-
-
-# Flag Killbox
-entities.EndersExtras/FlagKillbox.placements.name.normal=Flag Killbox
-entities.EndersExtras/FlagKillbox.placements.name.altname=Flag Kill Box
-entities.EndersExtras/FlagKillbox.placements.description.normal=Flag-toggleable killbox.\n(When above the killbox, the killbox becomes the new bottom deathzone.)
-entities.EndersExtras/FlagKillbox.attributes.description.triggerDistance=The number of tiles the player must be above the killbox before it activates.
-entities.EndersExtras/FlagKillbox.attributes.description.requireFlag=Flag required for the killbox to activate.\nA list of flags in the format "flagA, flagB, !flagC | flagD, flagE" can be specified.\nThis means (flagA and flagB and not flagC) or (flagD and flagE).
-entities.EndersExtras/FlagKillbox.attributes.name.permamentActivate=Permanent Activate
-entities.EndersExtras/FlagKillbox.attributes.description.permamentActivate=If true, when the Require Flag condition is met, it will stay activated, even when the flags change.\n(The zone still deactivates upon death/reload or if the player manages to get under it.)
-
-
-
 # Conditional Tutorial Bird
 entities.EndersExtras/ConditionalBirdTutorial.placements.name.normal=Conditional Bird Tutorial
 entities.EndersExtras/ConditionalBirdTutorial.placements.description.normal=Everest Custom Bird Tutorial with custom ways to activate them and fly-in animation.\nThe 2 nodes create a zone which can be used for the fly-in condition.\nEverest Custom Bird Tutorial Trigger works for removing the bird,\nbut you shouldn't use them to get the birds to show text.
@@ -95,8 +72,46 @@ entities.EndersExtras/DeathCountGate.attributes.description.setFlag=If specified
 entities.EndersExtras/DeathCountGate.attributes.description.silent=Prevents this gate from making any sound.
 
 
+# Connectable Outline
+entities.EndersExtras/ConnectableOutline.placements.name.normal=Connectable Outline
+entities.EndersExtras/ConnectableOutline.placements.description.normal=Visual outline that can be connected to other outlines, or attached to an entity.
+entities.EndersExtras/ConnectableOutline.attributes.description.texturePath=Texture of the outline.\nThe texture uses the same format as cassette blocks.\nYou can remove the "_filled" for a hollow version of the default texture.
+entities.EndersExtras/ConnectableOutline.attributes.description.colour=The colour of the outline.
+entities.EndersExtras/ConnectableOutline.attributes.description.connectLayer=Only outlines of the same connect layer number will be connected.\nSet to -1 to disable connections.
+entities.EndersExtras/ConnectableOutline.attributes.description.depth=Rendering depth of the outline.
+entities.EndersExtras/ConnectableOutline.attributes.description.attachable=If true, the outline will be attached to the nearest entity, or entity closest to its node if a node is added.
+entities.EndersExtras/ConnectableOutline.attributes.description.visibleFlag=If specified, the outline is only visible if this flag is enabled.\nA list of flags in the format "flagA, flagB, !flagC | flagD, flagE" can be specified.\nThis means (flagA and flagB and not flagC) or (flagD and flagE).
 
 
+# Flag Killbox
+entities.EndersExtras/FlagKillbox.placements.name.normal=Flag Killbox
+entities.EndersExtras/FlagKillbox.placements.name.altname=Flag Kill Box
+entities.EndersExtras/FlagKillbox.placements.description.normal=Flag-toggleable killbox.\n(When above the killbox, the killbox becomes the new bottom deathzone.)
+entities.EndersExtras/FlagKillbox.attributes.description.triggerDistance=The number of tiles the player must be above the killbox before it activates.
+entities.EndersExtras/FlagKillbox.attributes.description.requireFlag=Flag required for the killbox to activate.\nA list of flags in the format "flagA, flagB, !flagC | flagD, flagE" can be specified.\nThis means (flagA and flagB and not flagC) or (flagD and flagE).
+entities.EndersExtras/FlagKillbox.attributes.name.permamentActivate=Permanent Activate
+entities.EndersExtras/FlagKillbox.attributes.description.permamentActivate=If true, when the Require Flag condition is met, it will stay activated, even when the flags change.\n(The zone still deactivates upon death/reload or if the player manages to get under it.)
+
+
+# Settings NPC
+entities.EndersExtras/SettingsNpc.placements.name.normal=Mod Settings NPC
+entities.EndersExtras/SettingsNpc.placements.description.normal=An NPC that opens a filtered mod settings screen.
+entities.EndersExtras/SettingsNpc.attributes.description.spriteRate=The animation rate for the sprite.
+entities.EndersExtras/SettingsNpc.attributes.description.sprite=Which sprite to use.\n`player/idle` will use the full path `Graphics/Atlases/Gameplay/characters/player/idle00` and loop from 00 through 01, 02... upwards, depending on the number of matching file names.
+entities.EndersExtras/SettingsNpc.attributes.description.dialogId=The dialog ID to use for the dialogue.
+entities.EndersExtras/SettingsNpc.attributes.description.approachDistance=How far away from the NPC Madeline should stop when approaching.
+entities.EndersExtras/SettingsNpc.attributes.description.approachWhenTalking=Whether Madeline should walk towards the NPC when talking.
+entities.EndersExtras/SettingsNpc.attributes.description.indicatorOffsetX=Offset for the chat icon on the X axis.
+entities.EndersExtras/SettingsNpc.attributes.description.indicatorOffsetY=Offset for the chat icon on the Y axis.
+entities.EndersExtras/SettingsNpc.attributes.description.talkRegionScaleX=Scales the region the player can interact with this npc in the X axis.
+entities.EndersExtras/SettingsNpc.attributes.description.talkRegionScaleY=Scales the region the player can interact with this npc in the Y axis.
+entities.EndersExtras/SettingsNpc.attributes.description.flipX=Flips the sprite of the NPC horizontally.
+entities.EndersExtras/SettingsNpc.attributes.description.flipY=Flips the sprite of the NPC vertically.
+entities.EndersExtras/SettingsNpc.attributes.description.onlyOnce=Whether the dialogue should only be completable once.
+entities.EndersExtras/SettingsNpc.attributes.description.endLevel=Whether finishing the dialogue should count as completing the map.
+entities.EndersExtras/SettingsNpc.attributes.description.modSettings=A list of mod setting headers, options, and (optionally) additional dialog that will be added above the option.\n\nThe format for this is "[header] :: [option]" or "[header] :: [option] :: [dialogId]",\nwhere the header and option are what appears when the language is set to english.\nExample: "CelesteNet - Multiplayer :: Connect to celeste.0x0a.de :: EndersExtras_SettingsInfo_Cnet"\n\nYou can enable logSettings for the options in the right format to be printed out.
+entities.EndersExtras/SettingsNpc.attributes.description.headerDialog=A dialog id for a message that will be shown at the top of the menu.\nLeave it empty to not show anything.
+entities.EndersExtras/SettingsNpc.attributes.description.logSettings=When set to true, interacting with the npc will print the mod settings to use in the logs.\nUse it to identify what to add in Mod Settings.
 
 
 

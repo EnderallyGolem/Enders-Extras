@@ -1,6 +1,7 @@
 # ----------------------------------  Helper Stuff  ---------------------------------------
 
 EndersExtras_Settings=Ender's Extra's Settings
+EndersExtras_ModSettingsDefault=Mod Options
 
 
 
@@ -12,6 +13,9 @@ poem_EndersExtras_1_EndersExtrasTestMap_A=Insert Poem Here
 endersextras_mapname_EndersExtras_1_EndersExtrasTestMap=Basemen- i mean Test Rack
 endersextras_removechapternum_EndersExtras_1_EndersExtrasTestMap=This removes the chapter number and centers the text. Any text can go here!
 
+EndersExtras_Test=tweet :3
+EndersExtras_SettingsInfo_Cnet=Additional information can be added as a dialog!
+EndersExtras_SettingsInfo_Controls=Can't just make the relevant buttons appear unfortunately.
 
 # NOTES:
 # The # Symbol at the start of a line counts as a Comment. To include in dialog, use a \#
