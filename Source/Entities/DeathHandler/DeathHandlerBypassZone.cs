@@ -1,4 +1,3 @@
-using Celeste.Mod.EndersExtras.Integration;
 using Celeste.Mod.EndersExtras.Triggers.DeathHandler;
 using Celeste.Mod.EndersExtras.Utils;
 using Celeste.Mod.EndHelper.Utils;
@@ -38,7 +37,7 @@ public class DeathHandlerBypassZone : Entity
     List<Entity> entitiesInsideZone = new List<Entity>();
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public DeathHandlerBypassZone(EntityData data, Vector2 offset, EntityID id)
+    public DeathHandlerBypassZone(EntityData data, Vector2 offset)
         : base(data.Position + offset)
     {
         Utils_DeathHandlerEntities.EnableDeathHandler();
@@ -147,10 +146,6 @@ public class DeathHandlerBypassZone : Entity
         }
     }
 
-    public override void Added(Scene scene)
-    {
-        base.Added(scene);
-    }
     public override void Awake(Scene scene)
     {
         UpdateCurrentEffect();
@@ -216,7 +211,7 @@ public class DeathHandlerBypassZone : Entity
         //Logger.Log(LogLevel.Info, "EndersExtras/DeathHandlerBypassZone", $"Entity entered zone: {entity} {entity.SourceId}");
         UpdateDeathBypassEntity(entity); // Set death bypass if not already set
 
-        if (entity.Components.Get<DeathBypass>() is DeathBypass deathbypass)
+        if (entity.Components.Get<DeathBypass>() is { } deathbypass)
         {
             entitiesInsideZone.Add(entity);
             switch (currentEffect)
@@ -229,8 +224,6 @@ public class DeathHandlerBypassZone : Entity
                     break;
                 case BypassEffect.Toggle:
                     deathbypass.ToggleAllowBypass(entity, null, newRequireFlag: bypassFlag);
-                    break;
-                default:
                     break;
             }
         }

@@ -4,7 +4,6 @@ using Monocle;
 using System.Runtime.CompilerServices;
 using System;
 using Celeste.Mod.EndersExtras.Utils;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace Celeste.Mod.EndersExtras.Entities.RoomSwap;
 

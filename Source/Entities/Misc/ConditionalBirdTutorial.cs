@@ -73,7 +73,6 @@ public class ConditionalBirdTutorial : CustomBirdTutorial
     public override void Awake(Scene scene)
     {
         string trackerPrefix = $"EndersExtras_ConditionalBirdTutorial_{entityData.ID}";
-        Level level = SceneAs<Level>();
         bool flewInBefore = level.Session.GetFlag($"{trackerPrefix}_flewInBefore");
 
         if (!showSprite) { Visible = false; }
@@ -91,7 +90,7 @@ public class ConditionalBirdTutorial : CustomBirdTutorial
         //I don't want the regular awake to trigger
 
         if (flewInBefore && onlyOnceFlyIn && 
-            ( onlyFulfillConditionOnce ) || (!onlyFulfillConditionOnce && CheckMetFlyInCondition(level, true))
+            ( onlyFulfillConditionOnce ) || (!onlyFulfillConditionOnce && CheckMetFlyInCondition(true))
            )
         {
             // Stay flown in (but not triggered). If no onlyFulfillConditionOnce, flewInBefore is temporarily saved for this check. If condition met, start already flown in.
@@ -120,13 +119,12 @@ public class ConditionalBirdTutorial : CustomBirdTutorial
 
     private void UpdateConditionTracking_Time(bool avoidIncrement = false)
     {
-        Level level = SceneAs<Level>();
         if (!Utils_General.AreFlagsEnabled(level.Session, requireFlagForIncrement, true))
         {
             avoidIncrement = true; // Avoid incrementing if require flag for condition fails
         }
 
-        if (level.Tracker.GetEntity<Player>() is Player player)
+        if (level.Tracker.GetEntity<Player>() is { } player)
         {
             string trackerPrefix = $"EndersExtras_ConditionalBirdTutorial_{entityData.ID}";
             if (nodeBounds.Contains((int)player.X, (int)player.Y))
@@ -161,13 +159,12 @@ public class ConditionalBirdTutorial : CustomBirdTutorial
 
     internal void UpdateConditionTracking_Death(bool avoidIncrement = false) // From EndersExtrasModule - ILRunOnPlayerDeath
     {
-        Level level = SceneAs<Level>();
         if (!Utils_General.AreFlagsEnabled(level.Session, requireFlagForIncrement, true))
         {
             avoidIncrement = true; // Avoid incrementing if require flag for condition fails
         }
 
-        if (level.Tracker.GetEntity<Player>() is Player player)
+        if (level.Tracker.GetEntity<Player>() is { } player)
         {
             string trackerPrefix = $"EndersExtras_ConditionalBirdTutorial_{entityData.ID}";
             if (nodeBounds.Contains((int)player.X, (int)player.Y))
@@ -200,8 +197,7 @@ public class ConditionalBirdTutorial : CustomBirdTutorial
     private void FlyInIfMetCondition()
     {
         // Do logic to check if condition met
-        Level level = SceneAs<Level>();
-        if (CheckMetFlyInCondition(level))
+        if (CheckMetFlyInCondition())
         {
             // All passed! Get the bird to fly in.
             bool skipFly = false;
@@ -213,11 +209,11 @@ public class ConditionalBirdTutorial : CustomBirdTutorial
         }
     }
     
-    private bool CheckMetFlyInCondition(Level level, bool recheckIfOutsideZone = false)
+    private bool CheckMetFlyInCondition(bool recheckIfOutsideZone = false)
     {
         if (recheckIfOutsideZone) UpdateConditionTracking_Time(true);
 
-        if (level.Tracker.GetEntity<Player>() is Player player)
+        if (level.Tracker.GetEntity<Player>() is { } player)
         {
             // Look through each condition. If any fails, exit.
             // Ensure hasn't triggered yet
@@ -265,7 +261,6 @@ public class ConditionalBirdTutorial : CustomBirdTutorial
         {
             return;
         }
-        Level level = SceneAs<Level>();
         Rectangle levelBounds = level.Bounds;
         Vector2 flyawaySpeed = new Vector2((int)Facing * -5, -10f);
         Vector2 startingPos = restPosition;
@@ -297,7 +292,6 @@ public class ConditionalBirdTutorial : CustomBirdTutorial
         {
             triggered = true;
         }
-        Level level = SceneAs<Level>();
 
         string trackerPrefix = $"EndersExtras_ConditionalBirdTutorial_{entityData.ID}";
 

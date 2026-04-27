@@ -198,7 +198,7 @@ public class DeathHandlerChangeRespawnRegion : Entity
 
         if (fullReset && Utils_DeathHandler.getLastFullResetPos() is not null)
         {
-            targetSpawnpoint = Utils_DeathHandler.getLastFullResetPos().Value;
+            targetSpawnpoint = Utils_DeathHandler.getLastFullResetPos()!.Value;
         }
         else
         {
@@ -232,9 +232,6 @@ public class DeathHandlerChangeRespawnRegion : Entity
             }
             return;
         }
-
-        //Logger.Log(LogLevel.Info, "EndersExtras/DeathHandlerChangeRespawnRegion", $"it continues to collide {pos}");
-        Vector2 playerPosMiddle = new Vector2((player.Position.X - player.Width / 2), (player.Position.Y - player.Height));
 
         Level level = SceneAs<Level>();
         bool nextIsFullReset = Utils_DeathHandler.getNextRespawnFullReset();
@@ -274,7 +271,7 @@ public class DeathHandlerChangeRespawnRegion : Entity
         Add(new SoundSource("event:/game/03_resort/forcefield_bump"));
     }
 
-    public void UpdateVisualLine(Player player)
+    public void UpdateVisualLine(Player? player)
     {
         if (!visibleTarget) return;
         if (visualLineEffectDuration > 0) visualLineEffectDuration--;

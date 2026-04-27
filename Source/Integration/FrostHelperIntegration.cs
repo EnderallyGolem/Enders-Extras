@@ -1,5 +1,4 @@
-﻿using Celeste.Mod.EndersExtras.Utils;
-using FrostHelper;
+﻿using FrostHelper;
 using Microsoft.Xna.Framework;
 using Monocle;
 using System;

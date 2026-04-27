@@ -6,7 +6,6 @@ using Monocle;
 using System;
 using System.Runtime.CompilerServices;
 using Celeste.Mod.EndHelper.Utils;
-using static Celeste.Mod.EndersExtras.EndersExtrasModule;
 
 namespace Celeste.Mod.EndersExtras.Triggers.DeathHandler;
 

@@ -2,7 +2,6 @@
 using Monocle;
 using MonoMod.ModInterop;
 using System;
-using System.Collections.Generic;
 
 namespace Celeste.Mod.EndersExtras.Integration
 {
@@ -30,11 +29,11 @@ namespace Celeste.Mod.EndersExtras.Integration
 
         internal static bool CheckShowBypassEffects(Entity entity)
         {
-            return entity.Components.Get<DeathBypass>() is DeathBypass deathBypassComponent && deathBypassComponent.bypass && deathBypassComponent.showVisuals;
+            return entity.Components.Get<DeathBypass>() is { } deathBypassComponent && deathBypassComponent.bypass && deathBypassComponent.showVisuals;
         }
         internal static bool CheckShowDisableBypassEffects(Entity entity)
         {
-            return entity.Components.Get<DeathBypass>() is DeathBypass deathBypassComponent && !deathBypassComponent.bypass && deathBypassComponent.allowBypass
+            return entity.Components.Get<DeathBypass>() is { } deathBypassComponent && !deathBypassComponent.bypass && deathBypassComponent.allowBypass
                     && deathBypassComponent.showVisuals;
         }
     }

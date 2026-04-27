@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Celeste.Mod.EndersExtras.Entities.Misc;
-using Celeste.Mod.EndersExtras.Utils;
+﻿using Celeste.Mod.EndersExtras.Utils;
 using Celeste.Mod.Entities;
 using FMOD.Studio;
 using Microsoft.Xna.Framework;

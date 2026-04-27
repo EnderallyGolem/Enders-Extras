@@ -24,7 +24,6 @@ public class DeathHandlerRespawnMarker : Entity
     const int height = 18;
 
     public EntityID entityID;
-    private Vector2 previousTargetPos = Vector2.Zero;
     internal float previousDistanceBetweenPosAndTarget = 99999f;
     private int framesGoingFurtherFromTarget = 0;
 
@@ -75,41 +74,41 @@ public class DeathHandlerRespawnMarker : Entity
         base.Collider = new Hitbox(x: -width / 2, y: -height / 2, width: width, height: height);
     }
 
-    public override void Added(Scene scene)
-    {
-        base.Added(scene);
-    }
-
     public override void Awake(Scene scene)
     {
         UpdateSprite();
         base.Awake(scene);
 
-        Level level = scene as Level;
+        Level level = SceneAs<Level>();
 
         // le HUD
         level.Add(new MarkerHUD(this));
 
-        // Warp to spawnpoint location
-        Vector2 targetPos = level.Session.RespawnPoint.Value;
+        if (level.Session.RespawnPoint is not null)
+        {
+            // Warp to spawnpoint location
+            Vector2 targetPos = level.Session.RespawnPoint.Value;
 
-        // Target player
-        previousTargetPos = targetPos;
-        Position = new Vector2(targetPos.X, targetPos.Y - height / 2 + 1);
+            // Target player
+            Position = new Vector2(targetPos.X, targetPos.Y - height / 2 + 1);
+        }
+        else
+        {
+            Logger.Log(LogLevel.Warn, "EndersExtras/DeathHandlerRespawnMarker", $"Respawn point is unexpectedly null! Respawn marker cannot be set to respawn point upon load.");
+        }
     }
 
     private bool pastFirstFrame = false;
     private void UpdateFirstFrame()
     {
-        if (!pastFirstFrame)
+        Level level = SceneAs<Level>();
+        if (!pastFirstFrame && level.Session.RespawnPoint is not null)
         {
-            Level level = SceneAs<Level>();
             pastFirstFrame = true;
 
             // Warp to spawnpoint location. Again. lol
-            Vector2 currentPosSpawnpoint = new Vector2(Position.X, Position.Y + height / 2 - 1);
             Vector2 targetPos = level.Session.RespawnPoint.Value;
-            currentPosSpawnpoint = targetPos;
+            var currentPosSpawnpoint = targetPos;
             Position = new Vector2(currentPosSpawnpoint.X, currentPosSpawnpoint.Y - height / 2 + 1);
         }
     }
@@ -123,15 +122,21 @@ public class DeathHandlerRespawnMarker : Entity
         UpdateFirstFrame();
         Level level = SceneAs<Level>();
 
+        if (level.Session.RespawnPoint is null)
+        {
+            base.Update();
+            return; // Just give up lol. I don't think this can actually happen, but just in case.
+        }
+
         // Move to spawn point location
         Vector2 currentPosSpawnpoint = ConvertSpawnPointPosToActualPos(Position, true);
         Vector2 targetPos = level.Session.RespawnPoint.Value;
 
         // If player is deathbypass, targetPos can only be lastFullResetPos
-        if (level.Tracker.GetEntity<Player>() is Player player && player.Components.Get<DeathBypass>() is DeathBypass deathBypass && deathBypass.bypass
+        if (level.Tracker.GetEntity<Player>() is { } player && player.Components.Get<DeathBypass>() is { } deathBypass && deathBypass.bypass
             && Utils_DeathHandler.getLastFullResetPos() is not null)
         {
-            targetPos = Utils_DeathHandler.getLastFullResetPos().Value;
+            targetPos = Utils_DeathHandler.getLastFullResetPos()!.Value;
             faceLeft = fullResetFaceLeft;
             showRedEffects = true;
         }
@@ -155,7 +160,7 @@ public class DeathHandlerRespawnMarker : Entity
         //Logger.Log(LogLevel.Info, "EndersExtras/DeathHandlerRespawnMarker", $"Distance between pos and target: {distanceBetweenPosAndTarget}. Previous: {previousDistanceBetweenPosAndTarget}. Frames going further: {framesGoingFurtherFromTarget}");
 
         bool holdingThrowableRespawn = false;
-        if (level.Tracker.GetEntity<Player>() is Player player2 && player2.Holding is not null)
+        if (level.Tracker.GetEntity<Player>() is { } player2 && player2.Holding is not null)
         {
             Holdable playerHoldable = player2.Holding;
             holdingThrowableRespawn = playerHoldable.Entity is DeathHandlerThrowableRespawnPoint;
@@ -200,7 +205,6 @@ public class DeathHandlerRespawnMarker : Entity
             particleLimiter = 0;
         }
 
-        previousTargetPos = targetPos;
         previousDistanceBetweenPosAndTarget = distanceBetweenPosAndTarget;
         previousholdingThrowableRespawn = holdingThrowableRespawn;
     }
@@ -209,7 +213,7 @@ public class DeathHandlerRespawnMarker : Entity
     {
         UpdateSprite();
 
-        Level level = Scene as Level;
+        Level level = SceneAs<Level>();
         if (level.IsInBounds(Position, 8))
         {
             // Only render if entity is in level bounds

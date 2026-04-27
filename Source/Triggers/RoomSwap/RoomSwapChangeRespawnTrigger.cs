@@ -1,11 +1,7 @@
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
-using System;
 using System.Runtime.CompilerServices;
 using Monocle;
-using static MonoMod.InlineRT.MonoModRule;
-using System.Threading.Tasks;
-using Celeste.Mod.EndersExtras.Utils;
 
 namespace Celeste.Mod.EndersExtras.Triggers.RoomSwap;
 

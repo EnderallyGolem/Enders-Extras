@@ -51,7 +51,7 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
         private readonly string moveSound;
 
         private MTexture texture;
-        private SoundSource openSfx;
+        private SoundSource? openSfx;
 
         private bool moving;
         private bool cancelMoving;
@@ -273,7 +273,7 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
                     yield break;
                 }
 
-                if (!entityMover) 
+                if (!entityMover && openSfx != null) // should never be null
                 {
                     openSfx.Play(moveSound);
                 }
@@ -312,7 +312,7 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
                     // Round to's coords to integers
                     to = new Vector2((int)Math.Round(to.X), (int)Math.Round(to.Y));
 
-                    if (entity.Get<StaticMover>() is StaticMover staticMoverComponent && staticMoverComponent.Platform != null)
+                    if (entity.Get<StaticMover>() is { } staticMoverComponent && staticMoverComponent.Platform != null)
                     {
                         return; // Do not move StaticMovers (that has a platform). Their movement is already handled by moving the actual platform.
                     }
@@ -325,7 +325,10 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
                         {
                             platform.MoveTo(to);
                         }
-                        catch { }
+                        catch
+                        {
+                            // ignored
+                        }
                     }
                     else if (!entityMoverPlatformOnly)
                     {
@@ -337,7 +340,10 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
                                 actor.MoveH((to.X - entity.Position.X));
                                 actor.MoveV((to.Y - entity.Position.Y));
                             }
-                            catch { }
+                            catch
+                            {
+                                // ignored
+                            }
                         }
                         else
                         {
@@ -376,7 +382,7 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
                         }
                     }
                 };
-                tween.OnComplete = (t) => { waiting = false; };
+                tween.OnComplete = (_) => { waiting = false; };
                 Add(tween);
 
                 // wait for the move to be done.

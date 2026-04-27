@@ -144,7 +144,7 @@ public class CassetteManagerTrigger : Trigger
         Level level = SceneAs<Level>();
         allowFunctionality = Utils_General.AreFlagsEnabled(level.Session, requireFlag, true);
 
-        if (!wonkyCassettes && level.Tracker.GetEntity<CassetteBlockManager>() is CassetteBlockManager cassetteBlockManager)
+        if (!wonkyCassettes && level.Tracker.GetEntity<CassetteBlockManager>() is { } cassetteBlockManager)
         {
             DynamicData cassetteManagerData = DynamicData.For(cassetteBlockManager);
 
@@ -244,7 +244,7 @@ public class CassetteManagerTrigger : Trigger
 
     private void Update_QM(Level level)
     {
-        if (level.Tracker.GetEntity<WonkyCassetteBlockController>() is WonkyCassetteBlockController wonkyCassetteBlockManager)
+        if (level.Tracker.GetEntity<WonkyCassetteBlockController>() is { } wonkyCassetteBlockManager)
         {
             DynamicData wonkyCassetteManagerData = DynamicData.For(wonkyCassetteBlockManager);
 
@@ -323,7 +323,7 @@ public class CassetteManagerTrigger : Trigger
     public void SetBeatToIfAllow(int setBeat)
     {
         Level level = SceneAs<Level>();
-        if (!wonkyCassettes && level.Tracker.GetEntity<CassetteBlockManager>() is CassetteBlockManager cassetteBlockManager)
+        if (!wonkyCassettes && level.Tracker.GetEntity<CassetteBlockManager>() is { } cassetteBlockManager)
         {
             DynamicData cassetteManagerData = DynamicData.For(cassetteBlockManager);
             int c_beatIndexMax = cassetteManagerData.Get<int>("beatIndexMax");
@@ -405,7 +405,7 @@ public class CassetteManagerTrigger : Trigger
 
     private void SetBeatToAllow_QM(Level level, int setBeat)
     {
-        if (level.Tracker.GetEntity<WonkyCassetteBlockController>() is WonkyCassetteBlockController wonkyCassetteBlockManager)
+        if (level.Tracker.GetEntity<WonkyCassetteBlockController>() is { } wonkyCassetteBlockManager)
         {
             DynamicData wonkyCassetteManagerData = DynamicData.For(wonkyCassetteBlockManager);
             int s_musicBeatIndex = QuantumMechanicsIntegration.QMInte_MusicBeatIndex();
@@ -474,7 +474,7 @@ public class CassetteManagerTrigger : Trigger
     public void SetBeatTo(int setBeat)
     {
         Level level = SceneAs<Level>();
-        if (!wonkyCassettes && level.Tracker.GetEntity<CassetteBlockManager>() is CassetteBlockManager cassetteBlockManager)
+        if (!wonkyCassettes && level.Tracker.GetEntity<CassetteBlockManager>() is { } cassetteBlockManager)
         {
             DynamicData cassetteManagerData = DynamicData.For(cassetteBlockManager);
             int c_currentIndex = cassetteBlockManager.currentIndex;
@@ -592,7 +592,7 @@ public class CassetteManagerTrigger : Trigger
 
     private void SetBeatTo_QM(Level level, int setBeat)
     {
-        if (level.Tracker.GetEntity<WonkyCassetteBlockController>() is WonkyCassetteBlockController wonkyCassetteBlockManager)
+        if (level.Tracker.GetEntity<WonkyCassetteBlockController>() is { } wonkyCassetteBlockManager)
         {
             // Set Beats
             DynamicData wonkyCassetteManagerData = DynamicData.For(wonkyCassetteBlockManager);
@@ -733,7 +733,7 @@ public class CassetteManagerTrigger : Trigger
                 tempoChangeTime.Add([beatNum, tempoNum]);
             }
 
-            if (!wonkyCassettes && level.Tracker.GetEntity<CassetteBlockManager>() is CassetteBlockManager cassetteBlockManager)
+            if (!wonkyCassettes && level.Tracker.GetEntity<CassetteBlockManager>() is { } cassetteBlockManager)
             {
                 DynamicData cassetteManagerData = DynamicData.For(cassetteBlockManager);
                 cassetteManagerData.Set("EndersExtras_CassetteManagerTriggerTempoMultiplierList", tempoChangeTime);
@@ -761,7 +761,7 @@ public class CassetteManagerTrigger : Trigger
 
     private void SetTempoMultiplier_QM(Level level, bool resetCheckedBeat, List<List<object>> tempoChangeTime, bool multiplyOnTop)
     {
-        if (level.Tracker.GetEntity<WonkyCassetteBlockController>() is WonkyCassetteBlockController wonkyCassetteBlockManager)
+        if (level.Tracker.GetEntity<WonkyCassetteBlockController>() is { } wonkyCassetteBlockManager)
         {
             foreach (WonkyCassetteBlockController wonkyCasseteController in level.Tracker.GetEntities<WonkyCassetteBlockController>())
             {

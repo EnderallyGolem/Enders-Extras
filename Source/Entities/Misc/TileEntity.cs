@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Monocle;
 using Microsoft.Xna.Framework;
 using Celeste.Mod.Entities;
 using System.Runtime.CompilerServices;
-using System.ComponentModel.Design.Serialization;
 using Celeste.Mod.EndersExtras.Utils;
 
 namespace Celeste.Mod.EndersExtras.Entities.Misc;
@@ -307,7 +303,7 @@ public class TileEntity : Solid
                 }
             }
         }
-        else if (getMasterOfGroup is TileEntity)
+        else if (getMasterOfGroup is not null)
         {
             getMasterOfGroup.Break(from, direction, false);
         }

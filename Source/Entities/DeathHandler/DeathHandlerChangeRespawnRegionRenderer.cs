@@ -3,15 +3,14 @@
 // Decompiled with ICSharpCode.Decompiler 8.2.0.7535
 #endregion
 
-using Celeste.Mod.EndersExtras.Entities.DeathHandler;
-using Celeste.Mod.EndersExtras.Utils;
-using Microsoft.Xna.Framework;
-using Monocle;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Celeste.Mod.EndersExtras.Utils;
+using Microsoft.Xna.Framework;
+using Monocle;
 
-namespace Celeste;
+namespace Celeste.Mod.EndersExtras.Entities.DeathHandler;
 
 [Tracked(false)]
 public class DeathHandlerChangeRespawnRegionRenderer : Entity
@@ -27,7 +26,7 @@ public class DeathHandlerChangeRespawnRegionRenderer : Entity
         public Vector2 Max;
         public Vector2 Normal;
         public Vector2 Perpendicular;
-        public float[] Wave;
+        public float[]? Wave;
         public float Length;
 
         public bool fullReset;
@@ -177,7 +176,7 @@ public class DeathHandlerChangeRespawnRegionRenderer : Entity
         list.Remove(block);
 
         //Logger.Log(LogLevel.Info, "EndersExtras/DeathHandlerChangeRespawnRegionRenderer", $"removed block");
-        if (list.Count <= 0)
+        if (list.Count <= 0 || tiles is null)
         {
             tiles = null;
             //Logger.Log(LogLevel.Info, "EndersExtras/DeathHandlerChangeRespawnRegionRenderer", $"tiles = null");
@@ -216,7 +215,7 @@ public class DeathHandlerChangeRespawnRegionRenderer : Entity
     [MethodImpl(MethodImplOptions.NoInlining)]
     public void UpdateEdges()
     {
-        Camera camera = (base.Scene as Level).Camera;
+        Camera camera = SceneAs<Level>().Camera;
         Rectangle view = new Rectangle((int)camera.Left - 4, (int)camera.Top - 4, (int)(camera.Right - camera.Left) + 8, (int)(camera.Bottom - camera.Top) + 8);
         for (int i = 0; i < edges.Count; i++)
         {
@@ -250,7 +249,7 @@ public class DeathHandlerChangeRespawnRegionRenderer : Entity
             return;
         }
 
-        Level obj = base.Scene as Level;
+        Level obj = SceneAs<Level>();
         _ = obj.TileBounds.Left;
         _ = obj.TileBounds.Top;
         _ = obj.TileBounds.Right;
@@ -318,6 +317,7 @@ public class DeathHandlerChangeRespawnRegionRenderer : Entity
     [MethodImpl(MethodImplOptions.NoInlining)]
     public bool Inside(int tx, int ty)
     {
+        if (tiles is null) return false;
         return tiles[tx - levelTileBounds.X, ty - levelTileBounds.Y];
     }
 

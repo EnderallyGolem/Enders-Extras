@@ -125,7 +125,7 @@ namespace Celeste.Mod.EndersExtras.Utils
 
         private static int ManagerLeadBeatShenanigans(int leadBeatReturn)
         {
-            if (Engine.Scene is Level level && level.Tracker.GetEntity<CassetteBlockManager>() is CassetteBlockManager cassetteBlockManager)
+            if (Engine.Scene is Level level && level.Tracker.GetEntity<CassetteBlockManager>() is { } cassetteBlockManager)
             {
                 // Using manager! Return 0 at the end as it ensures the functions will be skipped. Before that though...
                 // Replace vanilla's lead beat logic with our lead beat logic.
@@ -178,7 +178,7 @@ namespace Celeste.Mod.EndersExtras.Utils
         }
         private static float ManagerMultiplyCassetteSpeed(float originalTime)
         {
-            if (Engine.Scene is Level level && level.Tracker.GetEntity<CassetteBlockManager>() is CassetteBlockManager cassetteBlockManager)
+            if (Engine.Scene is Level level && level.Tracker.GetEntity<CassetteBlockManager>() is { } cassetteBlockManager)
             {
                 DynamicData cassetteManagerData = DynamicData.For(cassetteBlockManager);
 

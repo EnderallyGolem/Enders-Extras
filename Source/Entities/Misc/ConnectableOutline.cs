@@ -2,7 +2,6 @@
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
-using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
@@ -12,17 +11,16 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
     [Tracked(false)]
     public class ConnectableOutline : Entity
     {
-        public List<ConnectableOutline> group;
+        public List<ConnectableOutline>? group;
         public List<Image> imageList = [];
         public bool groupLeader = false;
         public Vector2 groupOrigin;
-        public Wiggler wiggler;
+        public Wiggler wiggler = null!;
         public Vector2 wigglerScaler;
 
         private readonly string visibleFlag;
         private readonly Color colour;
         private readonly int connectLayer;
-        private readonly bool attachable;
         private readonly string folderPath;
         private readonly Vector2 nodeOffset = Vector2.Zero;
 
@@ -37,7 +35,7 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
             this.colour = Calc.HexToColorWithAlpha(data.Attr("colour", "ffffffff"));
             visibleFlag = data.Attr("visibleFlag", "");
             connectLayer = data.Int("connectLayer", 0);
-            attachable = data.Bool("attachable", true);
+            var attachable1 = data.Bool("attachable", true);
             folderPath = Utils_General.TrimPath(data.Attr("texturePath"), "objects/EndersExtras/Misc/outline_filled");
 
             Depth = data.Int("depth", 10000);
@@ -45,7 +43,7 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
 
             if (data.Nodes.Length > 0) nodeOffset = data.Nodes[0] + offset - Position;
 
-            if (attachable)
+            if (attachable1)
             {
                 Add(new StaticMover
                 {
@@ -184,10 +182,11 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
 
         public void FindInGroup(ConnectableOutline block)
         {
-            foreach (ConnectableOutline entity in base.Scene.Tracker.GetEntities<ConnectableOutline>())
+            foreach (var entity1 in base.Scene.Tracker.GetEntities<ConnectableOutline>())
             {
+                ConnectableOutline entity = (ConnectableOutline)entity1;
                 if (entity != this && entity != block && entity.connectLayer == connectLayer && entity.connectLayer != -1
-                    && (entity.CollideRect(new Rectangle((int)block.X - 1, (int)block.Y, (int)block.Width + 2, (int)block.Height)) || entity.CollideRect(new Rectangle((int)block.X, (int)block.Y - 1, (int)block.Width, (int)block.Height + 2))) && !group.Contains(entity))
+                    && (entity.CollideRect(new Rectangle((int)block.X - 1, (int)block.Y, (int)block.Width + 2, (int)block.Height)) || entity.CollideRect(new Rectangle((int)block.X, (int)block.Y - 1, (int)block.Width, (int)block.Height + 2))) && group is not null && !group.Contains(entity))
                 {
                     group.Add(entity);
                     FindInGroup(entity);
@@ -198,8 +197,9 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
 
         public bool CheckForSame(float x, float y)
         {
-            foreach (ConnectableOutline entity in base.Scene.Tracker.GetEntities<ConnectableOutline>())
+            foreach (var entity1 in base.Scene.Tracker.GetEntities<ConnectableOutline>())
             {
+                ConnectableOutline entity = (ConnectableOutline)entity1;
                 if (entity.connectLayer == connectLayer && entity.Collider.Collide(new Rectangle((int)x, (int)y, 8, 8)))
                 {
                     return true;
@@ -235,6 +235,7 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
             flagAllow = Utils_General.AreFlagsEnabled(level.Session, visibleFlag, true);
             //Logger.Log(LogLevel.Info, "EndersExtras/ConnectableOutline", $"flag allow: {flagAllow} -- {visibleFlag}");
 
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
             if ( (flagAllow != previousFlagAllow) || (opacity != 0 && opacity != 1) )
             {
                 if (flagAllow && opacity < 1)

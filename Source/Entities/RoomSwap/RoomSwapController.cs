@@ -1,5 +1,4 @@
 using Celeste.Mod.Entities;
-using Celeste.Mod.EndersExtras.Triggers;
 using Celeste.Mod.EndersExtras.Utils;
 using Microsoft.Xna.Framework;
 using Monocle;

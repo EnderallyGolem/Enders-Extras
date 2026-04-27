@@ -5,7 +5,6 @@ using Monocle;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using Celeste.Mod.UI;
 
 namespace Celeste.Mod.EndersExtras.Utils
 {

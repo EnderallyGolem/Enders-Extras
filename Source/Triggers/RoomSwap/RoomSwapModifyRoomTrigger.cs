@@ -1,7 +1,6 @@
 using Celeste.Mod.EndersExtras.Utils;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
-using System;
 
 namespace Celeste.Mod.EndersExtras.Triggers.RoomSwap;
 

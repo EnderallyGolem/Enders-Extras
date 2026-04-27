@@ -12,7 +12,6 @@ public class DeathHandlerRespawnPoint : Entity
 {
     internal readonly bool faceLeft = false; // Handled in EndersExtrasModule OnPlayerSpawnFunc everest event.
     private readonly bool visible = true;
-    private readonly bool attachable = true;
     internal readonly bool fullReset = false;
     private readonly string requireFlag = "";
     private readonly bool checkInvalid = true;
@@ -20,7 +19,7 @@ public class DeathHandlerRespawnPoint : Entity
 
     private readonly MTexture currentSpawnpointTexture;
     private readonly MTexture inactiveTexture;
-    private Image displayImage;
+    private Image? displayImage;
 
     const int width = 16;
     const int height = 18;
@@ -42,7 +41,7 @@ public class DeathHandlerRespawnPoint : Entity
         // It is not in LevelData.Spawns, because dealing with a game-loaded list together with room-loaded positions sounds like a disaster waiting to happen
         faceLeft = data.Bool("faceLeft", false);
         visible = data.Bool("visible", true);
-        attachable = data.Bool("attachable", true);
+        var attachable1 = data.Bool("attachable", true);
         fullReset = data.Bool("fullReset", false);
         requireFlag = data.Attr("requireFlag", "");
         checkInvalid = data.Bool("checkSolid", true);
@@ -65,7 +64,7 @@ public class DeathHandlerRespawnPoint : Entity
 
         base.Collider = new Hitbox(x: -2 - width/2, y: -2 - height/2, width:width + 4, height:height + 4);
 
-        if (attachable)
+        if (attachable1)
         {
             Add(new StaticMover
             {
@@ -94,7 +93,7 @@ public class DeathHandlerRespawnPoint : Entity
 
     public override void Added(Scene scene)
     {
-        (scene as Level).Session.SetFlag(flagWhenSpawnpoint, false, true);
+        (scene as Level)!.Session.SetFlag(flagWhenSpawnpoint, false, true);
         base.Added(scene);
     }
 
@@ -167,8 +166,9 @@ public class DeathHandlerRespawnPoint : Entity
     private void UpdateMarkerDirections(Level level)
     {
         // If using a DeathHandlerRespawnMarker, set its direction 
-        foreach (DeathHandlerRespawnMarker respawnMarker in level.Tracker.GetEntities<DeathHandlerRespawnMarker>())
+        foreach (var entity in level.Tracker.GetEntities<DeathHandlerRespawnMarker>())
         {
+            DeathHandlerRespawnMarker respawnMarker = (DeathHandlerRespawnMarker)entity;
             if (respawnMarker.showRedEffects && !fullReset) return;
 
             if (fullReset) respawnMarker.fullResetFaceLeft = faceLeft;
@@ -257,7 +257,7 @@ public class DeathHandlerRespawnPoint : Entity
 
     public override void Removed(Scene scene)
     {
-        (scene as Level).Session.SetFlag(flagWhenSpawnpoint, false, true);
+        (scene as Level)!.Session.SetFlag(flagWhenSpawnpoint, false, true);
         base.Removed(scene);
     }
 }

@@ -1,11 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Celeste.Mod.EndersExtras.Entities.Misc;
-using Celeste.Mod.EndersExtras.Integration;
-using Celeste.Mod.EndersExtras.Utils;
 using Microsoft.Xna.Framework;
 using Monocle;
 
@@ -436,7 +431,7 @@ namespace Celeste.Mod.EndersExtras.Utils
                         break;
 
                     //set_11_12_21_22
-                    case string s when s.StartsWith("Set_"):
+                    case { } s when s.StartsWith("Set_"):
                         {
                             string oldTemplateRoomAtThisPos = "";
                             int roomCol = 0; int roomRow = 0;
@@ -514,10 +509,6 @@ namespace Celeste.Mod.EndersExtras.Utils
 
                     case "None":
                         UpdateRooms();
-                        break;
-
-                    default:
-                        // nothing!!!!
                         break;
                 }
                 level.Session.SetFlag(GetTransitionFlagName(), true); //Set flag

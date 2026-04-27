@@ -9,8 +9,6 @@ using System;
 using System.Collections;
 using System.Reflection;
 using Celeste.Mod.EndersExtras.Entities.SoundRipple;
-using Celeste.Mod.EndHelper.Utils;
-using MonoMod.Utils;
 
 // ReSharper disable PossibleInvalidCastExceptionInForeachLoop
 
@@ -58,7 +56,7 @@ public class EndersExtrasModule : EverestModule {
 
 
 
-    private static ILHook Loadhook_Player_OrigDie;
+    private static ILHook? Loadhook_Player_OrigDie;
     public override void Load()
     {
         Everest.Events.Level.OnEnter += EnterMapFunc;
@@ -70,8 +68,8 @@ public class EndersExtrasModule : EverestModule {
         On.Celeste.LevelLoader.StartLevel += Hook_StartMapFromBeginning;
 
         On.Celeste.Player.Die += Hook_OnPlayerDeath;
-        MethodInfo ILOrigDie = typeof(Player).GetMethod("orig_Die", BindingFlags.Public | BindingFlags.Instance);
-        Loadhook_Player_OrigDie = new ILHook(ILOrigDie!, Hook_ILOrigDie);
+        MethodInfo ILOrigDie = typeof(Player).GetMethod("orig_Die", BindingFlags.Public | BindingFlags.Instance)!;
+        Loadhook_Player_OrigDie = new ILHook(ILOrigDie, Hook_ILOrigDie);
         On.Celeste.Player.IntroRespawnBegin += Hook_OnPlayerRespawn;
         //On.Celeste.OuiChapterPanel.
         On.Celeste.OuiChapterPanel.Render += Hook_OuiChapterPanelRender;
@@ -234,10 +232,10 @@ public class EndersExtrasModule : EverestModule {
         DeathCountGate.OnTransitionStatic(self);
     }
 
-    public static PlayerDeadBody Hook_OnPlayerDeath(On.Celeste.Player.orig_Die orig, global::Celeste.Player self, Vector2 direction, bool evenIfInvincible, bool registerDeathInStats)
+    public static PlayerDeadBody? Hook_OnPlayerDeath(On.Celeste.Player.orig_Die orig, global::Celeste.Player self, Vector2 direction, bool evenIfInvincible, bool registerDeathInStats)
     {
         Level level = self.SceneAs<Level>();
-        PlayerDeadBody origMethod = orig(self, direction, evenIfInvincible, registerDeathInStats);
+        PlayerDeadBody? origMethod = orig(self, direction, evenIfInvincible, registerDeathInStats);
 
         // DeathCountGate - Track death count
         if (origMethod is not null) DeathCountGate.OnPlayerDeathStatic(level);
@@ -305,15 +303,13 @@ public class EndersExtrasModule : EverestModule {
                 instr => instr.MatchLdarg0(),
                 instr => instr.MatchLdfld<OuiChapterPanel>("Area"),
                 instr => instr.MatchCall<AreaData>("Get"),
-                instr => instr.MatchLdfld<AreaData>("Name"),
-                instr => true,
-                instr => true
+                instr => instr.MatchLdfld<AreaData>("Name")
             )
          && (cursor.TryGotoNext(MoveType.After,
                 instr => instr.MatchLdnull(),
                 instr => instr.MatchCall(typeof(Dialog), "Clean")
             )))
-        #pragma warning restore CL0006
+        #pragma warning restore CL0006 
         {
             cursor.Emit(Mono.Cecil.Cil.OpCodes.Ldarg_0);
             cursor.EmitDelegate<Func<string, OuiChapterPanel, string>>(OuiChapterSelectReplacementMapName);

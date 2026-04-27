@@ -1,7 +1,6 @@
 ﻿
 using Celeste.Mod.EndersExtras.Integration;
 using Celeste.Mod.EndersExtras.Utils;
-using Celeste.Mod.EndHelper.Integration;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -108,7 +107,7 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
         [MethodImpl(MethodImplOptions.NoInlining)]
         public override void Awake(Scene scene)
         {
-            Level level = scene as Level;
+            Level level = (scene as Level)!;
             if (level.Tracker.GetNearestEntityExcluding<DeathCountGate>(Position, this) is DeathCountGate deathCountGate && deathCountGate.entityID.Equals(this.entityID))
             {
                 RemoveSelf();
@@ -236,8 +235,6 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
         [MethodImpl(MethodImplOptions.NoInlining)]
         public override void Update()
         {
-            Level level = SceneAs<Level>();
-
             if (!lockState)
             {
                 if (DoorOpenCheck())
@@ -286,11 +283,6 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
                 AddTag(Tags.Global);
             }
 
-            public override void Update()
-            {
-                base.Update();
-            }
-
             public override void Render()
             {
                 Level level = SceneAs<Level>();
@@ -318,8 +310,9 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
 
         static internal void OnPlayerDeathStatic(Level level)
         {
-            foreach (DeathCountGate deathCountGate in level.Tracker.GetEntities<DeathCountGate>())
+            foreach (var entity in level.Tracker.GetEntities<DeathCountGate>())
             {
+                DeathCountGate deathCountGate = (DeathCountGate)entity;
                 deathCountGate.OnPlayerDeath(level);
             }
         }
@@ -337,7 +330,7 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
                     break;
                 case DeathCountType.RoomFullreset:
                     if (CheckSameRoomAsPlayer()) ReferenceDeathCount++;
-                    if (EndersBlenderIntegration.ModInstalled && EndersBlenderImport.GetEnableEntityChecks() == true && EndersBlenderImport.GetNextRespawnFullReset() == true)
+                    if (EndersBlenderIntegration.ModInstalled && EndersBlenderImport.GetEnableEntityChecks!() && EndersBlenderImport.GetNextRespawnFullReset!())
                     {
                         ReferenceDeathCount = 0;
                     }
@@ -347,9 +340,7 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
                     break;
                 case DeathCountType.RoomTransitionRetry:
                     if (CheckSameRoomAsPlayer()) ReferenceDeathCount++;
-                    if (EndersBlenderIntegration.ModInstalled && EndersBlenderImport.GetEnableEntityChecks() == true && EndersBlenderImport.GetManualReset() == true) ReferenceDeathCount = 0;
-                    break;
-                default:
+                    if (EndersBlenderIntegration.ModInstalled && EndersBlenderImport.GetEnableEntityChecks!() && EndersBlenderImport.GetManualReset!()) ReferenceDeathCount = 0;
                     break;
             }
         }
@@ -374,7 +365,7 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
                 Active = false; Visible = true; Collidable = false; hud.Active = false; hud.Visible = false;
             }
 
-            if (base.Scene.Tracker.GetEntity<Player>() is Player player && Vector2.Distance(player.Position, Position) <= level.Camera.GetRect().Width * 3)
+            if (base.Scene.Tracker.GetEntity<Player>() is { } player && Vector2.Distance(player.Position, Position) <= level.Camera.GetRect().Width * 3)
             {
                 Visible = true;
             }
