@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Linq;
 using Celeste.Mod.EndersExtras.Utils;
 using Celeste.Mod.Entities;
 using FMOD.Studio;
@@ -241,6 +242,18 @@ public class SoundRippleBell : Entity
         internal void ResetCountdown()
         {
             detectCountdown = CountdownVal;
+        }
+
+        internal static void ClearAllComponentsFromPlayer(Level level)
+        {
+            if (!SoundEcho.enableShader) return;
+            if (level.Tracker.GetEntity<Player>() is {} player)
+            {
+                foreach (SoundRippleDetected rippleDetector in player.Components.GetAll<SoundRippleDetected>().ToList())
+                {
+                    rippleDetector.RemoveSelf();
+                }
+            }
         }
     }
 }

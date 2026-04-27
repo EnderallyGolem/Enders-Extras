@@ -129,3 +129,11 @@ player if they're within a Tile Entity, and they are not detected by a Sound Rip
 		poem_EndersExtras_1_EndersExtrasTestMap_A=Insert Poem Here
 		endersextras_mapname_EndersExtras_1_EndersExtrasTestMap=Basemen- i mean Test Rack
 		endersextras_removechapternum_EndersExtras_1_EndersExtrasTestMap=This removes the chapter number and centers the text. Any text can go here!
+		
+		
+		
+
+Changelog:
+
+### 1.0.1:
+- Sound Ripples: Fixed seeker bell detection of player persisting past screen transitions

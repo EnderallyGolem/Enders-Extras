@@ -229,6 +229,7 @@ public class EndersExtrasModule : EverestModule {
     )
     {
         Utils_General.framesSinceEnteredRoom = 0;
+        SoundRippleBell.SoundRippleDetected.ClearAllComponentsFromPlayer(self);
         yield return new SwapImmediately(orig(self, next, direction));
         DeathCountGate.OnTransitionStatic(self);
     }
