@@ -9,6 +9,7 @@ using Celeste.Mod.UI;
 using FMOD.Studio;
 using Microsoft.Xna.Framework;
 using Monocle;
+using MonoMod.Utils;
 
 namespace Celeste.Mod.EndersExtras.Entities.Misc
 {
@@ -236,30 +237,40 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
             if (level.FrozenOrPaused || level.Transitioning) return;
 
             // Ensure consistent naming across languages (cannot extract the actual name directly)
-            EndersExtrasModule.dialogCleanForceEnglish = true;
+            // modMenuNoDialog will be used for comparing, modMenu is the final one shown to the player
+            EndersExtrasModule.dialogCleanDisable = true;
+            TextMenu modMenuNoDialog = OuiModOptions.CreateMenu(true, (EventInstance) null!);
+            EndersExtrasModule.dialogCleanDisable = false;
             TextMenu modMenu = OuiModOptions.CreateMenu(true, (EventInstance) null!);
-            EndersExtrasModule.dialogCleanForceEnglish = false;
 
             modMenu.BatchMode = false;
+            modMenu.MinWidth = 800;
 
             String previousSubheaderStr = "";
+            String previousSubheaderStrNoDialog = "";
             TextMenu.SubHeader? previousSubheaderItem = null;
             bool addedSubheaderAlready = false;
 
             if (logList) Logger.Log(LogLevel.Info, "EndersExtras/SettingsNPC", "Printing out mod settings below!");
             List<TextMenu.Item> copyList = modMenu.items.ToList();
 
-            foreach (TextMenu.Item item in copyList)
+            for (var index = 0; index < copyList.Count; index++)
             {
-                if (item is TextMenu.SubHeader subheader)
+                var item = copyList[index];
+                var itemNoDialog = modMenuNoDialog.items[index];
+                if (item is TextMenu.SubHeader subheader && itemNoDialog is TextMenu.SubHeader subHeaderNoDialog)
                 {
                     String newSubheaderStr = subheader.Title.Split("|")[0].Trim();
+                    String newSubheaderStrNoDialog = subHeaderNoDialog.Title.Split("|")[0].Trim();
                     if (subheader.Title.Split("|").Length >= 2 && previousSubheaderStr != newSubheaderStr)
                     {
-                        if(previousSubheaderItem is not null && !previousSubheaderItem.Visible){ modMenu.Remove(previousSubheaderItem); }
+                        if (previousSubheaderItem is not null && !previousSubheaderItem.Visible)
+                        {
+                            modMenu.Remove(previousSubheaderItem);
+                        }
 
                         previousSubheaderItem = subheader;
-                        previousSubheaderStr = newSubheaderStr;
+                        previousSubheaderStr = newSubheaderStr; previousSubheaderStrNoDialog = newSubheaderStrNoDialog;
                         addedSubheaderAlready = false;
                         subheader.Visible = false;
                     }
@@ -270,7 +281,7 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
                 }
                 else
                 {
-                    HandleNormalItem(item);
+                    HandleNormalItem(item, itemNoDialog);
                 }
             }
 
@@ -295,16 +306,24 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
 
 
             // Checks if that item exists. If yes, returns true. If no, returns false after removing it from the menu.
-            bool HandleNormalItem(TextMenu.Item item, TextMenuExt.SubMenu? withinSubmenu = null)
+            bool HandleNormalItem(TextMenu.Item item, TextMenu.Item itemNoDialog, TextMenuExt.SubMenu? withinSubmenu = null, String? withinSubmenuPrefix = null)
             {
                 // Reiterate if item is a submenu (check every item inside)
-                if (item is TextMenuExt.SubMenu submenu)
+                if (item is TextMenuExt.SubMenu submenu && itemNoDialog is TextMenuExt.SubMenu submenuNoDialog)
                 {
                     List<TextMenu.Item> subCopyList = submenu.Items.ToList();
                     bool empty = true;
-                    foreach (TextMenu.Item subItem in subCopyList)
+                    for (var index = 0; index < subCopyList.Count; index++)
                     {
-                        bool subitemExists = HandleNormalItem(subItem, submenu);
+                        var subItem = subCopyList[index];
+                        var subItemNoDialog = submenuNoDialog.Items[index];
+
+                        string subMenuPrefix = submenuNoDialog.Label;
+
+                        if (!string.IsNullOrWhiteSpace(withinSubmenuPrefix))
+                        { subMenuPrefix = $"{withinSubmenuPrefix}_{subMenuPrefix}"; }
+
+                        bool subitemExists = HandleNormalItem(subItem, subItemNoDialog, submenu, subMenuPrefix);
                         if (!subitemExists)
                         {
                             submenu.Items.Remove(subItem);
@@ -321,23 +340,41 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
                 }
 
                 // Otherwise for standalone items, check for match
-                String searchLabel = item.SearchLabel();
-                if (string.IsNullOrEmpty(searchLabel) || searchLabel == "-")
+
+                // Get label. Sometimes different for some menu items.
+                string? searchLabelNoDialog = itemNoDialog.SearchLabel();
+
+                // Some settings store it as "Label" instead. If dialog is empty, try searching there instead.
+                // (Noteably TextMenuExt.IntSlider, but custom menus might do that.)
+                if (string.IsNullOrWhiteSpace(searchLabelNoDialog))
+                {
+                    DynamicData searchLabelData = DynamicData.For(itemNoDialog);
+                    searchLabelNoDialog = searchLabelData.Get<string>("Label");
+                }
+
+                if (string.IsNullOrWhiteSpace(searchLabelNoDialog))
                 {
                     modMenu.Remove(item);
                     return false;
                 }
 
-                if (logList) Logger.Log(LogLevel.Info, "EndersExtras/SettingsNPC", $"{previousSubheaderStr} :: {searchLabel}");
+                // Add prefix if exists
+                string? searchLabelNoDialogOrHeader = searchLabelNoDialog;
+                if (!string.IsNullOrWhiteSpace(withinSubmenuPrefix)) searchLabelNoDialog = $"{withinSubmenuPrefix}_{searchLabelNoDialog}";
 
-                MenuItem toSearch = new MenuItem(previousSubheaderStr, searchLabel);
+                if (logList)
+                {
+                    Logger.Log(LogLevel.Info, "EndersExtras/SettingsNPC", $"{previousSubheaderStrNoDialog} :: {searchLabelNoDialog}      ({previousSubheaderStr}: {Dialog.Clean(searchLabelNoDialogOrHeader)})");
+                }
+
+                MenuItem toSearch = new MenuItem(previousSubheaderStrNoDialog, searchLabelNoDialog);
 
                 if (searchQueries.Contains(toSearch))
                 {
-                    if (!addedSubheaderAlready && previousSubheaderItem is not null && previousSubheaderStr != "")
+                    if (!addedSubheaderAlready && previousSubheaderItem is not null && previousSubheaderStrNoDialog != "")
                     {
                         MenuItem queriedMenuItem = searchQueries.Find(m => m.Equals(toSearch));
-                        String additionalDialog = queriedMenuItem.infoDialog;
+                        string additionalDialog = queriedMenuItem.infoDialog;
                         if (additionalDialog != "")
                         {
                             TextMenuExt.SubHeaderExt additionalDialogMenu = new TextMenuExt.SubHeaderExt(Dialog.Clean(additionalDialog));

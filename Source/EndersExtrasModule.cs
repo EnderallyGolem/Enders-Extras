@@ -348,10 +348,10 @@ public class EndersExtrasModule : EverestModule {
         orig(source, timer, seed, amplitude);
     }
 
-    internal static bool dialogCleanForceEnglish = false;
+    internal static bool dialogCleanDisable = false;
     private static string Hook_DialogClean(On.Celeste.Dialog.orig_Clean orig, String name, Language language)
     {
-        if (dialogCleanForceEnglish) { return orig(name, Dialog.OrderedLanguages[0]); } // Used by SettingsNPC
+        if (dialogCleanDisable) { return name; } // Used by SettingsNPC
         return orig(name, language);
     }
 }
