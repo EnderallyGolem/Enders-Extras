@@ -21,6 +21,9 @@ public class CameraSplineTargetTrigger : CameraTargetTrigger
     private readonly float outerLerp;
     private readonly float catchupStrength;
     private readonly float nodeSearchRange;
+    private readonly float nodeOffset;
+
+    private readonly int searchResolution;
 
     private readonly bool dependOnlyOnX;
     private readonly bool dependOnlyOnY;
@@ -54,9 +57,11 @@ public class CameraSplineTargetTrigger : CameraTargetTrigger
         killOffscreenVertical = data.Bool("killOffscreenVertical", false);
 
         considerCameraOffset = data.Bool("considerCameraOffset", true);
-
         nodeSearchRange = data.Float("nodeSearchRange", 0.0f);
+        nodeOffset = data.Float("nodeOffset", 0.0f);
         if (nodeSearchRange == 0f) nodeSearchRange = float.PositiveInfinity;
+
+        searchResolution = data.Int("searchResolution", 10);
 
         Vector2[] array = data.NodesOffset(offset);
         nodes = new List<Vector2>(array);
@@ -138,7 +143,10 @@ public class CameraSplineTargetTrigger : CameraTargetTrigger
         if (considerCameraOffset) comparePos += level.CameraOffset;
 
         nodeProgress = FindSplineClosestDistanceProgress(level, comparePos, startSearchNode, endSearchNode);
-        Vector2 closestTargetCornerPos = level.Camera.ConvertCenterToCorner(GetSplinePos(level, nodeProgress));
+
+        // Offset the nodeProgress (do NOT save this. offset is not to be kept for rechecks!)
+        float nodeProgressOffsetted = Math.Clamp(nodeProgress + nodeOffset, 0, nodes.Count);
+        Vector2 closestTargetCornerPos = level.Camera.ConvertCenterToCorner(GetSplinePos(level, nodeProgressOffsetted));
 
         // Target some point inbetween
         Vector2 cameraTargetPos = catchupStrength*closestTargetCornerPos + (1-catchupStrength)*level.Camera.Position;
@@ -196,29 +204,27 @@ public class CameraSplineTargetTrigger : CameraTargetTrigger
 
     private float FindSplineClosestDistanceProgress(Level level, Vector2 comparePos, float? nodeStart = null, float? nodeEnd = null)
     {
-        int iterCount = 10;
+        int iterCount = 16;
         float nodeNearestProgress = 0;
         while (true)
         {
-
             iterCount--;
-            const int searchNum = 10;
 
             nodeStart ??= 0;
             nodeEnd ??= nodes.Count;
             if (nodeStart < 0) nodeStart = 0;
             if (nodeEnd >= nodes.Count) nodeEnd = nodes.Count - 0.0001f;
-            float nodeDiff = 1f / (10 - 1) * (nodeEnd.Value - nodeStart.Value);
+            float nodeDiff = 1f / (searchResolution - 1) * (nodeEnd.Value - nodeStart.Value);
 
-            //Logger.Log(LogLevel.Info, "EndersExtras/CameraSplineTargetTrigger", $"Iter {iterCount} | Searching {nodeStart} to {nodeEnd}");
+            //Logger.Log(LogLevel.Info, "EndersExtras/CameraSplineTargetTrigger", $"Iter {iterCount} | Searching {searchResolution} nodes ({nodeDiff} apart) from {nodeStart} to {nodeEnd}");
 
-            // Sample points to find closest. Select 10 points along the nodes
+            // Sample points to find closest. Select searchResolution points along the nodes
             float shortestSplineToCompareDistance = float.MaxValue;
 
             Vector2 prevSplinePos = GetSplinePos(level, nodeStart.Value);
             float longestBetweenSplinePos = 0;
 
-            for (int i = 0; i < searchNum; i++)
+            for (int i = 0; i < searchResolution; i++)
             {
                 float searchNodeProgress = nodeStart.Value + nodeDiff * i;
                 searchNodeProgress = Math.Clamp(searchNodeProgress, 0, nodes.Count);
@@ -255,7 +261,7 @@ public class CameraSplineTargetTrigger : CameraTargetTrigger
 
             // Only return this position if it is shorter than the old position. Otherwise, return old position.
             // (Prevents drifting when oneWay is selected)
-            //Logger.Log(LogLevel.Info, "EndersExtras/CameraSplineTargetTrigger", $"Returning: Comparing {nodeNearestProgress} ({shortestSplineToCompareDistance}) with current {nodeProgress} ({currentNodeDist})");
+            //Logger.Log(LogLevel.Info, "EndersExtras/CameraSplineTargetTrigger", $"Returning (Iter {iterCount}): Comparing {nodeNearestProgress} ({shortestSplineToCompareDistance}) with current {nodeProgress} ({currentNodeDist})");
             return shortestSplineToCompareDistance < currentNodeDist ? nodeNearestProgress : nodeProgress;
         }
     }
@@ -306,6 +312,13 @@ public class CameraSplineTargetTrigger : CameraTargetTrigger
         Vector2 splinePos = GetSplinePos(level, nodeProgress);
         //ActiveFont.DrawOutline($"{nodeProgress} / {nodes.Count}", splinePos + new Vector2(0, 16), new Vector2(0.5f, 0.5f), Vector2.One * 0.3f, Color.White, 1f, Color.Black);
         if (PlayerIsInside) Draw.Circle( splinePos, 3, Color.OrangeRed, 2, 8 );
+
+        if (nodeOffset != 0)
+        {
+            float nodeProgressOffsetted = Math.Clamp(nodeProgress + nodeOffset, 0, nodes.Count);
+            Vector2 splineOffsettedPos = GetSplinePos(level, nodeProgressOffsetted);
+            if (PlayerIsInside) Draw.Circle( splineOffsettedPos, 3, Color.Red, 2, 8 );
+        }
 
         int splineShowCount = 8 * nodes.Count;
         float nodeDiff = 1f / (splineShowCount - 1) * nodes.Count;

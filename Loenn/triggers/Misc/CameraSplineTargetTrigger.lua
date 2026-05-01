@@ -19,7 +19,9 @@ local CameraSplineTargetTrigger = {
                 killOffscreenHorizontal = false,
                 killOffscreenVertical = false,
                 nodeSearchRange = 0.0,
+                nodeOffset = 0.0,
                 considerCameraOffset = true,
+                searchResolution = 10,
             }
         },
     },
@@ -30,11 +32,12 @@ local CameraSplineTargetTrigger = {
         outerLerp = { fieldType = "number", minimumValue = 0, maximumValue = 1 },
         catchupStrength = { fieldType = "number", minimumValue = 0, maximumValue = 1 },
         restrictNodeSearch = { fieldType = "number", minimumValue = 0 },
+        searchResolution = { fieldType = "integer", minimumValue = 5 },
     },
     fieldOrder = {
         "x", "y", "height", "width",
         "innerRadius", "innerLerp", "outerRadius", "outerLerp", "catchupStrength",
-        "nodeSearchRange", "requireFlag",
+        "nodeSearchRange", "nodeOffset", "searchResolution", "requireFlag",
         "dependOnlyOnX", "dependOnlyOnY", "killOffscreenHorizontal", "killOffscreenVertical",
         "considerCameraOffset", "coverScreen", "oneWay"
     },

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using static Celeste.Mod.EndersExtras.EndersExtrasModule;
 using MonoMod.ModInterop;
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
 
 namespace Celeste.Mod.EndersExtras.Integration
 {
@@ -10,7 +11,7 @@ namespace Celeste.Mod.EndersExtras.Integration
     {
         public static Func<Action<Dictionary<Type, Dictionary<string, object>>, Level>?, Action<Dictionary<Type, Dictionary<string, object>>, Level>?, Action?, Action<Level>?, Action<Level>?, Action?, object>? RegisterSaveLoadAction;
         public static Action<Monocle.Entity, bool>? IgnoreSaveState;
-        public static Action<object>? Unregister;
+        public static Action<object?>? Unregister;
     }
 
     public static class SpeedrunToolIntegration

@@ -47,6 +47,7 @@ local function getSearchPredicate(entity)
 end
 
 local function getTileSprite(entity, x, y, frame, color, depth, rectangles)
+
     local hasAdjacent = connectedEntities.hasAdjacent
 
     local drawX, drawY = (x - 1) * 8, (y - 1) * 8
