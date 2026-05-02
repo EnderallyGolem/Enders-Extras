@@ -41,6 +41,16 @@ namespace Celeste.Mod.EndersExtras.Utils
 
         public static float framesSinceEnteredRoom = 0;
 
+        /// <summary>
+        /// Modulus but -4 % 5 = 1
+        /// </summary>
+        /// <param name="x">1st number</param>
+        /// <param name="m">2nd number</param>
+        /// <returns></returns>
+        internal static float NegModulus(float x, float m) {
+            return (x%m + m)%m;
+        }
+
 
         /// <summary>
         /// Compare if 2 2d lists are equal
