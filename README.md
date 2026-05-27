@@ -143,5 +143,9 @@ player if they're within a Tile Entity, and they are not detected by a Sound Rip
 
 Changelog:
 
+### 1.1.0:
+- Utilities:
+	- Added Mod Settings NPC
+
 ### 1.0.1:
 - Sound Ripples: Fixed seeker bell detection of player persisting past screen transitions

@@ -164,7 +164,7 @@ namespace Celeste.Mod.EndersExtras.Utils
                             List<List<string>>? initial = null;
                             if (EndersExtrasModule.Session.roomSwapOrderList.TryGetValue(gridID, out List<List<string>> value))
                             {
-                                initial = new List<List<string>>(Utils_General.DeepCopyJSON(value));
+                                initial = new List<List<string>>(Utils_General.DeepCopyJson(value));
                             }
 
 
@@ -450,7 +450,7 @@ namespace Celeste.Mod.EndersExtras.Utils
                             List<List<string>> initial = null;
                             if (EndersExtrasModule.Session.roomSwapOrderList.TryGetValue(gridID, out List<List<string>> value))
                             {
-                                initial = new List<List<string>>(Utils_General.DeepCopyJSON(value));
+                                initial = new List<List<string>>(Utils_General.DeepCopyJson(value));
                             }
 
                             for (int i = 1; i < splittedArr.Length; i++)

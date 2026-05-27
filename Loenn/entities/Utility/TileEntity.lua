@@ -46,7 +46,6 @@ tileEntity.fieldOrder = {
     "dashBlock", "dashBlockPermament", "dashBlockBreakSound",
     "offUL", "offU", "offUR", "offR", "offDR", "offD", "offDL", "offL",
     "noEdges", "extendOffscreen"
-
 }
 
 tileEntity.depth = function(room,entity) return entity.Depth or -10000 end

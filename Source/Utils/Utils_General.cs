@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Celeste.Mod.EndersExtras.Utils
 {
-    static internal class Utils_General
+    internal static class Utils_General
     {
         public class Countdown
         {
@@ -51,6 +51,19 @@ namespace Celeste.Mod.EndersExtras.Utils
             return (x%m + m)%m;
         }
 
+        /// <summary>
+        /// Gets how far a number is between 2 other numbers. Will be clamped if lies outside the min-max range.
+        /// </summary>
+        /// <param name="num">Number to compare proportions.</param>
+        /// <param name="minBetween">Minimum number</param>
+        /// <param name="maxBetween">Maximum number</param>
+        /// <returns>Proportion. 0 if equals minBetween, 1 if equals maxBetween.</returns>
+        internal static float GetProportionBetween(float num, float minBetween, float maxBetween)
+        {
+            num = Math.Clamp(num, minBetween, maxBetween);
+            return (num - minBetween) / (maxBetween - minBetween);
+        }
+
 
         /// <summary>
         /// Compare if 2 2d lists are equal
@@ -58,7 +71,7 @@ namespace Celeste.Mod.EndersExtras.Utils
         /// <param name="list1"></param>
         /// <param name="list2"></param>
         /// <returns></returns>
-        public static bool Are2LayerListsEqual<T>(List<List<T>> list1, List<List<T>> list2)
+        public static bool Are2LayerListsEqual<T>(List<List<T>>? list1, List<List<T>>? list2)
         {
             if (list1 == null || list2 == null)
             {
@@ -77,7 +90,7 @@ namespace Celeste.Mod.EndersExtras.Utils
         /// <typeparam name="T"></typeparam>
         /// <param name="input"></param>
         /// <returns></returns>
-        public static T DeepCopyJSON<T>(T input)
+        public static T? DeepCopyJson<T>(T input)
         {
             var jsonString = JsonSerializer.Serialize(input);
 
@@ -560,6 +573,14 @@ namespace Celeste.Mod.EndersExtras.Utils
             }
 
             return intersectPos;
+        }
+
+        /// <summary>
+        /// Find the axis distance between 2 vectors (diff in x + diff in y)
+        /// </summary>
+        public static float AxisDistance(Vector2 vec1, Vector2 vec2)
+        {
+            return Math.Abs(vec2.X - vec1.X) + Math.Abs(vec2.Y - vec1.Y);
         }
 
         /// <summary>
