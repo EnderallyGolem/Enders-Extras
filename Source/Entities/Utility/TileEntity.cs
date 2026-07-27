@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using Monocle;
-using Microsoft.Xna.Framework;
-using Celeste.Mod.Entities;
 using System.Runtime.CompilerServices;
 using Celeste.Mod.EndersExtras.Utils;
+using Celeste.Mod.Entities;
+using Microsoft.Xna.Framework;
+using Monocle;
 
-namespace Celeste.Mod.EndersExtras.Entities.Misc;
+namespace Celeste.Mod.EndersExtras.Entities.Utility;
 [Tracked]
 [CustomEntity("EndersExtras/TileEntity")]
 
@@ -86,8 +86,7 @@ public class TileEntity : Solid
             AllowStaticMovers = false;
         }
 
-        if (!SurfaceIndex.TileToIndex.TryGetValue(tileType, out SurfaceSoundIndex))
-            SurfaceSoundIndex = SurfaceIndex.Brick;
+        SurfaceSoundIndex = SurfaceIndex.TileToIndex.GetValueOrDefault(tileType, SurfaceIndex.Brick);
 
         OnDashCollide = OnDashed;
     }
@@ -146,11 +145,6 @@ public class TileEntity : Solid
                 //If group size reaches the screen edge and extendOffscreen is enabled, increase width/height by 1 or decrease starting x/y by 1
                 if (item.extendOffscreen)
                 {
-                    //Logger.Log(LogLevel.Info, "EndersExtras/Misc/TileEntity", "Identifying if edge of room:");
-                    //Logger.Log(LogLevel.Info, "EndersExtras/Misc/TileEntity", $"LEFT > {(num + rectangle.X)} == {(int) roomRect.Left/8}");
-                    //Logger.Log(LogLevel.Info, "EndersExtras/Misc/TileEntity", $"RIGHT > {(num + num3 + rectangle.X)} == {(int) roomRect.Right/8}");
-                    //Logger.Log(LogLevel.Info, "EndersExtras/Misc/TileEntity", $"TOP > {(num2 + rectangle.Y)} == {(int) roomRect.Top/8}");
-                    //Logger.Log(LogLevel.Info, "EndersExtras/Misc/TileEntity", $"BOTTOM > {(num2 + num4 + rectangle.Y)} == {(int) roomRect.Bottom/8}");
                     if (num + rectangle.X == SafeDiv8(roomRect.Left))
                     {
                         num--;

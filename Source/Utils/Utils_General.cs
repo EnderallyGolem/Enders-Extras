@@ -16,8 +16,6 @@ namespace Celeste.Mod.EndersExtras.Utils
         public class Countdown
         {
             public int TimeLeft { get; private set; } = 0;
-            public Countdown()
-            {}
             public void Set(int setValue, bool onlyIncrease = true)
             {
                 if (onlyIncrease)
@@ -40,6 +38,38 @@ namespace Celeste.Mod.EndersExtras.Utils
         }
 
         public static float framesSinceEnteredRoom = 0;
+
+        internal static Dictionary<string, Ease.Easer> easeTypes = new()
+        {
+            { "Linear", Ease.Linear },
+            { "SineIn", Ease.SineIn },
+            { "SineOut", Ease.SineOut },
+            { "SineInOut", Ease.SineInOut },
+            { "QuadIn", Ease.QuadIn },
+            { "QuadOut", Ease.QuadOut },
+            { "QuadInOut", Ease.QuadInOut },
+            { "CubeIn", Ease.CubeIn },
+            { "CubeOut", Ease.CubeOut },
+            { "CubeInOut", Ease.CubeInOut },
+            { "QuintIn", Ease.QuintIn },
+            { "QuintOut", Ease.QuintOut },
+            { "QuintInOut", Ease.QuintInOut },
+            { "BackIn", Ease.BackIn },
+            { "BackOut", Ease.BackOut },
+            { "BackInOut", Ease.BackInOut },
+            { "ExpoIn", Ease.ExpoIn },
+            { "ExpoOut", Ease.ExpoOut },
+            { "ExpoInOut", Ease.ExpoInOut },
+            { "BigBackIn", Ease.BigBackIn },
+            { "BigBackOut", Ease.BigBackOut },
+            { "BigBackInOut", Ease.BigBackInOut },
+            { "ElasticIn", Ease.ElasticIn },
+            { "ElasticOut", Ease.ElasticOut },
+            { "ElasticInOut", Ease.ElasticInOut },
+            { "BounceIn", Ease.BounceIn },
+            { "BounceOut", Ease.BounceOut },
+            { "BounceInOut", Ease.BounceInOut }
+        };
 
         /// <summary>
         /// Modulus but -4 % 5 = 1
@@ -112,7 +142,7 @@ namespace Celeste.Mod.EndersExtras.Utils
         }
 
         /// <summary>
-        /// Convert a Dictionary<object, objcet> to a dictionary<string, string>
+        /// <![CDATA[  Convert a Dictionary<object, object> to a dictionary<string, string>  ]]>
         /// </summary>
         /// <param name="source"></param>
         /// <returns></returns>
@@ -130,9 +160,8 @@ namespace Celeste.Mod.EndersExtras.Utils
         }
 
         /// <summary>
-        /// Convert an OrderedDictionary to a Dictionary<TKey, TValue>
+        /// <![CDATA[  Convert an OrderedDictionary to a Dictionary<TKey, TValue>  ]]>
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <typeparam name="TKey"></typeparam>
         /// <typeparam name="TValue"></typeparam>
         /// <param name="source"></param>
@@ -173,16 +202,6 @@ namespace Celeste.Mod.EndersExtras.Utils
         /// Held menu buttons. Eg: Holding right increases a value once, then waits a few frames, then rapidly increases.
         /// This should run every frame.
         /// </summary>
-        /// <param name="valueToChange"></param>
-        /// <param name="increaseInput"></param>
-        /// <param name="increaseValue"></param>
-        /// <param name="decreaseInput"></param>
-        /// <param name="decreaseValue"></param>
-        /// <param name="minValue"></param>
-        /// <param name="maxValue"></param>
-        /// <param name="framesFirstHeldChange"></param>
-        /// <param name="framesBetweenHeldChange"></param>
-        /// <returns></returns>
         public static int ScrollInput(int valueToChange, bool increaseInput, int increaseValue, bool decreaseInput, int decreaseValue, int minValue, int maxValue, bool loopValues, bool doNotChangeIfPastCap, int framesFirstHeldChange, int framesBetweenHeldChange)
         {
             // Hook_EngineUpdate: Decrease scrollResetInputFrames every frame, if 1, set scrollInputFrames to 0
@@ -729,8 +748,8 @@ namespace Celeste.Mod.EndersExtras.Utils
         /// <returns></returns>
         public static Vector2 ConvertCenterToCorner(this Camera camera, Vector2 centerPos)
         {
-            float xOffset = 0.5f * (camera.Right - camera.Left);
-            float yOffset = 0.5f * (camera.Bottom - camera.Top);
+            float xOffset = 0.5f * camera.GetRect().Width;
+            float yOffset = 0.5f * camera.GetRect().Height;
             return centerPos - new Vector2(xOffset, yOffset);
         }
         /// <summary>
@@ -741,8 +760,8 @@ namespace Celeste.Mod.EndersExtras.Utils
         /// <returns></returns>
         public static Vector2 ConvertCornerToCenter(this Camera camera, Vector2 cornerPos)
         {
-            float xOffset = 0.5f * (camera.Right - camera.Left);
-            float yOffset = 0.5f * (camera.Bottom - camera.Top);
+            float xOffset = 0.5f * camera.GetRect().Width;
+            float yOffset = 0.5f * camera.GetRect().Height;
             return cornerPos + new Vector2(xOffset, yOffset);
         }
         /// <summary>
@@ -753,8 +772,8 @@ namespace Celeste.Mod.EndersExtras.Utils
         /// <returns></returns>
         public static Rectangle ConvertCenterToRect(this Camera camera, Vector2 centerPos)
         {
-            float xOffset = 0.5f * (camera.Right - camera.Left);
-            float yOffset = 0.5f * (camera.Bottom - camera.Top);
+            float xOffset = 0.5f * camera.GetRect().Width;
+            float yOffset = 0.5f * camera.GetRect().Height;
             Vector2 cornerPos = centerPos - new Vector2(xOffset, yOffset);
             return camera.ConvertCornerToRect(cornerPos);
         }
@@ -767,7 +786,9 @@ namespace Celeste.Mod.EndersExtras.Utils
         /// <returns></returns>
         public static Rectangle ConvertCornerToRect(this Camera camera, Vector2 cornerPos)
         {
-            return new Rectangle((int)cornerPos.X, (int)cornerPos.Y, (int)(camera.Right - camera.Left), (int)(camera.Bottom - camera.Top));
+            float camWidth = camera.GetRect().Width;
+            float camHeight = camera.GetRect().Height;
+            return new Rectangle((int)cornerPos.X, (int)cornerPos.Y, (int)camWidth, (int)camHeight);
         }
     }
 }

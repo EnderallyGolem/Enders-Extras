@@ -8,7 +8,12 @@
 
 ### Individual Entities / Triggers
 	
-###### Gameplay
+
+###### Utility
+- Connectable Outline
+	- Visual outline.
+	- Can be attached, and can be toggled by flag.
+	
 - Tile Entity
 	- Foreground / Background tile entity that allows customising: 
 		- Entity depth
@@ -18,27 +23,16 @@
 		- If it is collidable
 	- Option to be breakable
 	
-- Temple Gate (Death Count)
-	- Opens and closes the gate depending on the death count in the map or room.
-	- With Death Handler, has extra options regarding full resets and manual retrys.
-
+- Flag Killbox
+	- Flag dependent and adjustable height dependent killbox.
+	
 - Conditional Bird Tutorial
 	- Tutorial bird which flies in when certain conditions are met:
 		- Certain time in room / part of room (total or at once)
 		- Certain number of deaths in room / part of room
 		- Flag enabled (either as a seperate condition, or required for the above 2 conditions to increment)
-		- If on screen
+		- If on screen	
 
-
-###### Utility
-
-- Connectable Outline
-	- Visual outline.
-	- Can be attached, and can be toggled by flag.
-	
-- Flag Killbox
-	- Flag dependent and adjustable height dependent killbox.
-	
 - Mod Settings NPC
 	- An NPC that opens the mod setting menu, with only the specified options being displayed.
 	- An additional header can be added for each setting.
@@ -53,6 +47,17 @@
 	- Lerping can be set to be based on the distance from the nearest part of the spline.
 	
 	
+###### Gameplay
+	
+- Temple Gate (Death Count)
+	- Opens and closes the gate depending on the death count in the map or room.
+	- With Death Handler, has extra options regarding full resets and manual retrys.
+
+- Dream Droplet
+	- wowee TODO TOADD TOSTUFF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 1.1.0 btw
+
+- Death Handler
+	- Fixed crash with newer blender versions
 	
 ### Gimmicks
 
@@ -78,8 +83,8 @@
     - Can be different depending on entering/exiting trigger, flags, or if within beat range
 - Both of these have support for Quantum Mechanic's wonky cassettes.
 
-###### Death Handler
 
+###### Death Handler
 These require Ender's Blender as a dependency. They affect respawns in various ways.
 It's recommended to use this with Seemless Respawns using Blender's Gameplay Tweaks Override Trigger.
 
@@ -145,7 +150,8 @@ Changelog:
 
 ### 1.1.0:
 - Utilities:
-	- Added Mod Settings NPC
+	- New entities: Mod Settings NPC, Dream Droplet
+	- Modified Camera Spline Trigger to work properly with extended camera dynamics
 
 ### 1.0.1:
 - Sound Ripples: Fixed seeker bell detection of player persisting past screen transitions

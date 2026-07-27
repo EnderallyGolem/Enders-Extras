@@ -1,19 +1,17 @@
-﻿using Celeste.Mod.EndersExtras.Utils;
+﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using Celeste.Mod.EndersExtras.Utils;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
-namespace Celeste.Mod.EndersExtras.Entities.Misc
+namespace Celeste.Mod.EndersExtras.Entities.Utility
 {
     [CustomEntity("EndersExtras/ConnectableOutline")]
     [Tracked(false)]
     public class ConnectableOutline : Entity
     {
         public List<ConnectableOutline>? group;
-        public List<Image> imageList = [];
-        public bool groupLeader = false;
         public Vector2 groupOrigin;
         public Wiggler wiggler = null!;
         public Vector2 wigglerScaler;
@@ -75,7 +73,6 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
             // Connections!
             if (group == null)
             {
-                groupLeader = true;
                 group = new List<ConnectableOutline>();
                 group.Add(this);
                 FindInGroup(this);
@@ -211,7 +208,7 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
         public void SetImage(float x, float y, int tx, int ty)
         {
             MTexture mtexture = GFX.Game[folderPath];
-            imageList.Add(CreateImage(x, y, tx, ty, mtexture));
+            Add(CreateImage(x, y, tx, ty, mtexture));
         }
 
         public Image CreateImage(float x, float y, int tx, int ty, MTexture tex)

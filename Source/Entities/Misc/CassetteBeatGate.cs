@@ -13,37 +13,6 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
     [Tracked(false)]
     public class CassetteBeatGate : Solid
     {
-        private static Dictionary<string, Ease.Easer> easeTypes = new Dictionary<string, Ease.Easer> {
-            { "Linear", Ease.Linear },
-            { "SineIn", Ease.SineIn },
-            { "SineOut", Ease.SineOut },
-            { "SineInOut", Ease.SineInOut },
-            { "QuadIn", Ease.QuadIn },
-            { "QuadOut", Ease.QuadOut },
-            { "QuadInOut", Ease.QuadInOut },
-            { "CubeIn", Ease.CubeIn },
-            { "CubeOut", Ease.CubeOut },
-            { "CubeInOut", Ease.CubeInOut },
-            { "QuintIn", Ease.QuintIn },
-            { "QuintOut", Ease.QuintOut },
-            { "QuintInOut", Ease.QuintInOut },
-            { "BackIn", Ease.BackIn },
-            { "BackOut", Ease.BackOut },
-            { "BackInOut", Ease.BackInOut },
-            { "ExpoIn", Ease.ExpoIn },
-            { "ExpoOut", Ease.ExpoOut },
-            { "ExpoInOut", Ease.ExpoInOut },
-            { "BigBackIn", Ease.BigBackIn },
-            { "BigBackOut", Ease.BigBackOut },
-            { "BigBackInOut", Ease.BigBackInOut },
-            { "ElasticIn", Ease.ElasticIn },
-            { "ElasticOut", Ease.ElasticOut },
-            { "ElasticInOut", Ease.ElasticInOut },
-            { "BounceIn", Ease.BounceIn },
-            { "BounceOut", Ease.BounceOut },
-            { "BounceInOut", Ease.BounceInOut }
-        };
-
         private readonly Vector2 startPos;
         private readonly Vector2[] nodes;
         private readonly float moveTime;
@@ -79,7 +48,7 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
             // parse all options
             nodes = data.NodesOffset(offset);
             moveTime = data.Float("moveTime", 0.3f);
-            easer = easeTypes[data.Attr("easing", "SineInOut")];
+            easer = Utils_General.easeTypes[data.Attr("easing", "SineInOut")];
             moveSound = data.Attr("moveSound", "");
 
             moveLoopBeatString = data.Attr("moveLoopBeat", "");

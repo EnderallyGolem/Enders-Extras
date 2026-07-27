@@ -37,7 +37,7 @@ local CameraSplineTargetTrigger = {
     fieldOrder = {
         "x", "y", "height", "width",
         "innerRadius", "innerLerp", "outerRadius", "outerLerp", "catchupStrength",
-        "nodeSearchRange", "nodeOffset", "searchResolution", "requireFlag",
+        "nodeSearchRange", "nodeOffset", "searchResolution", "immediateUpdate", "requireFlag",
         "dependOnlyOnX", "dependOnlyOnY", "killOffscreenHorizontal", "killOffscreenVertical",
         "considerCameraOffset", "coverScreen", "oneWay"
     },

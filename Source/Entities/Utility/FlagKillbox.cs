@@ -1,10 +1,10 @@
-﻿using Celeste.Mod.EndersExtras.Utils;
+﻿using System.Runtime.CompilerServices;
+using Celeste.Mod.EndersExtras.Utils;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
-using System.Runtime.CompilerServices;
 
-namespace Celeste.Mod.EndersExtras.Entities.Misc
+namespace Celeste.Mod.EndersExtras.Entities.Utility
 {
     [CustomEntity("EndersExtras/FlagKillbox")]
     [Tracked(false)]
@@ -13,7 +13,8 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
     {
         private readonly float triggerDistance;
         private readonly string requireFlag;
-        private readonly bool permamentActivate;
+        private readonly bool permanentActivate;
+        private readonly bool immediateUpdate;
 
         private bool flagAllow = false;
 
@@ -23,7 +24,14 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
         {
             triggerDistance = data.Float("triggerDistance", 4f);
             requireFlag = data.Attr("requireFlag", "");
-            permamentActivate = data.Bool("permamentActivate", true);
+            permanentActivate = data.Bool("permamentActivate", true);
+            immediateUpdate = data.Bool("immediateUpdate", false);
+        }
+
+        public override void Awake(Scene scene)
+        {
+            base.Awake(scene);
+            if (immediateUpdate) Update();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -34,7 +42,7 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
 
             Level level = SceneAs<Level>();
             float triggerPixels = triggerDistance * 8f;
-            if (permamentActivate && flagAllow) { } // Stay true if permament activate
+            if (permanentActivate && flagAllow) { } // Stay true if permament activate
             else
             {
                 flagAllow = Utils_General.AreFlagsEnabled(level.Session, requireFlag, true);

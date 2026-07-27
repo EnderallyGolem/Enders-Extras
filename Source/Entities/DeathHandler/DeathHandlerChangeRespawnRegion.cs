@@ -220,7 +220,7 @@ public class DeathHandlerChangeRespawnRegion : Entity
 
     public void PlayerCollide(Player player)
     {
-        if (killOnEnter && Utils_DeathHandler.deathCooldownFrames != 0)
+        if (killOnEnter && Utils_DeathHandler.getDeathCooldownFrames() != 0)
         {
             // If killOnEnter, we want to ensure the player dies if the respawn point changes.
             // If death cooldown isn't 0, do not run this.

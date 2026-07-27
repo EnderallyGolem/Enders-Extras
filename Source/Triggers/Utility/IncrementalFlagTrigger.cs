@@ -1,11 +1,11 @@
+using System;
+using System.Runtime.CompilerServices;
 using Celeste.Mod.EndersExtras.Utils;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
-using System;
-using System.Runtime.CompilerServices;
 
-namespace Celeste.Mod.EndersExtras.Triggers.Misc;
+namespace Celeste.Mod.EndersExtras.Triggers.Utility;
 
 [CustomEntity("EndersExtras/IncrementalFlagTrigger")]
 public class IncrementalFlagTrigger : Trigger

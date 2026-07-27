@@ -11,7 +11,7 @@ mods.EndersVendor.name=Ender's Vendor
 entities.EndersExtras/TileEntity.placements.name.normal=Tile Entity
 entities.EndersExtras/TileEntity.placements.description.normal=A highly customisable tile entity.
 entities.EndersExtras/TileEntity.attributes.description.depth=Entity depth. Connected tiles will have the same depth.
-entities.EndersExtras/TileEntity.attributes.description.tiletypeOffscreen=The portion of the entity that is outside a room will show up as this.\nSet this to an invisible tile ("fake air") and extend the tiles offscreen to allow seemless room transitions.\nAlternatively, add <Tileset id="◯" copy="y" path="EndersExtras/fakeAir" sound="0"/> to your ForegroundTiles.xml (◯ is U+25EF).
+entities.EndersExtras/TileEntity.attributes.description.tiletypeOffscreen=The portion of the entity that is outside a room will show up as this.\nSet this to an invisible tile ("fake air") and extend the tiles offscreen to allow seemless room transitions.\nAlternatively, add <Tileset id="◯" path="EndersExtras/fakeAir" sound="0"/> to your ForegroundTiles.xml (◯ is U+25EF).
 entities.EndersExtras/TileEntity.attributes.description.extendOffscreen=If the tiles are placed at the edge of the room, they will be extended one tile outside the room.
 entities.EndersExtras/TileEntity.attributes.description.allowMerge=Allows the tiles to connect to each other.\nBoth tile entities must have this enabled for them to connect.
 entities.EndersExtras/TileEntity.attributes.description.allowMergeDifferentType=Allows DIFFERENT tiles to connect to each other.\nBoth tile entities must have this and Allow Merge enabled for them to connect.\nNote: Groups of multiple tiles sometimes only connect to tiles with this option enabled (depending on connection order),\neven if the part of the group share the same tile.
@@ -79,6 +79,7 @@ entities.EndersExtras/FlagKillbox.attributes.description.triggerDistance=The num
 entities.EndersExtras/FlagKillbox.attributes.description.requireFlag=Flag required for the killbox to activate.\nA list of flags in the format "flagA, flagB, !flagC | flagD, flagE" can be specified.\nThis means (flagA and flagB and not flagC) or (flagD and flagE).
 entities.EndersExtras/FlagKillbox.attributes.name.permamentActivate=Permanent Activate
 entities.EndersExtras/FlagKillbox.attributes.description.permamentActivate=If true, when the Require Flag condition is met, it will stay activated, even when the flags change.\n(The zone still deactivates upon death/reload or if the player manages to get under it.)
+entities.EndersExtras/FlagKillbox.attributes.description.immediateUpdate=Updates the camera position while the room is loading (on awake).\nThis prevents the camera from changing locations suddenly after respawning.
 
 
 # Settings NPC
@@ -166,29 +167,37 @@ entities.EndersExtras/DeathCountGate.attributes.description.silent=Prevents this
 
 # Dream Droplet
 entities.EndersExtras/DreamDroplet.placements.name.normal=Dream Droplet
-entities.EndersExtras/DreamDroplet.placements.description.normal=Non-solid dream block that you can jump/hyper/super/wallbounce midway through, with an elliptical shape.\nThe focal points are adjusted by changing the corners of the rectangle.\nThe size is adjusted through the Semimajor Distance.
+entities.EndersExtras/DreamDroplet.placements.name.altname=Dream Bubble
+entities.EndersExtras/DreamDroplet.placements.description.normal=Non-solid dream block that you can jump/hyper/super/wallbounce midway through, with an elliptical shape.\nThe focal points are adjusted by changing the corners of the rectangle and flipFocals (or the flip keybinds).\nThe size is adjusted through the Semimajor Distance (or the rotation keybinds).\nNote that if the player is in multiple droplets, for effects, the previous droplet is prioritised, followed by the closest droplet.\n\nNote: If you want to use any external triggers to move this entity, you probably need to avoid using nodes and uncheck Wobble.
 entities.EndersExtras/DreamDroplet.attributes.description.depth=The depth of the entity.
 entities.EndersExtras/DreamDroplet.attributes.description.colour=The colour of the entity.
-entities.EndersExtras/DreamDroplet.attributes.description.semimajorDistance=Length of the semimajor axis of the ellipse, in tiles.\nIf this is too small compared to the distance between the focal points, a minimum value will be used.
+entities.EndersExtras/DreamDroplet.attributes.description.semimajorDistance=Length of the semimajor axis of the ellipse, in tiles.\nIf this is too small compared to the distance between the focal points, a minimum value will be used.\n(You can adjust this with the clockwise and counter-clockwise rotation keybinds.)
 entities.EndersExtras/DreamDroplet.attributes.description.flipFocals=Toggles the orentiation of the ellipse.\n(You can also use the horizontal or vertical flip hotkeys.)
 entities.EndersExtras/DreamDroplet.attributes.description.respawnTime=How long it takes for the droplet to respawn after bursting. 0 = Does not burst, -1 = Never.
-entities.EndersExtras/DreamDroplet.attributes.description.regainDash=Whether if performing a hyper/super/wallbounce/dash in the droplet lets you regain that dash back.
+entities.EndersExtras/DreamDroplet.attributes.description.regainDash=Whether if exiting the droplet returns your dash back. \n"If Not Dashed" means the dash will be regained only if not exiting through a dash, wallbounce, hyper or super.
 
-entities.EndersExtras/DreamDroplet.attributes.description.dashEffect=Effect when dashing while inside the droplet. ((same direction speed up or not allow?))
+entities.EndersExtras/DreamDroplet.attributes.description.burstOnExit=Whether the droplet bursts when exiting it via a dream dash (without any effects applied).
+entities.EndersExtras/DreamDroplet.attributes.description.dashEffect=Effect when dashing while inside the droplet.
 entities.EndersExtras/DreamDroplet.attributes.description.defaultEffect=Effect when pressing jump in the droplet, without pressing up/down, if not dashing up or up diagonally.
 entities.EndersExtras/DreamDroplet.attributes.description.upKeyEffect=Effect when pressing jump + up in the droplet.
 entities.EndersExtras/DreamDroplet.attributes.description.downKeyEffect=Effect when pressing jump + down in the droplet.
 entities.EndersExtras/DreamDroplet.attributes.description.defaultUpEffect=Effect when pressing jump in the droplet, if the player was dashing up without pressing up/down.
 entities.EndersExtras/DreamDroplet.attributes.description.defaultUpDiagonalEffect=Effect when pressing jump in the droplet, if the player was dashing up-diagonally without pressing up/down.
+entities.EndersExtras/DreamDroplet.attributes.description.directionRedirectIntensity=If non-zero, allows gradual redirection (same as superdash) when pressing directions while dream dashing in the droplet.\nThis sets the intensity of the redirection, where 1 = superdash intensity.
 
-entities.EndersExtras/DreamDroplet.attributes.description.horizontalVelocityScale=Scale which the droplet multiplies the player's horizontal speed by.
-entities.EndersExtras/DreamDroplet.attributes.description.verticalVelocityScale=Scale which the droplet multiplies the player's vertical speed by.
-entities.EndersExtras/DreamDroplet.attributes.description.normalisationScale=When the bubble burst, the location the player ends up at depends on what part of the droplet the action was performed at.\nWhen used, the player's velocity will be increased to account for it.\n0 = No scaling, 1 = Scale to roughly end up at the same location.
+entities.EndersExtras/DreamDroplet.attributes.description.horizontalVelocityScale=Scale which the droplet multiplies the player's horizontal speed by, when each effect is applied.
+entities.EndersExtras/DreamDroplet.attributes.description.verticalVelocityScale=Scale which the droplet multiplies the player's vertical speed by, when each effect is applied.
+entities.EndersExtras/DreamDroplet.attributes.description.wallbounceVelocityScale=Scales the wall bounce's vertical velocity, on top of the vertical velocity scale set.
 entities.EndersExtras/DreamDroplet.attributes.description.dashSpeed=The dash speed while dashing in the dream droplet.
-entities.EndersExtras/DreamDroplet.attributes.description.retainSpeed=If the player's speed before dashing in the droplet is retained if it is faster than the dash speed.
+entities.EndersExtras/DreamDroplet.attributes.description.retainSpeed=If the player's speed before dashing in the droplet is retained if it is faster than the dash speed.\nIf "Always", excess speed will be added to wallbounces, supers and hypers when exiting the droplet.
 
-entities.EndersExtras/DreamDroplet.attributes.description.nodeMoveTime=When using nodes, specifies the time it takes for the droplet to move to the node.
-entities.EndersExtras/DreamDroplet.attributes.description.nodeMoveOffset=When using nodes, specifies the offset (0 to 1) in the movement cycle. 
+entities.EndersExtras/DreamDroplet.attributes.description.nodeMoveTime=When using a node, specifies the time it takes for the droplet to move to the node.
+entities.EndersExtras/DreamDroplet.attributes.description.nodeMoveOffset=When using a node, specifies the offset (0 to 1) in the movement cycle.
+entities.EndersExtras/DreamDroplet.attributes.description.nodeEase=When using a node, specifies the ease type as the droplet moves.
+entities.EndersExtras/DreamDroplet.attributes.description.nodeMoveOneWay=If false, the droplet will move back and forth between its position and node.\nWhen true, the droplet will pop at its node and reappear at the beginning.
+
+entities.EndersExtras/DreamDroplet.attributes.description.gainDashInside=Whether if being inside the droplet (while not dream-dashing) refills your dash.
+entities.EndersExtras/DreamDroplet.attributes.description.wobble=If true, the droplet will oscillate up and down slightly, with a random frequency and phase seeded by location and size.\nThis may have unwanted gameplay effects, but it looks cool <3
 
 ### TRIGGERS ###
 

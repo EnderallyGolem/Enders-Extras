@@ -1,12 +1,12 @@
-﻿using Celeste.Mod.EndersExtras.Utils;
+﻿using System;
+using System.Collections;
+using Celeste.Mod.EndersExtras.Utils;
 using Celeste.Mod.Entities;
 using FMOD.Studio;
 using Microsoft.Xna.Framework;
 using Monocle;
-using System;
-using System.Collections;
 
-namespace Celeste.Mod.EndersExtras.Entities.Misc;
+namespace Celeste.Mod.EndersExtras.Entities.Utility;
 [Tracked(true)]
 [TrackedAs(typeof(CustomBirdTutorial))]
 [CustomEntity("EndersExtras/ConditionalBirdTutorial")]

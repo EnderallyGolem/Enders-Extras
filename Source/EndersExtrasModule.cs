@@ -9,6 +9,7 @@ using System;
 using System.Collections;
 using System.Reflection;
 using Celeste.Mod.EndersExtras.Entities.SoundRipple;
+using Celeste.Mod.EndersExtras.Entities.Utility;
 
 // ReSharper disable PossibleInvalidCastExceptionInForeachLoop
 
@@ -51,8 +52,11 @@ public class EndersExtrasModule : EverestModule {
     }
 
     public enum SessionResetCause { None, LoadState, Debug, ReenterMap }
-    public static SessionResetCause lastSessionResetCause = SessionResetCause.None; // Stores the previous cause of reset. Sometimes useful.
-    public static int timeSinceSessionReset = 2;                                    // If == 1, correct for resets if needed. Starts from 2 so it does not cause a reset when loading!
+
+    // Stores the previous cause of reset. Sometimes useful.
+    public static SessionResetCause lastSessionResetCause = SessionResetCause.None;
+    // If == 1, correct for resets if needed. Starts from 2 so it does not cause a reset when loading!
+    public static int timeSinceSessionReset = 2;
 
 
 
@@ -114,6 +118,7 @@ public class EndersExtrasModule : EverestModule {
     {
         Utils_CassetteManager.DisableHooks();
         Utils_DeathHandlerEntities.DisableHooks();
+        DreamDroplet.DisableHooks();
     }
 
 
@@ -183,7 +188,6 @@ public class EndersExtrasModule : EverestModule {
     {
         reloadComplete = false;
     }
-
 
     private static bool Hook_SeekerSeePlayer(On.Celeste.Seeker.orig_CanSeePlayer orig, Seeker self, Player player)
     {

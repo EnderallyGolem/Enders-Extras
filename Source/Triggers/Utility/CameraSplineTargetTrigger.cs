@@ -1,13 +1,14 @@
-using Celeste.Mod.EndersExtras.Utils;
-using Celeste.Mod.Entities;
-using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Celeste.Mod.EndersExtras.Utils;
+using Celeste.Mod.Entities;
+using Microsoft.Xna.Framework;
 using Monocle;
+
 // ReSharper disable PossibleInvalidCastExceptionInForeachLoop
 
-namespace Celeste.Mod.EndersExtras.Triggers.Misc;
+namespace Celeste.Mod.EndersExtras.Triggers.Utility;
 
 [CustomEntity("EndersExtras/CameraSplineTargetTrigger")]
 public class CameraSplineTargetTrigger : CameraTargetTrigger
@@ -109,7 +110,6 @@ public class CameraSplineTargetTrigger : CameraTargetTrigger
             PlayerIsInside = true;
             OnStay(player);
         }
-
     }
 
     public override void OnStay(Player player)
@@ -153,6 +153,9 @@ public class CameraSplineTargetTrigger : CameraTargetTrigger
         if (aliveTime <= 2) cameraTargetPos = closestTargetCornerPos; // Smoothly go to final pos if just loaded room
 
         player.CameraAnchor = cameraTargetPos;
+        // To make it work with extended cam dynamics (don't ask how)
+        player.CameraAnchor.X += (level.Camera.GetRect().Width - 320)/2;
+        player.CameraAnchor.Y += (level.Camera.GetRect().Height - 180)/2;
         player.CameraAnchorLerp = Vector2.One;
         player.CameraAnchorIgnoreX = false;
         player.CameraAnchorIgnoreY = false;

@@ -13,6 +13,7 @@ local FlagKillbox = {
             triggerDistance = 4,
             requireFlag = "",
             permamentActivate = true,
+            immediateUpdate = true,
         }
     }
 }

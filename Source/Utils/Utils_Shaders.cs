@@ -15,10 +15,14 @@ namespace Celeste.Mod.EndersExtras.Utils
         internal static Effect? FxRespawnRipple;
         internal static Effect? FxSoundEcho;
         internal static Effect? FxTintColor; // Helper shader lol
-        internal static RenderTarget2D? tempRender;
-        internal static RenderTarget2D? tempRenderB;
-        internal static RenderTarget2D? tempRenderC;
-        internal static RenderTarget2D? echoRender; // Used by SoundEcho for effect to fade away
+        internal static Effect? FxDreamDropletBubble;
+        internal static Effect? FxEllipseMask;
+        internal static VirtualRenderTarget? tempRender;
+        internal static VirtualRenderTarget? tempRenderB;
+        internal static VirtualRenderTarget? tempRenderC;
+        internal static VirtualRenderTarget? echoRender; // Used by SoundEcho for effect to fade away
+
+        // for future reference: VirtualContent.CreateRenderTarget
 
         internal static void LoadCustomShaders(bool forceReload = false)
         {
@@ -27,45 +31,25 @@ namespace Celeste.Mod.EndersExtras.Utils
 
             if (!_loadedShaders || forceReload)
             {
-                tempRender = new RenderTarget2D(
-                    Engine.Graphics.GraphicsDevice,
+                tempRender = VirtualContent.CreateRenderTarget(
+                    "tempRender",
                     width: 320,
-                    height: 180,
-                    mipMap: false,
-                    preferredFormat: SurfaceFormat.Color,
-                    preferredDepthFormat: DepthFormat.Depth24Stencil8,
-                    preferredMultiSampleCount: 0,
-                    usage: RenderTargetUsage.DiscardContents
+                    height: 180
                 );
-                tempRenderB = new RenderTarget2D(
-                    Engine.Graphics.GraphicsDevice,
+                tempRenderB = VirtualContent.CreateRenderTarget(
+                    "tempRenderB",
                     width: 320,
-                    height: 180,
-                    mipMap: false,
-                    preferredFormat: SurfaceFormat.Color,
-                    preferredDepthFormat: DepthFormat.Depth24Stencil8,
-                    preferredMultiSampleCount: 0,
-                    usage: RenderTargetUsage.DiscardContents
+                    height: 180
                 );
-                tempRenderC = new RenderTarget2D(
-                    Engine.Graphics.GraphicsDevice,
+                tempRenderC = VirtualContent.CreateRenderTarget(
+                    "tempRenderC",
                     width: 320,
-                    height: 180,
-                    mipMap: false,
-                    preferredFormat: SurfaceFormat.Color,
-                    preferredDepthFormat: DepthFormat.Depth24Stencil8,
-                    preferredMultiSampleCount: 0,
-                    usage: RenderTargetUsage.DiscardContents
+                    height: 180
                 );
-                echoRender = new RenderTarget2D(
-                    Engine.Graphics.GraphicsDevice,
+                echoRender = VirtualContent.CreateRenderTarget(
+                    "echoRender",
                     width: 320,
-                    height: 180,
-                    mipMap: false,
-                    preferredFormat: SurfaceFormat.Color,
-                    preferredDepthFormat: DepthFormat.Depth24Stencil8,
-                    preferredMultiSampleCount: 0,
-                    usage: RenderTargetUsage.DiscardContents
+                    height: 180
                 );
                 //Logger.Log(LogLevel.Info, "EndersExtras/Utils_Shaders", $"Loading custom shaders.");
                 FxGoldenRipple = LoadFxEndersExtras("goldenRipple"); GoldenRipple.ResetRipples();
@@ -73,6 +57,8 @@ namespace Celeste.Mod.EndersExtras.Utils
                 FxRespawnRipple = LoadFxEndersExtras("respawnRipple");
                 FxSoundEcho = LoadFxEndersExtras("soundEcho");
                 FxTintColor = LoadFxEndersExtras("tintColor");
+                FxDreamDropletBubble = LoadFxEndersExtras("bubbleShader");
+                FxEllipseMask = LoadFxEndersExtras("ellipseMask");
             }
             _loadedShaders = true;
         }
@@ -102,6 +88,19 @@ namespace Celeste.Mod.EndersExtras.Utils
             echoRender?.Dispose();
             GoldenRipple.enableShader = false;
             SoundEcho.enableShader = false;
+        }
+
+        internal static void UpdateShader(Level level, VirtualRenderTarget? shaderToUpdate)
+        {
+            if (shaderToUpdate is null) return;
+
+            Rectangle camera = level.Camera.GetRect();
+            if (shaderToUpdate.Width != camera.Width || shaderToUpdate.Height != camera.Height)
+            {
+                shaderToUpdate.Width = level.Camera.GetRect().Width;
+                shaderToUpdate.Height = level.Camera.GetRect().Height;
+                shaderToUpdate.Reload();
+            }
         }
     }
 
@@ -175,6 +174,8 @@ namespace Celeste.Mod.EndersExtras.Utils
         public static void Apply(VirtualRenderTarget sourceTarget, Level level)
         {
             UpdateRipples(level);
+            Utils_Shaders.UpdateShader(level, Utils_Shaders.tempRender);
+
             Effect effect = Utils_Shaders.FxGoldenRipple!;
             Effect effectDisable = Utils_Shaders.FxGoldenRippleDisable!;
 
@@ -328,6 +329,7 @@ namespace Celeste.Mod.EndersExtras.Utils
         public static void Apply(Level level)
         {
             Effect effect = Utils_Shaders.FxRespawnRipple!;
+            Utils_Shaders.UpdateShader(level, Utils_Shaders.tempRender);
 
             // Generic Parameters
             effect.Parameters["Time"]?.SetValue(Engine.Scene.TimeActive);
@@ -382,7 +384,7 @@ namespace Celeste.Mod.EndersExtras.Utils
         private const float ContrastThreshold = 0.7f;
         private const float FadeOutMultiplier = 0.99f;
 
-        private static void Clear(VirtualRenderTarget sourceTarget, Level level)
+        private static void Clear(VirtualRenderTarget sourceTarget)
         {
             if (nextClearShader)
             {
@@ -396,7 +398,11 @@ namespace Celeste.Mod.EndersExtras.Utils
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static void Apply(VirtualRenderTarget sourceTarget, Level level)
         {
-            Clear(sourceTarget, level);
+            Clear(sourceTarget);
+            Utils_Shaders.UpdateShader(level, Utils_Shaders.tempRender);
+            Utils_Shaders.UpdateShader(level, Utils_Shaders.tempRenderB);
+            Utils_Shaders.UpdateShader(level, Utils_Shaders.tempRenderC);
+            Utils_Shaders.UpdateShader(level, Utils_Shaders.echoRender);
 
             Effect effect = Utils_Shaders.FxSoundEcho!;
             Effect effectTint = Utils_Shaders.FxTintColor!;
@@ -496,6 +502,115 @@ namespace Celeste.Mod.EndersExtras.Utils
             Draw.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullNone, null);
             Draw.SpriteBatch.Draw(Utils_Shaders.echoRender, Vector2.Zero, Color.White);
             Draw.SpriteBatch.End();
+        }
+    }
+
+    /// <summary>
+    /// Ran during Dream Droplet rendering, for their effects
+    /// </summary>
+    internal static class DreamDropletBubble
+    {
+        private static RenderTargetBinding[] _renderTargets = null!;
+
+        // Run BeginEntityRender and EndEntityRender at the start and end of the entity render
+        internal static void BeginEntityRender(Level level, Vector2 focal1Pos, Vector2 focal2Pos, float semiMajorDist, float rainbowIntensity, float burstPerc)
+        {
+            Draw.SpriteBatch.End();
+            _renderTargets = Engine.Instance.GraphicsDevice.GetRenderTargets();
+
+            // Temporarily render on tempRender
+            Engine.Instance.GraphicsDevice.SetRenderTarget(Utils_Shaders.tempRender);
+            Engine.Instance.GraphicsDevice.Clear(Color.Transparent);
+
+            Apply(level, focal1Pos, focal2Pos, semiMajorDist, rainbowIntensity, burstPerc);
+            Draw.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullNone, null, level.Camera.matrix);
+        }
+
+        internal static void EndEntityRender(Level level)
+        {
+            Draw.SpriteBatch.End();
+
+            Engine.Instance.GraphicsDevice.SetRenderTargets(_renderTargets);
+            Draw.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullNone, Utils_Shaders.FxDreamDropletBubble);
+            Draw.SpriteBatch.Draw(Utils_Shaders.tempRender, Vector2.Zero, Color.White);
+            Draw.SpriteBatch.End();
+
+            Draw.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullNone, null, level.Camera.Matrix);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void Apply(Level level, Vector2 focal1Pos, Vector2 focal2Pos, float semiMajorDist, float rainbowIntensity, float burstPerc)
+        {
+            Effect effect = Utils_Shaders.FxDreamDropletBubble!;
+            Utils_Shaders.UpdateShader(level, Utils_Shaders.tempRender);
+
+            // Generic Parameters
+            Viewport vp = Engine.Graphics.GraphicsDevice.Viewport;
+            effect.Parameters["TransformMatrix"]?.SetValue(Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0, 1));
+            effect.Parameters["ViewMatrix"]?.SetValue(Matrix.Identity);
+            effect.Parameters["Dimensions"]?.SetValue(new Vector2(GameplayBuffers.Gameplay.Width, GameplayBuffers.Gameplay.Height));
+            effect.Parameters["CamPos"]?.SetValue(level.Camera.Position);
+
+            // Special Parameters
+            effect.Parameters["focal1Pos"]?.SetValue(focal1Pos);
+            effect.Parameters["focal2Pos"]?.SetValue(focal2Pos);
+            effect.Parameters["semiMajorDist"]?.SetValue(semiMajorDist);
+            effect.Parameters["rainbowIntensity"]?.SetValue(rainbowIntensity);
+            effect.Parameters["burstPerc"]?.SetValue(burstPerc);
+        }
+    }
+
+    /// <summary>
+    /// Shader that removes everything except the region within an ellipse.
+    /// Ran during Dream Droplet rendering. Probably reuseable for other ellipses!
+    /// </summary>
+    internal static class EllipseMask
+    {
+        private static RenderTargetBinding[] _renderTargets = null!;
+
+        // Run BeginEntityRender and EndEntityRender at the start and end of the entity render
+        internal static void BeginEntityRender(Level level, Vector2 focal1Pos, Vector2 focal2Pos, float semiMajorDist)
+        {
+            Draw.SpriteBatch.End();
+            _renderTargets = Engine.Instance.GraphicsDevice.GetRenderTargets();
+
+            // Temporarily render on tempRender
+            Engine.Instance.GraphicsDevice.SetRenderTarget(Utils_Shaders.tempRender);
+            Engine.Instance.GraphicsDevice.Clear(Color.Transparent);
+
+            Apply(level, focal1Pos, focal2Pos, semiMajorDist);
+            Draw.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullNone, null, level.Camera.matrix);
+        }
+
+        internal static void EndEntityRender(Level level)
+        {
+            Draw.SpriteBatch.End();
+
+            Engine.Instance.GraphicsDevice.SetRenderTargets(_renderTargets);
+            Draw.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullNone, Utils_Shaders.FxEllipseMask);
+            Draw.SpriteBatch.Draw(Utils_Shaders.tempRender, Vector2.Zero, Color.White);
+            Draw.SpriteBatch.End();
+
+            Draw.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullNone, null, level.Camera.Matrix);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void Apply(Level level, Vector2 focal1Pos, Vector2 focal2Pos, float semiMajorDist)
+        {
+            Effect effect = Utils_Shaders.FxEllipseMask!;
+            Utils_Shaders.UpdateShader(level, Utils_Shaders.tempRender);
+
+            // Generic Parameters
+            Viewport vp = Engine.Graphics.GraphicsDevice.Viewport;
+            effect.Parameters["TransformMatrix"]?.SetValue(Matrix.CreateOrthographicOffCenter(0, vp.Width, vp.Height, 0, 0, 1));
+            effect.Parameters["ViewMatrix"]?.SetValue(Matrix.Identity);
+            effect.Parameters["Dimensions"]?.SetValue(new Vector2(GameplayBuffers.Gameplay.Width, GameplayBuffers.Gameplay.Height));
+            effect.Parameters["CamPos"]?.SetValue(level.Camera.Position);
+
+            // Special Parameters
+            effect.Parameters["focal1Pos"]?.SetValue(focal1Pos);
+            effect.Parameters["focal2Pos"]?.SetValue(focal2Pos);
+            effect.Parameters["semiMajorDist"]?.SetValue(semiMajorDist);
         }
     }
 }

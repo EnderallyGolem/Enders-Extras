@@ -296,5 +296,5 @@
   
   
   <!-- Add this line to your map's ForegroundTiles.xml! -->
-  <Tileset id="◯" copy="y" path="EndersExtras/fakeAir" sound="0"/>
+  <Tileset id="◯" copy="z" path="EndersExtras/fakeAir" sound="0"/>
 </Data>

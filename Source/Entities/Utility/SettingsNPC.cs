@@ -11,7 +11,7 @@ using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
 
-namespace Celeste.Mod.EndersExtras.Entities.Misc
+namespace Celeste.Mod.EndersExtras.Entities.Utility
 {
     [CustomEntity("EndersExtras/SettingsNpc")]
     [TrackedAs(typeof(NPC))]
@@ -19,10 +19,10 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
     {
         private readonly float spriteRate;
         private readonly bool onlyOnce;
-      private readonly bool endLevel;
-      private readonly List<MTexture>? textures;
-      private readonly EntityID id;
-      private readonly bool approachWhenTalking;
+        private readonly bool endLevel;
+        private readonly List<MTexture>? textures;
+        private readonly EntityID id;
+        private readonly bool approachWhenTalking;
       private readonly int approachDistance;
       private readonly string[] dialogs;
       private readonly bool animated;

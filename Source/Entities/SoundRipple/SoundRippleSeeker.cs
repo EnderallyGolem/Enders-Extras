@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Celeste.Mod.EndersExtras.Entities.Misc;
+using Celeste.Mod.EndersExtras.Entities.Utility;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
