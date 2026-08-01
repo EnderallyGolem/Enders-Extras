@@ -167,7 +167,11 @@ entities.EndersExtras/DeathCountGate.attributes.description.silent=Prevents this
 
 # Dream Droplet
 entities.EndersExtras/DreamDroplet.placements.name.normal=Dream Droplet
+entities.EndersExtras/DreamDroplet.placements.name.purple=Dream Droplet (Purple)
+entities.EndersExtras/DreamDroplet.placements.name.green=Dream Droplet (Green)
 entities.EndersExtras/DreamDroplet.placements.name.altname=Dream Bubble
+entities.EndersExtras/DreamDroplet.placements.name.purple_alt=Dream Bubble (Purple)
+entities.EndersExtras/DreamDroplet.placements.name.green_alt=Dream Bubble (Green)
 entities.EndersExtras/DreamDroplet.placements.description.normal=Non-solid dream block that you can jump/hyper/super/wallbounce midway through, with an elliptical shape.\nThe focal points are adjusted by changing the corners of the rectangle and flipFocals (or the flip keybinds).\nThe size is adjusted through the Semimajor Distance (or the rotation keybinds).\nNote that if the player is in multiple droplets, for effects, the previous droplet is prioritised, followed by the closest droplet.\n\nNote: If you want to use any external triggers to move this entity, you probably need to avoid using nodes and uncheck Wobble.
 entities.EndersExtras/DreamDroplet.attributes.description.depth=The depth of the entity.
 entities.EndersExtras/DreamDroplet.attributes.description.colour=The colour of the entity.

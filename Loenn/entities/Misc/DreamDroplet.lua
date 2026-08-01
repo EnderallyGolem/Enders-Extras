@@ -117,7 +117,8 @@ function DreamDroplet.fillColor(room, entity)
     return entity.colour
 end
 
-DreamDroplet.placements = {
+DreamDroplet.placements = {}
+DreamDroplet.placements[1] = {
     name = "normal",
     alternativeName = {"altname"},
     placementType = "point",
@@ -155,6 +156,92 @@ DreamDroplet.placements = {
 
         wobble = true,
         gainDashInside = true,
+
+        flagWhenDashingInside = ""
+    }
+}
+DreamDroplet.placements[2] = {
+    name = "purple",
+    alternativeName = {"purple_alt"},
+    placementType = "point",
+    data = {
+        width = 8,
+        height = 8,
+        Depth = -12000,
+        colour = "b721ff96",
+        rainbowIntensity = 1,
+        semimajorDistance = 3.5,
+        flipFocals = false,
+        burstOnExit = true,
+
+        respawnTime = 3,
+        regainDash = "always",
+        retainSpeed = "not_dash",
+
+        defaultEffect = "jump",
+        defaultUpEffect = "wallbounce",
+        defaultUpDiagonalEffect = "default_effect",
+        upKeyEffect = "default_effect",
+        downKeyEffect = "hyper",
+        dashEffect = "dash_burst",
+        directionRedirectIntensity = 0.0,
+
+        dashSpeed = 240.0,
+        horizontalVelocityScale = 1.3,
+        verticalVelocityScale = 1.3,
+        wallbounceVelocityScale = 2.0,
+
+        nodeMoveTime = 5,
+        nodeMoveOffset = 0,
+        nodeEase = "SineInOut",
+        nodeMoveOneWay = false,
+
+        wobble = true,
+        gainDashInside = true,
+
+        flagWhenDashingInside = ""
+    }
+}
+DreamDroplet.placements[3] = {
+    name = "green",
+    alternativeName = {"green_alt"},
+    placementType = "point",
+    data = {
+        width = 8,
+        height = 8,
+        Depth = -12000,
+        colour = "40f14db4",
+        rainbowIntensity = 1,
+        semimajorDistance = 3.5,
+        flipFocals = false,
+        burstOnExit = true,
+
+        respawnTime = 3,
+        regainDash = "always",
+        retainSpeed = "not_dash",
+
+        defaultEffect = "jump",
+        defaultUpEffect = "wallbounce",
+        defaultUpDiagonalEffect = "default_effect",
+        upKeyEffect = "default_effect",
+        downKeyEffect = "hyper",
+        dashEffect = "dash_burst",
+        directionRedirectIntensity = 0.8,
+
+        dashSpeed = 240.0,
+        horizontalVelocityScale = 1.0,
+        verticalVelocityScale = 1.0,
+        wallbounceVelocityScale = 2.0,
+
+        nodeMoveTime = 5,
+        nodeMoveOffset = 0,
+        nodeEase = "SineInOut",
+        nodeMoveOneWay = false,
+
+        wobble = true,
+        gainDashInside = true,
+
+        flagWhenDashingInside = ""
     }
 }
 
@@ -170,7 +257,9 @@ DreamDroplet.fieldOrder = {
     "dashSpeed", "regainDash", "retainSpeed",
     "horizontalVelocityScale", "verticalVelocityScale", "wallbounceVelocityScale",
 
-    "nodeMoveTime", "nodeMoveOffset", "nodeEase", "nodeMoveOneWay", "wobble"
+    "nodeMoveTime", "nodeMoveOffset", "nodeEase", "nodeMoveOneWay", "wobble",
+
+    "flagWhenDashingInside"
 }
 
 local easeTypes = {

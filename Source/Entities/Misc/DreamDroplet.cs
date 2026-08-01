@@ -112,6 +112,8 @@ public class DreamDroplet : Solid
     private bool dropletFormed = true;
     private float burstPerc = 0;
 
+    private readonly string flagWhenDashingInside = "";
+
     private JumpEffect StringToJumpEffect(String str)
     {
         switch (str)
@@ -581,10 +583,12 @@ public class DreamDroplet : Solid
         wallbounceVelocityScale = data.Float("wallbounceVelocityScale", 2f);
 
         float nodeMoveTime = data.Float("nodeMoveTime", 3f);
-        float nodeMoveOffset = data.Float("nodeMoveOffset", 3f);
+        float nodeMoveOffset = data.Float("nodeMoveOffset", 0f);
         Ease.Easer nodeEase = Utils_General.easeTypes[data.Attr("nodeEase", "SineInOut")];
         nodeMoveOneWay = data.Bool("nodeMoveOneWay", false);
         bool haveWobbleTween = data.Bool("wobble", true);
+
+        flagWhenDashingInside = data.String("flagWhenDashingInside", "");
 
         gainDashInside = data.Bool("gainDashInside", true);
         nodes = data.NodesOffset(offset);
@@ -594,7 +598,15 @@ public class DreamDroplet : Solid
         if (nodes.Length == 1)
         {
             nodeTween = Tween.Create(nodeMoveOneWay ? Tween.TweenMode.Looping : Tween.TweenMode.YoyoLooping, nodeEase, nodeMoveTime, start: true);
-            nodeTween.TimeLeft = nodeTween.Duration - nodeMoveOffset * nodeMoveTime;
+
+            float effectiveNodeMoveOffset = nodeTween.Mode == Tween.TweenMode.YoyoLooping ? nodeMoveOffset*2 : nodeMoveOffset;
+            if (effectiveNodeMoveOffset >= 1)
+            {
+                effectiveNodeMoveOffset -= 1;
+                nodeTween.Reverse = true;
+            }
+            nodeTween.TimeLeft = nodeTween.Duration - effectiveNodeMoveOffset * nodeMoveTime;
+
             Add(nodeTween);
 
             Vector2 endPos = nodes[0];
@@ -605,8 +617,13 @@ public class DreamDroplet : Solid
         {
             Calc.PushRandom((int)(data.Position.X * data.Position.Y + Width + Height + semimajorDistance));
             wobbleTween = Tween.Create(Tween.TweenMode.YoyoLooping, Ease.SineInOut, Random.Shared.NextFloat(3)+2, start: true);
+
             Calc.PushRandom((int)(data.Position.X * data.Position.Y + Width + Height - semimajorDistance));
             wobbleTween.TimeLeft = wobbleTween.Duration * Random.Shared.NextFloat(1);
+
+            Calc.PushRandom((int)(data.Position.X * data.Position.Y + Width + Height - semimajorDistance));
+            wobbleTween.Reverse = Random.Shared.Chance(0.5f);
+
             wobbleTween.Update();
             Add(wobbleTween);
             Position += Vector2.Lerp(new Vector2(0, 3), new Vector2(0, -3), wobbleTween.Eased);
@@ -658,8 +675,24 @@ public class DreamDroplet : Solid
 
 
     private bool nodeRespawnDropletNext = false;
+
+    private void UpdateFlag()
+    {
+        // Check if in any droplet with this flag if dream dashing
+        Level level = SceneAs<Level>();
+        bool setFlagBool = false;
+
+        if (SceneAs<Level>().Tracker.GetEntity<Player>() is {} player && player.StateMachine == 9 )
+        {
+            setFlagBool = PlayerInsideAnyDroplet(level, flagWhenDashingInside);
+        }
+        level.Session.SetFlag(flagWhenDashingInside, setFlagBool);
+    }
+
     public override void Update()
     {
+        if (flagWhenDashingInside != "") UpdateFlag(); // Update flag
+
         // Droplet Formation
         if (dropletFormed)
         {
@@ -878,14 +911,18 @@ public class DreamDroplet : Solid
         dropletBoosterRespawnSfx.setPitch(0.7f);
     }
 
-    public static bool PlayerInsideAnyDroplet(Level? level = null)
+    public static bool PlayerInsideAnyDroplet(Level? level = null, String? flagRequired = null)
     {
         level ??= Engine.Scene as Level;
         if (level?.Tracker.GetEntity<Player>() is null) return false;
         foreach (var dreamDropletVar in level.Tracker.GetEntities<DreamDroplet>())
         {
             DreamDroplet droplet = (DreamDroplet) dreamDropletVar;
-            if (droplet.playerInside && droplet.dropletFormed) return true;
+
+            if (droplet.playerInside && droplet.dropletFormed)
+            {
+                if (flagRequired is null || flagRequired == droplet.flagWhenDashingInside) return true;
+            }
         }
         return false;
     }
