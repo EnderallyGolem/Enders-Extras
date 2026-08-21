@@ -154,6 +154,7 @@ public class DreamDroplet : Solid
     {
         if (EnabledHooks) return;
         EnabledHooks = true;
+        Everest.Events.Level.OnBeforeUpdate += Event_OnBeforeLevelUpdate;
         On.Celeste.Player.DreamDashBegin += Hook_DreamDashBegin;
         On.Celeste.Player.DreamDashEnd += Hook_DreamDashEnd;
         On.Celeste.Player.DreamDashCheck += Hook_DreamDashCheck;
@@ -166,6 +167,7 @@ public class DreamDroplet : Solid
     {
         if (!EnabledHooks) return;
         EnabledHooks = false;
+        Everest.Events.Level.OnAfterUpdate -= Event_OnBeforeLevelUpdate;
         On.Celeste.Player.DreamDashBegin -= Hook_DreamDashBegin;
         On.Celeste.Player.DreamDashEnd -= Hook_DreamDashEnd;
         On.Celeste.Player.DreamDashCheck -= Hook_DreamDashCheck;
@@ -180,6 +182,18 @@ public class DreamDroplet : Solid
     private static bool _overrideAllowDreamJump = false;
 
     private static bool _exitDreamBlockDashIsDash;
+
+    private static void Event_OnBeforeLevelUpdate(global::Celeste.Level level)
+    {
+        // Outside of dream update in case somehow this > 0 in a room without dream droplets...
+        // Tick down timer if not dream dashing
+        if (_playerDropletDreamDashInsideCooldown > 0 && level.Tracker.GetEntity<Player>() is {} player && player.StateMachine.State != 9)
+        {
+            _playerDropletDreamDashInsideCooldown--;
+            if (_playerDropletDreamDashInsideCooldown == 0) _lastDropletDashed = null;
+        }
+    }
+
     private static void Hook_DreamDashBegin(On.Celeste.Player.orig_DreamDashBegin orig, Player player)
     {
         Vector2 oldSpeed = player.Speed;
@@ -331,17 +345,21 @@ public class DreamDroplet : Solid
             //Logger.Log(LogLevel.Info, "EndersExtras/DreamDroplet", $"dash dir {player.DashDir}");
             return 9;
         }
-        if (_playerDropletDreamDashInsideCooldown > 0) _playerDropletDreamDashInsideCooldown--;
+        if (_playerDropletDreamDashInsideCooldown > 0)
+        {
+            // Tick down cooldown
+            _playerDropletDreamDashInsideCooldown--;
+            if (_lastDropletDashed != null && _playerDropletDreamDashInsideCooldown == 0)
+            {
+                // Not inside a dream droplet anymore.
+                // Set lastDropletDashed to null to prevent rebursts or whatever bugs.
+                _lastDropletDashed = null;
+            }
+        }
         if (_lastDropletDashed is { playerInside: false, burstOnExit: true } )
         {
             _lastDropletDashed.BurstDroplet(); // Burst on normal reach-the-end exit
             // Do not set null here yet, as dream dash might only end next frame and DreamDashEnd needs to look at last droplet
-        }
-        if (_lastDropletDashed != null && _playerDropletDreamDashInsideCooldown == 0)
-        {
-            // Not inside a dream droplet anymore.
-            // Set lastDropletDashed to null to prevent rebursts or whatever bugs.
-            _lastDropletDashed = null;
         }
         return orig(player);
     }

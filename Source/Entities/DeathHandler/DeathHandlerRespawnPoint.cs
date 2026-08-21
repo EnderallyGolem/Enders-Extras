@@ -102,6 +102,9 @@ public class DeathHandlerRespawnPoint : Entity
         // Level level = SceneAs<Level>();
         UpdateImage();
         base.Awake(scene);
+
+        // Backup check. May be needed if this is the room that enabled the DeathHandler hooks.
+        Utils_DeathHandlerEntities.ResetFullReset(SceneAs<Level>(), onlyIfNull:true);
     }
 
     public override void Update()

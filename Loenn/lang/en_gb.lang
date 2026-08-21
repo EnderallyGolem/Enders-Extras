@@ -76,10 +76,22 @@ entities.EndersExtras/FlagKillbox.placements.name.normal=Flag Killbox
 entities.EndersExtras/FlagKillbox.placements.name.altname=Flag Kill Box
 entities.EndersExtras/FlagKillbox.placements.description.normal=Flag-toggleable killbox.\n(When above the killbox, the killbox becomes the new bottom deathzone.)
 entities.EndersExtras/FlagKillbox.attributes.description.triggerDistance=The number of tiles the player must be above the killbox before it activates.
-entities.EndersExtras/FlagKillbox.attributes.description.requireFlag=Flag required for the killbox to activate.\nA list of flags in the format "flagA, flagB, !flagC | flagD, flagE" can be specified.\nThis means (flagA and flagB and not flagC) or (flagD and flagE).
+entities.EndersExtras/FlagKillbox.attributes.description.requireFlag=Flag required for the killbox to activate.\nActivated by default if not specified.\nA list of flags in the format "flagA, flagB, !flagC | flagD, flagE" can be specified.\nThis means (flagA and flagB and not flagC) or (flagD and flagE).
 entities.EndersExtras/FlagKillbox.attributes.name.permamentActivate=Permanent Activate
 entities.EndersExtras/FlagKillbox.attributes.description.permamentActivate=If true, when the Require Flag condition is met, it will stay activated, even when the flags change.\n(The zone still deactivates upon death/reload or if the player manages to get under it.)
 entities.EndersExtras/FlagKillbox.attributes.description.immediateUpdate=Updates the camera position while the room is loading (on awake).\nThis prevents the camera from changing locations suddenly after respawning.
+
+
+# Flag Invisible Barrier
+entities.EndersExtras/FlagInvisibleBarrier.placements.name.normal=Flag Invisible Barrier
+entities.EndersExtras/FlagInvisibleBarrier.placements.description.normal=Flag and player position toggleable invisible barrier.
+entities.EndersExtras/FlagInvisibleBarrier.attributes.description.requireFlag=Flag required for the killbox to activate.\nActivated by default if not specified.\nA list of flags in the format "flagA, flagB, !flagC | flagD, flagE" can be specified.\nThis means (flagA and flagB and not flagC) or (flagD and flagE).
+entities.EndersExtras/FlagInvisibleBarrier.attributes.description.disableLeft=If true, the barrier will be disabled if the player is to the left of it.
+entities.EndersExtras/FlagInvisibleBarrier.attributes.description.disableRight=If true, the barrier will be disabled if the player is to the right of it.
+entities.EndersExtras/FlagInvisibleBarrier.attributes.description.disableAbove=If true, the barrier will be disabled if the player is above it.
+entities.EndersExtras/FlagInvisibleBarrier.attributes.description.disableBelow=If true, the barrier will be disabled if the player is below it.
+entities.EndersExtras/FlagInvisibleBarrier.attributes.description.disablePermanently=If true, if the barrier is disabled, it cannot be enabled (until the room is reloaded).\nThis does not count the barrier being disabled due to the player being inside it.
+entities.EndersExtras/FlagInvisibleBarrier.attributes.description.enablePermanently=If true, if the barrier is enabled, it cannot be disabled (until the room is reloaded).
 
 
 # Settings NPC

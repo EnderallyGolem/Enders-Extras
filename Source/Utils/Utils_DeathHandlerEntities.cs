@@ -36,6 +36,8 @@ namespace Celeste.Mod.EndersExtras.Utils
         private static ILHook Loadhook_Level_OrigTransitionRoutine;
         private static void LoadHooks()
         {
+            Logger.Log(LogLevel.Info, "EndersExtras/Utils_DeathHandler", $"Enabling DeathHandler wackiness!");
+
             Everest.Events.Player.OnSpawn += OnPlayerSpawnFunc;
             On.Celeste.Session.GetSpawnPoint += Hook_SessionGetSpawnPoint;
             On.Celeste.Level.TransitionRoutine += Hook_TransitionRoutine;
@@ -45,6 +47,8 @@ namespace Celeste.Mod.EndersExtras.Utils
         }
         private static void UnloadHooks()
         {
+            Logger.Log(LogLevel.Info, "EndersExtras/Utils_DeathHandler", $"Disabled DeathHandler");
+
             Everest.Events.Player.OnSpawn -= OnPlayerSpawnFunc;
             On.Celeste.Session.GetSpawnPoint -= Hook_SessionGetSpawnPoint;
             On.Celeste.Level.TransitionRoutine -= Hook_TransitionRoutine;
@@ -112,9 +116,7 @@ namespace Celeste.Mod.EndersExtras.Utils
             On.Celeste.Level.orig_TransitionRoutine orig, global::Celeste.Level self, global::Celeste.LevelData next, Vector2 direction
         )
         {
-            Utils_General.framesSinceEnteredRoom = 0;
             yield return new SwapImmediately(orig(self, next, direction));
-
             if (EndHelperModule.Session.AllowDeathHandlerEntityChecks) ResetFullResetAndBypassBetweenRooms(self); // AFTER room change
         }
 
@@ -134,16 +136,11 @@ namespace Celeste.Mod.EndersExtras.Utils
 
 
 
-
-
-
-
-
-
         // Other functions
         public static Vector2? GetFullResetSpawnPoint(this Level level)
         {
             Player player = level.Tracker.GetEntity<Player>();
+
             if (player is null) return null;
 
             // Look at every single death handler respawn point. Get the one closest to the player.
@@ -177,21 +174,19 @@ namespace Celeste.Mod.EndersExtras.Utils
         public static void ResetFullResetAndBypassBetweenRooms(Level level)
         {
             DeathBypass.ClearDeathBypassID(level);
+            ResetFullReset(level);
+        }
+
+        internal static void ResetFullReset(Level level, bool onlyIfNull = false)
+        {
+            if (onlyIfNull && EndHelperModule.Session.firstFullResetPos is not null && EndHelperModule.Session.lastFullResetPos is not null) return;
+
             Vector2? firstFullResetRespawnPoint = GetFullResetSpawnPoint(level);
             EndHelperModule.Session.nextRespawnFullReset = false;
 
-            //Logger.Log(LogLevel.Info, "EndersExtras/Utils_DeathHandler", $"Full Reset and bypass between rooms. firstFullResetRespawnPoint: {firstFullResetRespawnPoint}");
-
-            if (firstFullResetRespawnPoint is not null)
-            {
-                EndHelperModule.Session.firstFullResetPos = firstFullResetRespawnPoint.Value;
-                EndHelperModule.Session.lastFullResetPos = firstFullResetRespawnPoint.Value;
-            }
-            else
-            {
-                EndHelperModule.Session.firstFullResetPos = null;
-                EndHelperModule.Session.lastFullResetPos = null;
-            }
+            // Note: Possible for firstFullResetRespawnPoint to be null!
+            EndHelperModule.Session.firstFullResetPos = firstFullResetRespawnPoint;
+            EndHelperModule.Session.lastFullResetPos = firstFullResetRespawnPoint;
             //Logger.Log(LogLevel.Info, "EndersExtras/Utils_DeathHandler", $"room transitiionnn. firstfullresetpos is {firstFullResetRespawnPoint}. null? : {firstFullResetRespawnPoint is null}");
         }
 

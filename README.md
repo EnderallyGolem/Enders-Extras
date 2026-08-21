@@ -26,6 +26,9 @@
 - Flag Killbox
 	- Flag dependent and adjustable height dependent killbox.
 	
+- Flag Invisible Barrier
+	- Flag and player position dependent activation
+	
 - Conditional Bird Tutorial
 	- Tutorial bird which flies in when certain conditions are met:
 		- Certain time in room / part of room (total or at once)
@@ -54,10 +57,9 @@
 	- With Death Handler, has extra options regarding full resets and manual retrys.
 
 - Dream Droplet
-	- wowee TODO TOADD TOSTUFF !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 1.1.0 btw
-
-- Death Handler
-	- Fixed crash with newer blender versions
+	- An elliptical bubble that the player can stand inside, and can dream-dash by dashing into
+	- Can be dashed out of, dream jumped, wall bounced, hypered or supered out from the droplet when dream dashing (configurable)
+	- Can be steered while dream-dashing like a superdash (configurable)
 	
 ### Gimmicks
 
@@ -150,8 +152,13 @@ Changelog:
 
 ### 1.1.0:
 - Utilities:
-	- New entities: Mod Settings NPC, Dream Droplet
+	- New entities: Mod Settings NPC, Flag Invisible Barrier, Dream Droplet
 	- Modified Camera Spline Trigger to work properly with extended camera dynamics
+
+- Death Handler
+	- Fixed crash with newer blender versions
+	- Attempted to fixed bug that prevents some entities from working the first time you load a room with entities, 
+	  after leaving and reentering the map
 
 ### 1.0.1:
 - Sound Ripples: Fixed seeker bell detection of player persisting past screen transitions
