@@ -180,6 +180,7 @@ public class DreamDroplet : Solid
     private static DreamDroplet? _lastDropletDashed;
     private static int _playerDropletDreamDashInsideCooldown = 0;
     private static bool _overrideAllowDreamJump = false;
+    private static int _burstIncreasePitchCount = 0;
 
     private static bool _exitDreamBlockDashIsDash;
 
@@ -203,6 +204,7 @@ public class DreamDroplet : Solid
         _lastDropletDashed = null;
         _overrideAllowDreamJump = false;
         _exitDreamBlockDashIsDash = false;
+        _burstIncreasePitchCount = 0;
 
         if (playerInDroplet)
         {
@@ -255,6 +257,7 @@ public class DreamDroplet : Solid
             player.Depth = 0;
             _playerDropletDreamDashInsideCooldown = 0;
             _overrideAllowDreamJump = false;
+            _burstIncreasePitchCount = 0;
 
 
             //Logger.Log(LogLevel.Info, "EndersExtras/DreamDroplet", $"regain dash {droplet?.regainDash.ToString()}");
@@ -317,7 +320,7 @@ public class DreamDroplet : Solid
             if (_lastDropletDashed is { playerInside: false, burstOnExit: true } prevBlock
                 && prevBlock != closestDroplet && closestDroplet != null)
             {
-                _lastDropletDashed.BurstDroplet(); // If this happens the lastDropletDashed *WILL* get replaced
+                _lastDropletDashed.BurstDroplet(chainIncreasePitch: true); // If this happens the lastDropletDashed *WILL* get replaced
             }
 
             if (closestDroplet is not null) _lastDropletDashed = closestDroplet;
@@ -358,7 +361,7 @@ public class DreamDroplet : Solid
         }
         if (_lastDropletDashed is { playerInside: false, burstOnExit: true } )
         {
-            _lastDropletDashed.BurstDroplet(); // Burst on normal reach-the-end exit
+            _lastDropletDashed.BurstDroplet(chainIncreasePitch: true); // Burst on normal reach-the-end exit
             // Do not set null here yet, as dream dash might only end next frame and DreamDashEnd needs to look at last droplet
         }
         return orig(player);
@@ -463,7 +466,7 @@ public class DreamDroplet : Solid
                 player.dreamJump = true;
                 player.Jump();
                 player.Speed = AddVelocityBonus(player.Speed, player);
-                BurstDroplet();
+                BurstDroplet(chainIncreasePitch: true);
                 return 0;
             case JumpEffect.Super:
                 player.dashCooldownTimer = 0.2f;
@@ -474,7 +477,7 @@ public class DreamDroplet : Solid
                 player.Speed = AddVelocityBonus(player.Speed, player);
                 if (retainSpeed == DashCondition.Always) RetainFasterOldSpeedBonus(oldSpeed, player);
 
-                BurstDroplet();
+                BurstDroplet(chainIncreasePitch: true);
                 _exitDreamBlockDashIsDash = true;
                 return 0;
             case JumpEffect.Hyper:
@@ -485,7 +488,7 @@ public class DreamDroplet : Solid
                     "event:/char/madeline/dash_red_left" : "event:/char/madeline/dash_red_right");
                 player.Speed = AddVelocityBonus(player.Speed, player);
                 if (retainSpeed == DashCondition.Always) RetainFasterOldSpeedBonus(oldSpeed, player);
-                BurstDroplet();
+                BurstDroplet(chainIncreasePitch: true);
                 _exitDreamBlockDashIsDash = true;
                 return 0;
             case JumpEffect.Wallbounce:
@@ -496,7 +499,7 @@ public class DreamDroplet : Solid
                 player.Speed = AddVelocityBonus(player.Speed, player);
                 player.Speed.Y *= wallbounceVelocityScale;
                 if (retainSpeed == DashCondition.Always) RetainFasterOldSpeedBonus(oldSpeed, player);
-                BurstDroplet();
+                BurstDroplet(chainIncreasePitch: true);
                 _exitDreamBlockDashIsDash = true;
                 return 0;
             default:
@@ -527,7 +530,7 @@ public class DreamDroplet : Solid
             // Prevent exiting in wall
             if (player.DreamDashedIntoSolid() && PlayerInsideDropletCount() <= 1) return -1;
             Input.Dash.ConsumeBuffer();
-            BurstDroplet();
+            BurstDroplet(chainIncreasePitch: true);
 
             if (!PlayerInsideAnyDroplet())
             {
@@ -761,7 +764,7 @@ public class DreamDroplet : Solid
 
                 if (nodeTween.TimeLeft < 0.167f)
                 {
-                    BurstDroplet(forceBurst: true);
+                    BurstDroplet(forceBurst: true, chainIncreasePitch: false);
                     respawnTimeCurrent = -9999;
                     nodeRespawnDropletNext = true;
                 }
@@ -877,7 +880,7 @@ public class DreamDroplet : Solid
         }
     }
 
-    private void BurstDroplet(bool forceBurst = false)
+    private void BurstDroplet(bool forceBurst = false, bool chainIncreasePitch = true)
     {
         if (respawnTime == 0 && !forceBurst) return; // No bursting!
         if (!dropletFormed) return; // Already burst.
@@ -902,8 +905,18 @@ public class DreamDroplet : Solid
         }
         EventInstance dropletBoosterBreakSfx = Audio.Play("event:/game/04_cliffside/greenbooster_end", ellipse.AbsoluteCenterPos);
         dropletBoosterBreakSfx.setPitch(1.5f);
+
         EventInstance dropletBoosterBreakSfx2 = Audio.Play("event:/game/general/assist_nonsolid_out", ellipse.AbsoluteCenterPos);
-        dropletBoosterBreakSfx2.setPitch(0.8f + Random.Shared.NextFloat(0.3f));
+
+        if (chainIncreasePitch)
+        {
+            dropletBoosterBreakSfx2.setPitch(0.8f + Random.Shared.NextFloat(0.3f) + _burstIncreasePitchCount*0.15f);
+            if (_burstIncreasePitchCount < 7) _burstIncreasePitchCount += 1;
+        }
+        else
+        {
+            dropletBoosterBreakSfx2.setPitch(0.8f + Random.Shared.NextFloat(0.3f));
+        }
     }
     private void ReformDroplet()
     {
