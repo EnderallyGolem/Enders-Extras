@@ -41,7 +41,7 @@ public class DeathHandlerRespawnPoint : Entity
         // It is not in LevelData.Spawns, because dealing with a game-loaded list together with room-loaded positions sounds like a disaster waiting to happen
         faceLeft = data.Bool("faceLeft", false);
         visible = data.Bool("visible", true);
-        var attachable1 = data.Bool("attachable", true);
+        bool attachable1 = data.Bool("attachable", true);
         fullReset = data.Bool("fullReset", false);
         requireFlag = data.Attr("requireFlag", "");
         checkInvalid = data.Bool("checkSolid", true);
