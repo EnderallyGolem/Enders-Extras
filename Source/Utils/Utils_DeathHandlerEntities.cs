@@ -1,6 +1,6 @@
 ﻿using Celeste.Mod.EndersExtras.Entities.DeathHandler;
-using Celeste.Mod.EndHelper;
-using Celeste.Mod.EndHelper.Utils;
+// using Celeste.Mod.EndHelper;
+// using Celeste.Mod.EndHelper.Utils;
 using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Cil;
@@ -9,14 +9,23 @@ using MonoMod.Utils;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using static Celeste.Mod.EndersExtras.Utils.Utils_DeathHandlerEntities_EndHelperMix;
+using Debug = System.Diagnostics.Debug;
 
 namespace Celeste.Mod.EndersExtras.Utils
 {
     internal static class Utils_DeathHandlerEntities
     {
         internal static bool EnabledDeathHandler { get; private set; } = false;
-        internal static void EnableDeathHandler()
+        internal static bool EnabledDeathHandlerBlenderMix { get; private set; } = false;
+        internal static void EnableDeathHandler(bool enableBlenderMix)
         {
+            if (enableBlenderMix && !EnabledDeathHandlerBlenderMix)
+            {
+                EnabledDeathHandlerBlenderMix = true;
+                Logger.Log(LogLevel.Info, "EndersExtras/Utils_DeathHandler", $"Using DeathHandler Ender's Blender methods (mainly full resets)!");
+            }
+
             if (!EnabledDeathHandler)
             {
                 EnabledDeathHandler = true;
@@ -28,6 +37,7 @@ namespace Celeste.Mod.EndersExtras.Utils
             if (EnabledDeathHandler)
             {
                 UnloadHooks();
+                EnabledDeathHandlerBlenderMix = false;
                 EnabledDeathHandler = false;
             }
         }
@@ -117,7 +127,8 @@ namespace Celeste.Mod.EndersExtras.Utils
         )
         {
             yield return new SwapImmediately(orig(self, next, direction));
-            if (EndHelperModule.Session.AllowDeathHandlerEntityChecks) ResetFullResetAndBypassBetweenRooms(self); // AFTER room change
+
+            if (EnabledDeathHandlerBlenderMix) Hook_TransitionRoutine_Ext(self);
         }
 
         private static void Hook_IL_OrigTransitionRoutine(ILContext il)
@@ -165,7 +176,8 @@ namespace Celeste.Mod.EndersExtras.Utils
                 }
 
                 // Search for closest spot to player
-                Vector2 closestSpawnPos = Calc.ClosestTo(deathHandlerFullResetSpawnPoints, player.BottomCenter);
+                if (deathHandlerFullResetSpawnPoints.Count == 0) return null;
+                Vector2 closestSpawnPos = deathHandlerFullResetSpawnPoints.ClosestTo(player.BottomCenter);
                 return closestSpawnPos;
             }
             return null;
@@ -173,21 +185,14 @@ namespace Celeste.Mod.EndersExtras.Utils
 
         public static void ResetFullResetAndBypassBetweenRooms(Level level)
         {
-            DeathBypass.ClearDeathBypassID(level);
+            if (EnabledDeathHandlerBlenderMix) ResetFullResetAndBypassBetweenRooms_Ext(level);
             ResetFullReset(level);
         }
 
         internal static void ResetFullReset(Level level, bool onlyIfNull = false)
         {
-            if (onlyIfNull && EndHelperModule.Session.firstFullResetPos is not null && EndHelperModule.Session.lastFullResetPos is not null) return;
-
-            Vector2? firstFullResetRespawnPoint = GetFullResetSpawnPoint(level);
-            EndHelperModule.Session.nextRespawnFullReset = false;
-
-            // Note: Possible for firstFullResetRespawnPoint to be null!
-            EndHelperModule.Session.firstFullResetPos = firstFullResetRespawnPoint;
-            EndHelperModule.Session.lastFullResetPos = firstFullResetRespawnPoint;
-            //Logger.Log(LogLevel.Info, "EndersExtras/Utils_DeathHandler", $"room transitiionnn. firstfullresetpos is {firstFullResetRespawnPoint}. null? : {firstFullResetRespawnPoint is null}");
+            // Freaking java styled coding practices (terrible (shutup))
+            if (EnabledDeathHandlerBlenderMix) ResetFullReset_Ext(level, onlyIfNull);
         }
 
         internal static void ReplaceTransitionRoutineGetSpawnpointWithTheActualFunction()
@@ -201,6 +206,97 @@ namespace Celeste.Mod.EndersExtras.Utils
                 Vector2 to = player.CollideFirst<RespawnTargetTrigger>()?.Target ?? player.Position;
                 level.Session.RespawnPoint = level.Session.GetSpawnPoint(to);
             }
+        }
+
+
+
+        // Crappy Blender-less version of functions
+        public static bool NoInvalidCheck(Level level, Vector2 targetPos, bool checkInvalid = true)
+        {
+            if (EnabledDeathHandlerBlenderMix) return NoInvalidCheck_Ext(level, targetPos, checkInvalid);
+
+            if (!checkInvalid)
+            {
+                return true; // Avoid any checks for solid. Always return true (no solids), since they are already invalid by default.
+            }
+
+            Vector2 point = targetPos + Vector2.UnitY * -4f;
+
+            if (level.CollideCheck<CrystalStaticSpinner>(point) || level.CollideCheck<DustStaticSpinner>(point) || level.CollideCheck<Spikes>(point))
+            {
+                return false;
+            }
+            if (level.CollideCheck<Solid>(point))
+            {
+                return level.CollideCheck<FloatySpaceBlock>(point);
+            }
+            foreach (Entity entity in level.Entities)
+            {
+                if (entity.CollidePoint(point) && entity.Components.Get<LedgeBlocker>() != null) return false;
+            }
+
+            return true;
+        }
+        public static bool NoInvalidCheck(Level level, Rectangle targetRect, bool checkInvalid = true, int inflate = 0)
+        {
+            if (EnabledDeathHandlerBlenderMix) return NoInvalidCheck_Ext(level, targetRect, checkInvalid, inflate);
+
+            if (!checkInvalid)
+            {
+                return true; // Avoid any checks for solid. Always return true (no solids), since they are already invalid by default.
+            }
+
+            targetRect.X += inflate;
+            targetRect.Y += inflate;
+            targetRect.Width += inflate * 2;
+            targetRect.Height += inflate * 2;
+
+            if (level.CollideCheck<CrystalStaticSpinner>(targetRect) || level.CollideCheck<DustStaticSpinner>(targetRect) || level.CollideCheck<Spikes>(targetRect))
+            {
+                return false;
+            }
+            if (level.CollideCheck<Solid>(targetRect))
+            {
+                return level.CollideCheck<FloatySpaceBlock>(targetRect);
+            }
+
+
+            targetRect.Height += 2;
+            foreach (Entity entity in level.Entities)
+            {
+                if (entity.CollideRect(targetRect) && entity.Components.Get<LedgeBlocker>() != null) return false;
+            }
+
+            return true;
+        }
+
+        public static bool UpdateRespawnPos(Vector2 targetPos, Level level, bool checkSolid, bool fullResetOnly = false)
+        {
+            // Logger.Log(LogLevel.Info, "EndHelper/Utils_DeathHandler", $"Tried updating respawn point to {targetPos} | full reset {fullResetOnly}");
+            if (EnabledDeathHandlerBlenderMix)
+            {
+                return UpdateRespawnPos_Ext(targetPos, level, checkSolid, fullResetOnly);
+            }
+
+            Debug.Assert(fullResetOnly==false, "UpdateRespawnPos: FullResetOnly is true, but BlenderMix is false. This shouldn't happen...");
+
+            bool changedRespawn = false;
+            targetPos = level.GetSpawnPoint(targetPos);
+
+            Session session = level.Session;
+            if (NoInvalidCheck(level, targetPos, checkSolid) && (!session.RespawnPoint.HasValue || session.RespawnPoint.Value != targetPos))
+            {
+                session.HitCheckpoint = true;
+                if (session.RespawnPoint != targetPos)
+                {
+                    changedRespawn = true;
+                }
+                session.RespawnPoint = targetPos;
+                session.UpdateLevelStartDashes();
+            }
+
+            //Logger.Log(LogLevel.Info, "EndHelper/Utils_DeathHandler", $"Tried updating respawn point to {targetPos}. Success: {changedRespawn}");
+            return changedRespawn;
         }
     }
 }

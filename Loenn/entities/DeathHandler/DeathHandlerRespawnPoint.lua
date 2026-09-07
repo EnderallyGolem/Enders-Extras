@@ -1,5 +1,4 @@
 local DeathHandlerRespawnPoint = {
-    associatedMods = {"EndersExtras", "EndersBlender"},
     name = "EndersExtras/DeathHandlerRespawnPoint",
     depth = 2,
     justification = {0.5, 0.5},
@@ -20,6 +19,15 @@ local DeathHandlerRespawnPoint = {
     },
     fieldInformation = {}
 }
+
+function DeathHandlerRespawnPoint.associatedMods(entity)
+    if entity.fullReset then
+        return {"EndersExtras", "EndersBlender"}
+    else
+        return {"EndersExtras"}
+    end
+end
+
 function DeathHandlerRespawnPoint.scale(room, entity)
     return entity.faceLeft and -1 or 1, 1
 end

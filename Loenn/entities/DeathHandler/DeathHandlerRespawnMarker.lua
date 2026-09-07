@@ -1,5 +1,4 @@
 local DeathHandlerRespawnMarker = {
-    associatedMods = {"EndersExtras", "EndersBlender"},
     name = "EndersExtras/DeathHandlerRespawnMarker",
     depth = -8500,
     justification = {0.5, 0.5},

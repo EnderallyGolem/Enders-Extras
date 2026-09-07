@@ -1,8 +1,9 @@
-﻿using Monocle;
+﻿using System.Runtime.CompilerServices;
+using Monocle;
 using Microsoft.Xna.Framework;
 using Celeste.Mod.Entities;
 using Celeste.Mod.EndersExtras.Utils;
-using Celeste.Mod.EndHelper.Utils;
+// using Celeste.Mod.EndHelper.Utils;
 
 namespace Celeste.Mod.EndersExtras.Entities.DeathHandler;
 
@@ -35,7 +36,6 @@ public class DeathHandlerRespawnPoint : Entity
 
     public DeathHandlerRespawnPoint(EntityData data, Vector2 offset, EntityID id) : base(data.Position + offset)
     {
-        Utils_DeathHandlerEntities.EnableDeathHandler();
 
         // This entity, if found, has its position checked whenever GetSpawnPoint is ran
         // It is not in LevelData.Spawns, because dealing with a game-loaded list together with room-loaded positions sounds like a disaster waiting to happen
@@ -48,10 +48,11 @@ public class DeathHandlerRespawnPoint : Entity
         flagWhenSpawnpoint = data.Attr("flagWhenSpawnpoint", "");
 
         entityID = id;
+        Utils_DeathHandlerEntities.EnableDeathHandler(fullReset);
 
         if (fullReset)
         {
-            Utils_DeathHandler.EnableDeathHandlerEntityChecks();
+            Utils_DeathHandlerEntities_EndHelperMix.EnableDeathHandlerEntityChecks();
             currentSpawnpointTexture = GFX.Game["objects/EndersExtras/DeathHandlerRespawnPoint/respawnpoint_fullreset_active"];
             inactiveTexture = GFX.Game["objects/EndersExtras/DeathHandlerRespawnPoint/respawnpoint_fullreset_inactive"];
         }
@@ -147,17 +148,20 @@ public class DeathHandlerRespawnPoint : Entity
                 level.Session.RespawnPoint = entityPosSpawnPoint;
                 if (fullReset)
                 {
-                    Utils_DeathHandler.SetFullResetPos(level.Session.RespawnPoint);
+                    Utils_DeathHandlerEntities_EndHelperMix.SetFullResetPos(level.Session.RespawnPoint);
                 }
 
                 UpdateMarkerDirections(level);
                 currentPointIsSpawnpoint = true;
             }
 
-            else if (fullReset && entityPosSpawnPoint == Utils_DeathHandler.getLastFullResetPos() || entityPosSpawnPointPrevious == Utils_DeathHandler.getLastFullResetPos())
+            else if (
+                fullReset && entityPosSpawnPoint == Utils_DeathHandlerEntities_EndHelperMix.getLastFullResetPos()
+                || entityPosSpawnPointPrevious == Utils_DeathHandlerEntities_EndHelperMix.getLastFullResetPos())
+
             {
                 // Special case for full Reset: Lets the lastFullResetPos update even if currently not the spawnpoint
-                Utils_DeathHandler.SetFullResetPos(entityPosSpawnPoint);
+                Utils_DeathHandlerEntities_EndHelperMix.SetFullResetPos(entityPosSpawnPoint);
             }
         }
         if (!currentPointIsSpawnpoint)
@@ -168,7 +172,7 @@ public class DeathHandlerRespawnPoint : Entity
 
     private void UpdateMarkerDirections(Level level)
     {
-        // If using a DeathHandlerRespawnMarker, set its direction 
+        // If using a DeathHandlerRespawnMarker, set its direction
         foreach (var entity in level.Tracker.GetEntities<DeathHandlerRespawnMarker>())
         {
             DeathHandlerRespawnMarker respawnMarker = (DeathHandlerRespawnMarker)entity;
@@ -196,7 +200,7 @@ public class DeathHandlerRespawnPoint : Entity
         entityPosSpawnPointPrevious = entityPosSpawnPoint;
 
         // Do not update entityPosSpawnPoint if it is in an invalid respawn spot
-        if (firstUpdate == false && !Utils_DeathHandler.NoInvalidCheck(level, respawnPointCheckRect, checkInvalid, inflate: -4)) return;
+        if (firstUpdate == false && !Utils_DeathHandlerEntities.NoInvalidCheck(level, respawnPointCheckRect, checkInvalid, inflate: -4)) return;
 
         entityPosSpawnPoint = new Vector2(Position.X, Position.Y + height / 2 - 1);
         if (firstUpdate)

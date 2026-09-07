@@ -5,7 +5,7 @@ using Monocle;
 using System;
 using System.Collections;
 using System.Runtime.CompilerServices;
-using Celeste.Mod.EndHelper.Utils;
+// using Celeste.Mod.EndHelper.Utils;
 
 namespace Celeste.Mod.EndersExtras.Entities.DeathHandler;
 
@@ -43,7 +43,6 @@ public class DeathHandlerChangeRespawnRegion : Entity
     public DeathHandlerChangeRespawnRegion(EntityData data, Vector2 offset, EntityID id)
         : base(data.Position + offset)
     {
-        Utils_DeathHandlerEntities.EnableDeathHandler();
 
         this.Collider = new Hitbox(data.Width, data.Height);
 
@@ -54,6 +53,8 @@ public class DeathHandlerChangeRespawnRegion : Entity
 
         this.visibleArea = data.Bool("visibleArea", true);
         this.visibleTarget = data.Bool("visibleTarget", true);
+
+        Utils_DeathHandlerEntities.EnableDeathHandler(fullReset);
 
         if (data.Nodes.Length > 0) targetSpawnpointOffset = data.Nodes[0] + offset - Position;
 
@@ -128,7 +129,12 @@ public class DeathHandlerChangeRespawnRegion : Entity
         base.Added(scene);
 
         Action onDeathBypassAction = () => Add(new Coroutine(OnDeathBypass()));
-        Add(new DeathBypassModifier(onDeathBypassAction: onDeathBypassAction));
+
+        if (Utils_DeathHandlerEntities.EnabledDeathHandlerBlenderMix)
+        {
+            NewDeathBypassModifier(onDeathBypassAction);
+        }
+
         if (scheduleAddRendererTick)
         {
             // Add renderer if level doesn't already have one
@@ -136,12 +142,17 @@ public class DeathHandlerChangeRespawnRegion : Entity
             EnsureRendererInLevel();
         }
     }
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void NewDeathBypassModifier(Action onDeathBypassAction)
+    {
+        Add(Utils_DeathHandlerEntities_EndHelperMix.NewDeathBypassModifier(onDeathBypassAction: onDeathBypassAction));
+    }
 
     public void EnsureRendererInLevel()
     {
         Level level = SceneAs<Level>();
         if (level.Tracker.CountEntities<DeathHandlerChangeRespawnRegionRenderer>() == 0)
-        { 
+        {
             level.Add(new DeathHandlerChangeRespawnRegionRenderer());
         }
         //Logger.Log(LogLevel.Info, "EndersExtras/DeathHandlerChangeRespawnRegion", $"ensure renderer in level added new renderer - now total {level.Tracker.CountEntities<DeathHandlerChangeRespawnRegionRenderer>()}");
@@ -196,9 +207,9 @@ public class DeathHandlerChangeRespawnRegion : Entity
         Player player = base.Scene.Tracker.GetEntity<Player>();
         Rectangle regionRect = this.HitRect();
 
-        if (fullReset && Utils_DeathHandler.getLastFullResetPos() is not null)
+        if (fullReset && Utils_DeathHandlerEntities_EndHelperMix.getLastFullResetPos() is not null)
         {
-            targetSpawnpoint = Utils_DeathHandler.getLastFullResetPos()!.Value;
+            targetSpawnpoint = Utils_DeathHandlerEntities_EndHelperMix.getLastFullResetPos()!.Value;
         }
         else
         {
@@ -220,7 +231,7 @@ public class DeathHandlerChangeRespawnRegion : Entity
 
     public void PlayerCollide(Player player)
     {
-        if (killOnEnter && Utils_DeathHandler.getDeathCooldownFrames() != 0)
+        if (killOnEnter && Utils_DeathHandlerEntities.EnabledDeathHandlerBlenderMix && Utils_DeathHandlerEntities_EndHelperMix.getDeathCooldownFrames() != 0)
         {
             // If killOnEnter, we want to ensure the player dies if the respawn point changes.
             // If death cooldown isn't 0, do not run this.
@@ -228,15 +239,15 @@ public class DeathHandlerChangeRespawnRegion : Entity
             // (Otherwise they skipped through using invincibility)
             if (fullReset)
             {
-                Utils_DeathHandler.ForceShortDeathCooldown();
+                Utils_DeathHandlerEntities_EndHelperMix.ForceShortDeathCooldown();
             }
             return;
         }
 
         Level level = SceneAs<Level>();
-        bool nextIsFullReset = Utils_DeathHandler.getNextRespawnFullReset();
-        bool changeRespawnSuccess = Utils_DeathHandler.UpdateRespawnPos(targetSpawnpoint, level, checkSolid, fullReset);
-        if (Utils_DeathHandler.getNextRespawnFullReset() != nextIsFullReset) changeRespawnSuccess = true;
+        bool nextIsFullReset = Utils_DeathHandlerEntities.EnabledDeathHandlerBlenderMix && Utils_DeathHandlerEntities_EndHelperMix.getNextRespawnFullReset();
+        bool changeRespawnSuccess = Utils_DeathHandlerEntities.UpdateRespawnPos(targetSpawnpoint, level, checkSolid, fullReset);
+        if (Utils_DeathHandlerEntities.EnabledDeathHandlerBlenderMix && Utils_DeathHandlerEntities_EndHelperMix.getNextRespawnFullReset() != nextIsFullReset) changeRespawnSuccess = true;
 
         if (killOnEnter && changeRespawnSuccess)
         {

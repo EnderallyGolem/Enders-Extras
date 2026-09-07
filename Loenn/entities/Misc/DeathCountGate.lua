@@ -60,6 +60,13 @@ DeathCountGate.fieldInformation = {
         }
     },
 }
+function DeathCountGate.associatedMods(entity)
+    if entity.deathCountType == "room_fullreset" then
+        return {"EndersExtras", "EndersBlender"}
+    else
+        return {"EndersExtras"}
+    end
+end
 
 function DeathCountGate.sprite(room, entity)
     local variant = entity.sprite or "default"

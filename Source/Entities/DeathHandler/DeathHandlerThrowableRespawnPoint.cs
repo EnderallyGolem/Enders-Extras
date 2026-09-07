@@ -6,7 +6,7 @@ using System;
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using Celeste.Mod.EndHelper.Utils;
+// using Celeste.Mod.EndHelper.Utils;
 
 namespace Celeste.Mod.EndersExtras.Entities.DeathHandler;
 
@@ -50,7 +50,6 @@ public class DeathHandlerThrowableRespawnPoint : Actor
 
     public DeathHandlerThrowableRespawnPoint(EntityData data, Vector2 offset, EntityID id) : base(data.Position + offset)
     {
-        Utils_DeathHandlerEntities.EnableDeathHandler();
 
         // This entity, if found, has its position checked whenever GetSpawnPoint is ran
         // It is not in LevelData.Spawns, because dealing with a game-loaded list together with room-loaded positions sounds like a disaster waiting to happen
@@ -59,7 +58,9 @@ public class DeathHandlerThrowableRespawnPoint : Actor
         faceLeft = data.Bool("initialFaceLeft", false);
         checkInvalid = data.Bool("checkSolid", true);
         flagWhenSpawnpoint = data.Attr("flagWhenSpawnpoint", "");
+
         entityID = id;
+        Utils_DeathHandlerEntities.EnableDeathHandler(fullReset);
 
         Add(sprite = EndersExtrasModule.SpriteBank.Create("DeathHandlerThrowableRespawnPoint"));
         if (faceLeft) sprite.FlipX = true;
@@ -74,7 +75,7 @@ public class DeathHandlerThrowableRespawnPoint : Actor
 
         if (fullReset)
         {
-            Utils_DeathHandler.EnableDeathHandlerEntityChecks();
+            Utils_DeathHandlerEntities_EndHelperMix.EnableDeathHandlerEntityChecks();
             P_Impact = new ParticleType
             {
                 Color = Calc.HexToColor("BF5764"),
@@ -133,7 +134,7 @@ public class DeathHandlerThrowableRespawnPoint : Actor
 
     public override void Update()
     {
-        TheoUpdate(); 
+        TheoUpdate();
         blockDirectionUpdate = false;
         UpdatePositionVectors();
 
@@ -168,17 +169,19 @@ public class DeathHandlerThrowableRespawnPoint : Actor
                 level.Session.RespawnPoint = entityPosSpawnPoint;
                 if (fullReset)
                 {
-                    Utils_DeathHandler.SetFullResetPos(level.Session.RespawnPoint);
+                    Utils_DeathHandlerEntities_EndHelperMix.SetFullResetPos(level.Session.RespawnPoint);
                 }
 
                 UpdateMarkerDirections(level);
                 currentPointIsSpawnpoint = true;
             }
 
-            else if (fullReset && entityPosSpawnPoint == Utils_DeathHandler.getLastFullResetPos() || entityPosSpawnPointPrevious == Utils_DeathHandler.getLastFullResetPos())
+            else if (Utils_DeathHandlerEntities.EnabledDeathHandlerBlenderMix &&
+                 (fullReset && entityPosSpawnPoint == Utils_DeathHandlerEntities_EndHelperMix.getLastFullResetPos() ||
+                  entityPosSpawnPointPrevious == Utils_DeathHandlerEntities_EndHelperMix.getLastFullResetPos()))
             {
                 // Special case for full Reset: Lets the lastFullResetPos update even if currently not the spawnpoint
-                Utils_DeathHandler.SetFullResetPos(entityPosSpawnPoint);
+                Utils_DeathHandlerEntities_EndHelperMix.SetFullResetPos(entityPosSpawnPoint);
             }
         }
         if (!currentPointIsSpawnpoint)
@@ -231,7 +234,7 @@ public class DeathHandlerThrowableRespawnPoint : Actor
 
         // Do not update entityPosSpawnPoint if it is in an invalid respawn spot
         //Logger.Log(LogLevel.Info, "EndersExtras/DeathHandlerThrowableRespawnPoint", $"y comparising: {respawnPointCheckRect.Y} {level.Bounds.Bottom}");
-        if (firstUpdate == false && (respawnPointCheckRect.Y + 12 > level.Bounds.Bottom || !Utils_DeathHandler.NoInvalidCheck(level, respawnPointCheckRect, checkInvalid, inflate: 0))) 
+        if (firstUpdate == false && (respawnPointCheckRect.Y + 12 > level.Bounds.Bottom || !Utils_DeathHandlerEntities.NoInvalidCheck(level, respawnPointCheckRect, checkInvalid, inflate: 0)))
         {
             blockDirectionUpdate = true;
             return;
@@ -247,7 +250,7 @@ public class DeathHandlerThrowableRespawnPoint : Actor
 
     private void UpdateMarkerDirections(Level level)
     {
-        // If using a DeathHandlerRespawnMarker, set its direction 
+        // If using a DeathHandlerRespawnMarker, set its direction
         foreach (DeathHandlerRespawnMarker respawnMarker in level.Tracker.GetEntities<DeathHandlerRespawnMarker>())
         {
             if (respawnMarker.showRedEffects && !fullReset) return;
@@ -666,7 +669,7 @@ public class DeathHandlerThrowableRespawnPoint : Actor
     {
         previousPosition = position;
         base.Depth = 100;
-        base.Collider = new Hitbox(9f, 12f, -5f, -12f);
+        base.Collider = new Hitbox(8f, 12f, -4f, -12f);
         Add(Hold = new Holdable(0.1f));
         Hold.PickupCollider = new Hitbox(16f, 22f, -8f, -16f);
         Hold.SlowFall = false;

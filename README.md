@@ -87,7 +87,7 @@
 
 
 ###### Death Handler
-These require Ender's Blender as a dependency. They affect respawns in various ways.
+Respawn Bypass and Full Resets require Ender's Blender as a dependency. They affect respawns in various ways.
 It's recommended to use this with Seemless Respawns using Blender's Gameplay Tweaks Override Trigger.
 
 **NOTE: THESE ARE EXPERIMENTAL, AND FUNCTIONALITY MAY CHANGE IN THE FUTURE!**
@@ -159,6 +159,8 @@ Changelog:
 	- Fixed crash with newer blender versions
 	- Attempted to fixed bug that prevents some entities from working the first time you load a room with entities, 
 	  after leaving and reentering the map
+	- Respawn Point, Throwable Respawn Point, Change Respawn Region and Respawn Marker can be used without Ender's Blender as a dependency, as long as Full Reset isn't used.
+	- Modified Throwable Respawn Point's hitbox to match Theo Crystals in width. So uhh it doesn't fall through the ground when throwing it next to a wall.
 
 ### 1.0.1:
 - Sound Ripples: Fixed seeker bell detection of player persisting past screen transitions

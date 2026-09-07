@@ -1,6 +1,6 @@
 using Celeste.Mod.EndersExtras.Triggers.DeathHandler;
 using Celeste.Mod.EndersExtras.Utils;
-using Celeste.Mod.EndHelper.Utils;
+// using Celeste.Mod.EndHelper.Utils;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
@@ -40,7 +40,7 @@ public class DeathHandlerBypassZone : Entity
     public DeathHandlerBypassZone(EntityData data, Vector2 offset)
         : base(data.Position + offset)
     {
-        Utils_DeathHandlerEntities.EnableDeathHandler();
+        Utils_DeathHandlerEntities.EnableDeathHandler(true);
 
         Depth = 9500;
 
@@ -199,10 +199,10 @@ public class DeathHandlerBypassZone : Entity
     private void UpdateDeathBypassEntity(Entity entity)
     {
         // Check for existing deathbypass
-        if (entity.Components.Get<DeathBypass>() is null)
+        if (Utils_DeathHandlerEntities.EnabledDeathHandlerBlenderMix && Utils_DeathHandlerEntities_EndHelperMix.GetDeathBypassComponent(entity) is null)
         {
             // No deathbypass. Add one.
-            entity.Add(new DeathBypass(bypassFlag, true, initialAllowBypass: false));
+            entity.Add(Utils_DeathHandlerEntities_EndHelperMix.NewDeathBypass(bypassFlag, true, initialAllowBypass: false));
         }
     }
 
@@ -211,7 +211,7 @@ public class DeathHandlerBypassZone : Entity
         //Logger.Log(LogLevel.Info, "EndersExtras/DeathHandlerBypassZone", $"Entity entered zone: {entity} {entity.SourceId}");
         UpdateDeathBypassEntity(entity); // Set death bypass if not already set
 
-        if (entity.Components.Get<DeathBypass>() is { } deathbypass)
+        if (Utils_DeathHandlerEntities.EnabledDeathHandlerBlenderMix && Utils_DeathHandlerEntities_EndHelperMix.GetDeathBypassComponent(entity) is { } deathbypass)
         {
             entitiesInsideZone.Add(entity);
             switch (currentEffect)

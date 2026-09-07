@@ -5,7 +5,6 @@ local DeathHandlerThrowableRespawnPoint = {}
 DeathHandlerThrowableRespawnPoint.name = "EndersExtras/DeathHandlerThrowableRespawnPoint"
 DeathHandlerThrowableRespawnPoint.depth = 100
 DeathHandlerThrowableRespawnPoint.placements = {
-    associatedMods = {"EndersExtras", "EndersBlender"},
     name = "normal",
     data = {
         fullReset = false,
@@ -15,6 +14,14 @@ DeathHandlerThrowableRespawnPoint.placements = {
         flagWhenSpawnpoint = "",
     },
 }
+
+function DeathHandlerThrowableRespawnPoint.associatedMods(entity)
+    if entity.fullReset then
+        return {"EndersExtras", "EndersBlender"}
+    else
+        return {"EndersExtras"}
+    end
+end
 
 -- Offset is from sprites.xml, not justifications
 local offsetY = -10

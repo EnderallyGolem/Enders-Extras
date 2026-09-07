@@ -22,7 +22,7 @@ public class DeathHandlerDeathBypassTrigger : Trigger
     public DeathHandlerDeathBypassTrigger(EntityData data, Vector2 offset, EntityID id)
         : base(data, offset)
     {
-        Utils_DeathHandlerEntities.EnableDeathHandler();
+        Utils_DeathHandlerEntities.EnableDeathHandler(true);
 
         nodes = data.NodesOffset(offset);
         requireFlag = data.Attr("requireFlag", "");

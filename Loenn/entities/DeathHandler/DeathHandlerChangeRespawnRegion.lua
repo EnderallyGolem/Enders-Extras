@@ -4,7 +4,6 @@ local DeathHandlerChangeRespawnRegion = {
     nodeLimits = {0, 1},
     nodeLineRenderType = "line",
     nodeVisibility = "selected",
-    associatedMods = {"EndersExtras", "EndersBlender"},
     placements = {
         {
             name = "normal",
@@ -25,6 +24,14 @@ local DeathHandlerChangeRespawnRegion = {
         speed = { fieldType = "number", minimumValue = 0 },
     }
 }
+
+function DeathHandlerChangeRespawnRegion.associatedMods(entity)
+    if entity.fullReset then
+        return {"EndersExtras", "EndersBlender"}
+    else
+        return {"EndersExtras"}
+    end
+end
 
 function DeathHandlerChangeRespawnRegion.fillColor(room, entity)
 

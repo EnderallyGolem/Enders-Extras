@@ -330,7 +330,8 @@ namespace Celeste.Mod.EndersExtras.Entities.Misc
                     break;
                 case DeathCountType.RoomFullreset:
                     if (CheckSameRoomAsPlayer()) ReferenceDeathCount++;
-                    if (EndersBlenderIntegration.ModInstalled && EndersBlenderImport.GetEnableEntityChecks!() && EndersBlenderImport.GetNextRespawnFullReset!())
+                    // Logger.Log(LogLevel.Info, "EndersExtras/DeathCountGate", $"Enable entity checks {EndersBlenderImport.GetEnableEntityChecks} | Full Reset {EndersBlenderImport.GetNextRespawnFullReset!()}");
+                    if (EndersBlenderIntegration.ModInstalled && Utils_DeathHandlerEntities.EnabledDeathHandlerBlenderMix && Utils_DeathHandlerEntities_EndHelperMix.getNextRespawnFullReset())
                     {
                         ReferenceDeathCount = 0;
                     }

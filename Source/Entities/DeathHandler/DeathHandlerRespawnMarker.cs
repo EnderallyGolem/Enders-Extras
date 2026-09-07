@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 using Celeste.Mod.Entities;
 using Celeste.Mod.EndersExtras.Utils;
 using System.Runtime.CompilerServices;
-using Celeste.Mod.EndHelper.Utils;
+//using Celeste.Mod.EndHelper.Utils;
 
 namespace Celeste.Mod.EndersExtras.Entities.DeathHandler;
 
@@ -53,7 +53,7 @@ public class DeathHandlerRespawnMarker : Entity
 
     public DeathHandlerRespawnMarker(EntityData data, Vector2 offset, EntityID id) : base(data.Position + offset)
     {
-        Utils_DeathHandlerEntities.EnableDeathHandler();
+        Utils_DeathHandlerEntities.EnableDeathHandler(false);
 
         speed = data.Float("speed", 1f);
         requireFlag = data.Attr("requireFlag", "");
@@ -64,7 +64,10 @@ public class DeathHandlerRespawnMarker : Entity
         sine = new SineWave(0.6f, 0f);
         Add(sine);
 
-        Add(new DeathBypass(requireFlag, false, id, preventChange: true));
+        if (Utils_DeathHandlerEntities.EnabledDeathHandlerBlenderMix)
+        {
+            NewDeathBypass(requireFlag, id);
+        }
 
         Add(sprite = EndersExtrasModule.SpriteBank.Create("DeathHandlerRespawnPoint"));
         sprite.Position += new Vector2(0, -1);
@@ -72,6 +75,23 @@ public class DeathHandlerRespawnMarker : Entity
 
         Depth = 1;
         base.Collider = new Hitbox(x: -width / 2, y: -height / 2, width: width, height: height);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private Vector2 SetTargetPosWithBlender(Player player, Vector2 currentTargetPos)
+    {
+        if (Utils_DeathHandlerEntities_EndHelperMix.GetDeathBypassComponent(player) is { } deathBypass && deathBypass.bypass
+            && Utils_DeathHandlerEntities_EndHelperMix.getLastFullResetPos() is not null)
+        {
+            faceLeft = fullResetFaceLeft;
+            showRedEffects = true;
+            return Utils_DeathHandlerEntities_EndHelperMix.getLastFullResetPos()!.Value;
+        }
+        else
+        {
+            showRedEffects = false;
+            return currentTargetPos;
+        }
     }
 
     public override void Awake(Scene scene)
@@ -133,12 +153,9 @@ public class DeathHandlerRespawnMarker : Entity
         Vector2 targetPos = level.Session.RespawnPoint.Value;
 
         // If player is deathbypass, targetPos can only be lastFullResetPos
-        if (level.Tracker.GetEntity<Player>() is { } player && player.Components.Get<DeathBypass>() is { } deathBypass && deathBypass.bypass
-            && Utils_DeathHandler.getLastFullResetPos() is not null)
+        if (level.Tracker.GetEntity<Player>() is { } player && Utils_DeathHandlerEntities.EnabledDeathHandlerBlenderMix)
         {
-            targetPos = Utils_DeathHandler.getLastFullResetPos()!.Value;
-            faceLeft = fullResetFaceLeft;
-            showRedEffects = true;
+            targetPos = SetTargetPosWithBlender(player, targetPos);
         }
         else
         {
@@ -207,6 +224,11 @@ public class DeathHandlerRespawnMarker : Entity
 
         previousDistanceBetweenPosAndTarget = distanceBetweenPosAndTarget;
         previousholdingThrowableRespawn = holdingThrowableRespawn;
+    }
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void NewDeathBypass(string _requireFlag = "", EntityID? id = null)
+    {
+        Add(Utils_DeathHandlerEntities_EndHelperMix.NewDeathBypass(_requireFlag, false, id, preventChange: true));
     }
   
     public override void Render()
@@ -289,7 +311,15 @@ public class DeathHandlerRespawnMarker : Entity
             p = parent;
             AddTag(Tags.HUD);
 
-            Add(new DeathBypass(p.requireFlag, false, p.entityID));
+            if (Utils_DeathHandlerEntities.EnabledDeathHandlerBlenderMix)
+            {
+                AddBypass();
+            }
+        }
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void AddBypass()
+        {
+            Add(Utils_DeathHandlerEntities_EndHelperMix.NewDeathBypass(p.requireFlag, false, p.entityID));
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
