@@ -65,7 +65,7 @@
 
 
 ###### Room-Swap
-- Create a grid of rooms that can swap positions with each other (baring some limitations: no collectables and FG/BG tiles).
+- Create a grid of rooms that can swap positions with each other (baring some limitations: no collectables).
 - You can check out how they work in my [Crossroads Contest map](https://www.youtube.com/watch?v=xB6RLAKZC0g).
 	- Setup a grid with Room-Swap Controller (ensure it is loaded before entering the grid)
 	- Create template rooms (with names matching the controller) and actual rooms of the same size. Actual rooms are empty, template rooms have the actual room.
@@ -161,6 +161,9 @@ Changelog:
 	  after leaving and reentering the map
 	- Respawn Point, Throwable Respawn Point, Change Respawn Region and Respawn Marker can be used without Ender's Blender as a dependency, as long as Full Reset isn't used.
 	- Modified Throwable Respawn Point's hitbox to match Theo Crystals in width. So uhh it doesn't fall through the ground when throwing it next to a wall.
+	
+- Room-Swap:
+	- Foreground and Background Tiles are now copied during swaps.
 
 ### 1.0.1:
 - Sound Ripples: Fixed seeker bell detection of player persisting past screen transitions

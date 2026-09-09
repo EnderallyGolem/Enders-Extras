@@ -24,7 +24,7 @@ namespace Celeste.Mod.EndersExtras.Utils
             RoomModificationEvent?.Invoke(null, new RoomModificationEventArgs(gridID));
         }
 
-        internal static void ReupdateAllRooms()
+        internal static void ReupdateAllRoomsBasic()
         {
             if (Engine.Scene is not Level level)
             {
@@ -32,11 +32,11 @@ namespace Celeste.Mod.EndersExtras.Utils
             }
             else
             {
-                ReupdateAllRooms(level);
+                ReupdateAllRooms(level, 0);
             }
         }
 
-        internal static void ReupdateAllRooms(global::Celeste.Level level)
+        internal static void ReupdateAllRooms(global::Celeste.Level level, int teleportDelayMilisecond)
         {
             foreach (String gridID in EndersExtrasModule.Session.roomSwapOrderList.Keys)
             {
@@ -49,14 +49,14 @@ namespace Celeste.Mod.EndersExtras.Utils
                 {
                     for (int column = 1; column <= roomSwapTotalColumn; column++)
                     {
-                        ReplaceRoomAfterReloadEnd(gridID, roomSwapPrefix, row, column, level);
+                        ReplaceRoomAfterReloadEnd(gridID, roomSwapPrefix, row, column, level, teleportDelayMilisecond);
                     }
                 }
                 RoomModificationEventTrigger(gridID);
             }
         }
 
-        internal static async void ReplaceRoomAfterReloadEnd(string gridID, String roomSwapPrefix, int row, int column, global::Celeste.Level level)
+        internal static async void ReplaceRoomAfterReloadEnd(string gridID, String roomSwapPrefix, int row, int column, global::Celeste.Level level, int teleportDelayMilisecond)
         {
             while (EndersExtrasModule.reloadComplete != true)
             {
@@ -64,10 +64,10 @@ namespace Celeste.Mod.EndersExtras.Utils
             }
 
             //Logger.Log(LogLevel.Info, "EndersExtras/Utils_RoomSwap", $"Replace {EndersExtrasModule.Session.roomSwapOrderList[gridID][row - 1][column - 1]} >> {roomSwapPrefix}{row}{column}");
-            ReplaceRoom($"{roomSwapPrefix}{row}{column}", EndersExtrasModule.Session.roomSwapOrderList[gridID][row - 1][column - 1], level);
+            ReplaceRoom($"{roomSwapPrefix}{row}{column}", EndersExtrasModule.Session.roomSwapOrderList[gridID][row - 1][column - 1], level, teleportDelayMilisecond);
         }
 
-        static LevelData getRoomDataFromName(string roomName, Level level)
+        static LevelData GetRoomDataFromName(string roomName, Level level)
         {
             foreach (LevelData levelData in level.Session.MapData.Levels)
             {
@@ -77,15 +77,14 @@ namespace Celeste.Mod.EndersExtras.Utils
             return level.Session.LevelData; //returns current room if can't find (this should not happen)
         }
 
-        static void ReplaceRoom(String replaceSwapRoomName, String replaceTemplateRoomName, global::Celeste.Level level)
+        static void ReplaceRoom(String replaceSwapRoomName, String replaceTemplateRoomName, global::Celeste.Level level, int teleportDelayMilisecond)
         {
-            LevelData replaceSwapRoomData = getRoomDataFromName(replaceSwapRoomName, level);
-            LevelData replaceTemplateRoomData = getRoomDataFromName(replaceTemplateRoomName, level);
+            LevelData replaceSwapRoomData = GetRoomDataFromName(replaceSwapRoomName, level);
+            LevelData replaceTemplateRoomData = GetRoomDataFromName(replaceTemplateRoomName, level);
 
             //Logger.Log(LogLevel.Info, "EndersExtras/Utils_RoomSwap", $"Replacing room {replaceSwapRoomName} with the template {replaceTemplateRoomName}");
 
             // Avoid changing name, position
-            // FG and BG tiles don't even work smhmh
             replaceSwapRoomData.Entities = replaceTemplateRoomData.Entities;
             replaceSwapRoomData.Dummy = replaceTemplateRoomData.Dummy;
             //replaceSwapRoomData.Space = replaceTemplateRoomData.Space;
@@ -96,9 +95,9 @@ namespace Celeste.Mod.EndersExtras.Utils
             replaceSwapRoomData.Spawns = replaceTemplateRoomData.Spawns;
             replaceSwapRoomData.DefaultSpawn = replaceTemplateRoomData.DefaultSpawn;
 
-            //Tiles only SOMETIMES work, so i'll remove here so they consistently don't work
-            //replaceSwapRoomData.BgTiles = replaceTemplateRoomData.BgTiles;
-            //replaceSwapRoomData.FgTiles = replaceTemplateRoomData.FgTiles;
+            // Tiles can't be copy pasted like this
+            // replaceSwapRoomData.BgTiles = replaceTemplateRoomData.BgTiles;
+            // replaceSwapRoomData.FgTiles = replaceTemplateRoomData.FgTiles;
             replaceSwapRoomData.ObjTiles = replaceTemplateRoomData.ObjTiles;
 
             replaceSwapRoomData.Solids = replaceTemplateRoomData.Solids;
@@ -122,6 +121,56 @@ namespace Celeste.Mod.EndersExtras.Utils
             replaceSwapRoomData.HasGem = replaceTemplateRoomData.HasGem;
             replaceSwapRoomData.HasHeartGem = replaceTemplateRoomData.HasHeartGem;
             replaceSwapRoomData.HasCheckpoint = replaceTemplateRoomData.HasCheckpoint;
+
+            CloneTiles(replaceSwapRoomData, replaceTemplateRoomData, level, teleportDelayMilisecond);
+        }
+
+        private static async void CloneTiles(LevelData replaceSwapRoomData, LevelData replaceTemplateRoomData, Level level, int teleportDelayMilisecond)
+        {
+            // Logger.Log(LogLevel.Info, "EndersExtras/Utils_RoomSwap", $"Template {replaceTemplateRoomData.Name} >> Swap {replaceSwapRoomData.Name}");
+
+            Rectangle swapRoomBounds = replaceSwapRoomData.TileBounds;
+            swapRoomBounds.Location -= level.Session.MapData.TileBounds.Location;
+            Rectangle templateRoomBounds = replaceTemplateRoomData.TileBounds;
+            templateRoomBounds.Location -= level.Session.MapData.TileBounds.Location;
+
+            if (swapRoomBounds.Width != templateRoomBounds.Width || swapRoomBounds.Height != templateRoomBounds.Height)
+            {
+                Logger.Log(LogLevel.Warn, "EndersExtras/Utils_RoomSwap", $"Template Room {replaceTemplateRoomData.Name} and Swap Room {replaceSwapRoomData.Name} have differing sizes!\nTemplate: {templateRoomBounds.Width} x {templateRoomBounds.Height} tiles, Swap:  {swapRoomBounds.Width} x {swapRoomBounds.Height} tiles.");
+            }
+
+            for (int x = 0; x < templateRoomBounds.Width; x++) for (int y = 0; y < templateRoomBounds.Height; y++)
+            {
+                Point templateRoomPoint = new Point(templateRoomBounds.X + x, templateRoomBounds.Y + y);
+                Point swapRoomPoint = new Point(swapRoomBounds.X + x, swapRoomBounds.Y + y);
+
+                level.SolidTiles.Grid[swapRoomPoint.X, swapRoomPoint.Y] = level.SolidTiles.Grid[templateRoomPoint.X, templateRoomPoint.Y];
+                level.SolidsData[swapRoomPoint.X, swapRoomPoint.Y] = level.SolidsData[templateRoomPoint.X, templateRoomPoint.Y];
+                level.BgData[swapRoomPoint.X, swapRoomPoint.Y] = level.BgData[templateRoomPoint.X, templateRoomPoint.Y];
+            }
+
+            Autotiler.Generated genned = GFX.FGAutotiler.Generate(level.SolidsData, swapRoomBounds.X, swapRoomBounds.Y, templateRoomBounds.Width, templateRoomBounds.Height, forceSolid: false, '0', new Autotiler.Behaviour {
+                EdgesExtend = true,
+                EdgesIgnoreOutOfLevel = false,
+                PaddingIgnoreOutOfLevel = false
+            });
+            Autotiler.Generated gennedBG = GFX.BGAutotiler.Generate(level.BgData, swapRoomBounds.X, swapRoomBounds.Y, templateRoomBounds.Width, templateRoomBounds.Height, forceSolid: false, '0', new Autotiler.Behaviour {
+                EdgesExtend = true,
+                EdgesIgnoreOutOfLevel = false,
+                PaddingIgnoreOutOfLevel = false
+            });
+            int swapDelayMilisecond = teleportDelayMilisecond == 0 ? 0 : teleportDelayMilisecond + 150;
+            await Task.Delay(swapDelayMilisecond); // So you don't see the swap before you teleport
+            for (int x = 0; x < templateRoomBounds.Width; x++) for (int y = 0; y < templateRoomBounds.Height; y++)
+            {
+                Point swapRoomPoint = new Point(swapRoomBounds.X + x, swapRoomBounds.Y + y);
+                Point templateRoomPoint = new Point(templateRoomBounds.X + x, templateRoomBounds.Y + y);
+
+                level.SolidTiles.Tiles.Tiles[swapRoomPoint.X, swapRoomPoint.Y] = genned.TileGrid.Tiles[x, y];
+                level.BgTiles.Tiles.Tiles[swapRoomPoint.X, swapRoomPoint.Y] = gennedBG.TileGrid.Tiles[x, y];
+
+                level.SolidTiles.AnimatedTiles.tiles[swapRoomPoint.X, swapRoomPoint.Y] = level.SolidTiles.AnimatedTiles.tiles[templateRoomPoint.X, templateRoomPoint.Y];
+            }
         }
 
         internal static async void TemporarilyDisableTrigger(int millisecondDelay, string gridID)
@@ -397,9 +446,7 @@ namespace Celeste.Mod.EndersExtras.Utils
                             //Only continue if not leftmost or rightmost
                             if (roomCol != roomSwapTotalColumn && roomCol != 1)
                             {
-                                String leftRoom = EndersExtrasModule.Session.roomSwapOrderList[gridID][roomRow - 1][roomCol - 2];
-                                EndersExtrasModule.Session.roomSwapOrderList[gridID][roomRow - 1][roomCol - 2] = EndersExtrasModule.Session.roomSwapOrderList[gridID][roomRow - 1][roomCol];
-                                EndersExtrasModule.Session.roomSwapOrderList[gridID][roomRow - 1][roomCol] = leftRoom;
+                                (EndersExtrasModule.Session.roomSwapOrderList[gridID][roomRow - 1][roomCol - 2], EndersExtrasModule.Session.roomSwapOrderList[gridID][roomRow - 1][roomCol]) = (EndersExtrasModule.Session.roomSwapOrderList[gridID][roomRow - 1][roomCol], EndersExtrasModule.Session.roomSwapOrderList[gridID][roomRow - 1][roomCol - 2]);
                                 UpdateRooms();
                                 //teleportToRoom(getSwapRoomFromTemplateRoom(currentTemplateRoomName), player, level);
                             }
@@ -421,9 +468,7 @@ namespace Celeste.Mod.EndersExtras.Utils
                             //Only continue if not topmost or bottommost
                             if (roomRow != roomSwapTotalRow && roomRow != 1)
                             {
-                                String topRoom = EndersExtrasModule.Session.roomSwapOrderList[gridID][roomRow - 2][roomCol - 1];
-                                EndersExtrasModule.Session.roomSwapOrderList[gridID][roomRow - 2][roomCol - 1] = EndersExtrasModule.Session.roomSwapOrderList[gridID][roomRow][roomCol - 1];
-                                EndersExtrasModule.Session.roomSwapOrderList[gridID][roomRow][roomCol - 1] = topRoom;
+                                (EndersExtrasModule.Session.roomSwapOrderList[gridID][roomRow - 2][roomCol - 1], EndersExtrasModule.Session.roomSwapOrderList[gridID][roomRow][roomCol - 1]) = (EndersExtrasModule.Session.roomSwapOrderList[gridID][roomRow][roomCol - 1], EndersExtrasModule.Session.roomSwapOrderList[gridID][roomRow - 2][roomCol - 1]);
                                 UpdateRooms();
                                 //teleportToRoom(getSwapRoomFromTemplateRoom(currentTemplateRoomName), player, level);
                             }
@@ -520,7 +565,7 @@ namespace Celeste.Mod.EndersExtras.Utils
                 {
                     for (int column = 1; column <= roomSwapTotalColumn; column++)
                     {
-                        ReplaceRoom($"{roomSwapPrefix}{row}{column}", EndersExtrasModule.Session.roomSwapOrderList[gridID][row - 1][column - 1], level);
+                        ReplaceRoom($"{roomSwapPrefix}{row}{column}", EndersExtrasModule.Session.roomSwapOrderList[gridID][row - 1][column - 1], level, teleportDelayMilisecond);
                     }
                 }
                 //Logger.Log(LogLevel.Info, "EndersExtras/Utils_RoomSwap", "Updating rooms...");
@@ -539,7 +584,7 @@ namespace Celeste.Mod.EndersExtras.Utils
                 }
                 else
                 {
-                    LevelData toRoomData = getRoomDataFromName(teleportToRoomName, level);
+                    LevelData toRoomData = GetRoomDataFromName(teleportToRoomName, level);
                     Vector2 toRoomPos = toRoomData.Position;
 
                     await Task.Delay(teleportDelayMilisecond);

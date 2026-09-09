@@ -594,6 +594,16 @@ namespace Celeste.Mod.EndersExtras.Utils
             return intersectPos;
         }
 
+        public static Rectangle Scale(this Rectangle rectangle, float scaleFactor, bool scalePos = true, bool scaleLength = true)
+        {
+            int leftX = scalePos ? (int)(rectangle.X * scaleFactor) : rectangle.X;
+            int leftY = scalePos ? (int)(rectangle.Y * scaleFactor) : rectangle.Y;
+            int width = scaleLength ? (int)(rectangle.Width * scaleFactor) : rectangle.Width;
+            int height = scaleLength ? (int)(rectangle.Height * scaleFactor) : rectangle.Height;
+
+            return new Rectangle(leftX, leftY, width, height);
+        }
+
         /// <summary>
         /// Find the axis distance between 2 vectors (diff in x + diff in y)
         /// </summary>

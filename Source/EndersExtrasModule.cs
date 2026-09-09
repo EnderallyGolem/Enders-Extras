@@ -10,6 +10,7 @@ using System.Collections;
 using System.Reflection;
 using Celeste.Mod.EndersExtras.Entities.SoundRipple;
 using Celeste.Mod.EndersExtras.Entities.Utility;
+using MonoMod.Utils;
 
 // ReSharper disable PossibleInvalidCastExceptionInForeachLoop
 
@@ -135,7 +136,7 @@ public class EndersExtrasModule : EverestModule {
         {
             // This only exists so it updates when you respawn from debug. It umm still requires a transition/respawn to work lol
             // Also runs if SessionResetCause is ReenterMap
-            Utils_RoomSwap.ReupdateAllRooms(level);
+            Utils_RoomSwap.ReupdateAllRooms(level, 0);
 
             if (lastSessionResetCause == SessionResetCause.Debug || lastSessionResetCause == SessionResetCause.ReenterMap)
             {
@@ -280,7 +281,7 @@ public class EndersExtrasModule : EverestModule {
     {
         //Update the room-swap rooms. This is kind of here as a failsafe,
         //and also otherwise warping with debug mode permamently empty the swap rooms.
-        Utils_RoomSwap.ReupdateAllRooms();
+        Utils_RoomSwap.ReupdateAllRoomsBasic();
         orig(self);
     }
 
