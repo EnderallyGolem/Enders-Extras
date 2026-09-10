@@ -51,11 +51,11 @@ public class EndersExtrasModule : EverestModule {
         _CustomEntitySpriteBank = new SpriteBank(GFX.Game, "Graphics/EndersExtras/Sprites.xml");
     }
 
-    public enum SessionResetCause { None, LoadState, Debug, ReenterMap }
+    public enum SessionResetCause { None, LoadState, Debug, ReloadAssets, EnterMap }
 
     // Stores the previous cause of reset. Sometimes useful.
-    public static SessionResetCause lastSessionResetCause = SessionResetCause.None;
-    // If == 1, correct for resets if needed. Starts from 2 so it does not cause a reset when loading!
+    public static SessionResetCause lastSessionResetCause = SessionResetCause.EnterMap;
+    // If == 1, correct for resets if needed. Starts with SessionResetCause.EnterMap
     public static int timeSinceSessionReset = 2;
 
 
@@ -69,7 +69,7 @@ public class EndersExtrasModule : EverestModule {
         Everest.Events.AssetReload.OnAfterReload += ReloadCompleteFunc;
         Everest.Events.Level.OnBeforeUpdate += OnBeforeLevelUpdate;
         On.Celeste.Level.TransitionRoutine += Hook_TransitionRoutine;
-        On.Celeste.LevelLoader.StartLevel += Hook_StartMapFromBeginning;
+        On.Celeste.LevelLoader.StartLevel += Hook_EnterMap;
 
         On.Celeste.Player.Die += Hook_OnPlayerDeath;
         MethodInfo ILOrigDie = typeof(Player).GetMethod("orig_Die", BindingFlags.Public | BindingFlags.Instance)!;
@@ -96,7 +96,7 @@ public class EndersExtrasModule : EverestModule {
         Everest.Events.AssetReload.OnAfterReload -= ReloadCompleteFunc;
         Everest.Events.Level.OnBeforeUpdate -= OnBeforeLevelUpdate;
         On.Celeste.Level.TransitionRoutine -= Hook_TransitionRoutine;
-        On.Celeste.LevelLoader.StartLevel -= Hook_StartMapFromBeginning;
+        On.Celeste.LevelLoader.StartLevel -= Hook_EnterMap;
 
         On.Celeste.Player.Die -= Hook_OnPlayerDeath;
         Loadhook_Player_OrigDie?.Dispose(); Loadhook_Player_OrigDie = null;
@@ -124,21 +124,26 @@ public class EndersExtrasModule : EverestModule {
 
     private static void SessionResetFuncs(Level level)
     {
-        Utils_Shaders.LoadCustomShaders(forceReload: true);
+        Logger.Log(LogLevel.Info, "EndersExtras/Main", $"Session Reset! Cause: {lastSessionResetCause}");
 
-        if (Utils_DeathHandlerEntities.EnabledDeathHandler && lastSessionResetCause == SessionResetCause.Debug)
+        if (lastSessionResetCause is not SessionResetCause.EnterMap)
         {
-            Utils_DeathHandlerEntities.ResetFullResetAndBypassBetweenRooms(level);
+            if (Utils_DeathHandlerEntities.EnabledDeathHandler && lastSessionResetCause == SessionResetCause.Debug)
+            {
+                Utils_DeathHandlerEntities.ResetFullResetAndBypassBetweenRooms(level);
+            }
         }
 
+        Utils_Shaders.LoadCustomShaders(forceReload: true);
         if (Session.gimmickToggleTracker["enableRoomSwapFuncs"])
         {
+
             // This only exists so it updates when you respawn from debug. It umm still requires a transition/respawn to work lol
             // Also runs if SessionResetCause is ReenterMap
             Utils_RoomSwap.UpdateEnablingRoomSwapHooks(true);
             Utils_RoomSwap.ReupdateAllRooms(level, 0);
 
-            if (lastSessionResetCause == SessionResetCause.Debug || lastSessionResetCause == SessionResetCause.ReenterMap)
+            if (lastSessionResetCause is not (SessionResetCause.LoadState or SessionResetCause.None))
             {
                 // Check if require double reload - if room the player is in a grid
                 String currentRoom = level.Session.LevelData.Name;
@@ -154,11 +159,7 @@ public class EndersExtrasModule : EverestModule {
             }
         }
 
-
-        if (timeSinceSessionReset <= 1)
-        {
-            timeSinceSessionReset = 2;
-        }
+        if (timeSinceSessionReset <= 1) timeSinceSessionReset = 2;
     }
 
 
@@ -178,7 +179,7 @@ public class EndersExtrasModule : EverestModule {
         if (timeSinceSessionReset > 2)
         {
             timeSinceSessionReset = 0;
-            lastSessionResetCause = SessionResetCause.ReenterMap;
+            lastSessionResetCause = SessionResetCause.ReloadAssets;
         }
     }
     private static void ReloadCompleteFunc(bool silent)
@@ -223,9 +224,14 @@ public class EndersExtrasModule : EverestModule {
         }
     }
 
-    private static void Hook_StartMapFromBeginning(On.Celeste.LevelLoader.orig_StartLevel orig, global::Celeste.LevelLoader self)
+    private static void Hook_EnterMap(On.Celeste.LevelLoader.orig_StartLevel orig, global::Celeste.LevelLoader self)
     {
-        Utils_Shaders.LoadCustomShaders(forceReload: true);
+        //Utils_Shaders.LoadCustomShaders(forceReload: true);
+        if (timeSinceSessionReset > 2)
+        {
+            timeSinceSessionReset = 0;
+            lastSessionResetCause = SessionResetCause.EnterMap;
+        }
         orig(self);
     }
 

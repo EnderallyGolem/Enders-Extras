@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using Mono.Cecil.Cil;
 using Monocle;
+using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 
 namespace Celeste.Mod.EndersExtras.Utils
@@ -29,17 +31,23 @@ namespace Celeste.Mod.EndersExtras.Utils
             }
         }
 
+        private static ILHook? Loadhook_Level_OrigLoadLevel;
         private static void LoadHooks()
         {
             Logger.Log(LogLevel.Info, "EndersExtras/Utils_RoomSwap", $"Enabling Room-Swap Hooks.");
 
             On.Celeste.Player.IntroRespawnBegin += Hook_OnPlayerRespawn;
+            On.Celeste.Level.CreateEntityId += Hook_OnCreateEntityID;
+            MethodInfo ILOrigLoadLevel = typeof(Level).GetMethod("orig_LoadLevel", BindingFlags.Public | BindingFlags.Instance)!;
+            Loadhook_Level_OrigLoadLevel = new ILHook(ILOrigLoadLevel, Hook_ILOrigLoadLevel);
         }
         private static void UnloadHooks()
         {
             Logger.Log(LogLevel.Info, "EndersExtras/Utils_RoomSwap", $"Disabling Room-Swap Hooks.");
 
             On.Celeste.Player.IntroRespawnBegin -= Hook_OnPlayerRespawn;
+            On.Celeste.Level.CreateEntityId -= Hook_OnCreateEntityID;
+            Loadhook_Level_OrigLoadLevel?.Dispose(); Loadhook_Level_OrigLoadLevel = null;
         }
 
         private static void Hook_OnPlayerRespawn(On.Celeste.Player.orig_IntroRespawnBegin orig, global::Celeste.Player self)
@@ -48,6 +56,86 @@ namespace Celeste.Mod.EndersExtras.Utils
             //and also otherwise warping with debug mode permanently empty the swap rooms.
             ReupdateAllRoomsBasic();
             orig(self);
+        }
+
+        private static EntityID Hook_OnCreateEntityID(On.Celeste.Level.orig_CreateEntityId orig, Level level, LevelData levelData, EntityData entityData)
+        {
+            EntityID entityId = orig(level, levelData, entityData);
+            entityId.Level = GetTemplateEntityID(entityId.Level, level);
+            return entityId;
+        }
+
+        public static void Hook_ILOrigLoadLevel(ILContext il)
+        {
+            ILCursor cursor = new ILCursor(il);
+
+            // At EntityID entityId = new EntityID(levelData.Name, id);
+            // Replace levelData.Name for swap rooms with the template rooms
+            while (cursor.TryGotoNext(MoveType.After,
+                    instr => instr.MatchLdloca(out _),
+                    instr => instr.MatchLdloc3(),
+                    instr => instr.MatchLdfld(typeof(global::Celeste.LevelData), "Name")
+            ))
+            {
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate<Func<string, Level, string>>(GetTemplateEntityID);
+            }
+        }
+
+        private static String GetTemplateEntityID(string origRoomName, Level level)
+        {
+            // Logger.Log(LogLevel.Info, "EndersExtras/Utils_RoomSwap", $"the ILChangeEntityIDs is looking at origLevelName {origRoomName}. Level Name {level.Session.LevelData.Name}");
+
+            String roomName = level.Session.LevelData.Name;
+            List<int> roomPos = GetPosFromRoomName(roomName);
+
+            foreach (String gridID in EndersExtrasModule.Session.roomSwapOrderList.Keys)
+            {
+                String roomSwapPrefix = EndersExtrasModule.Session.roomSwapPrefix[gridID];
+
+                int row = roomPos[0]; int col = roomPos[1];
+
+                // Check if {roomSwapPrefix}{row}{column} matches current room name
+                String swapRoomName = $"{roomSwapPrefix}{row}{col}";
+                if (swapRoomName != roomName) continue;
+
+                // Found match! Replace that part with templateRoomName
+                String templateRoomName = EndersExtrasModule.Session.roomSwapOrderList[gridID][row - 1][col - 1];
+                return templateRoomName;
+            }
+            return origRoomName;
+        }
+
+        private static void ChangeAllEntityIDsToTemplate(Level level)
+        {
+            String roomName = level.Session.LevelData.Name;
+            List<int> roomPos = GetPosFromRoomName(roomName);
+
+            foreach (String gridID in EndersExtrasModule.Session.roomSwapOrderList.Keys)
+            {
+                String roomSwapPrefix = EndersExtrasModule.Session.roomSwapPrefix[gridID];
+
+                int row = roomPos[0]; int col = roomPos[1];
+
+                // Check if {roomSwapPrefix}{row}{column} matches current room name
+                String swapRoomName = $"{roomSwapPrefix}{row}{col}";
+                if (swapRoomName != roomName) continue;
+
+                // Found match! Replace that part with templateRoomName
+                String templateRoomName = EndersExtrasModule.Session.roomSwapOrderList[gridID][row - 1][col - 1];
+
+                // Replace for all (non UI, non global) entities in the room
+                foreach (Entity entity in level.Entities)
+                {
+                    if (entity.TagCheck(Tags.Global) || entity.TagCheck(Tags.HUD) || entity.TagCheck(TagsExt.SubHUD)) continue;
+
+                    if (entity is Decal or SolidTiles or BackgroundTiles or Player) continue;
+
+                    entity.SourceId = entity.SourceId with { Level = templateRoomName };
+                }
+
+                return;
+            }
         }
 
 
@@ -90,7 +178,7 @@ namespace Celeste.Mod.EndersExtras.Utils
                 int roomSwapTotalRow = EndersExtrasModule.Session.roomSwapRow[gridID];
                 int roomSwapTotalColumn = EndersExtrasModule.Session.roomSwapColumn[gridID];
                 String roomSwapPrefix = EndersExtrasModule.Session.roomSwapPrefix[gridID];
-                String roomTemplatePrefix = EndersExtrasModule.Session.roomTemplatePrefix[gridID];
+                //String roomTemplatePrefix = EndersExtrasModule.Session.roomTemplatePrefix[gridID];
 
                 for (int row = 1; row <= roomSwapTotalRow; row++)
                 {
@@ -99,6 +187,8 @@ namespace Celeste.Mod.EndersExtras.Utils
                         ReplaceRoomAfterReloadEnd(gridID, roomSwapPrefix, row, column, level, teleportDelayMilisecond);
                     }
                 }
+                // Update current room IDs. Sometimes needed, although usually the orig_LoadRoom handles it.
+                ChangeAllEntityIDsToTemplate(level);
                 RoomModificationEventTrigger(gridID);
             }
         }

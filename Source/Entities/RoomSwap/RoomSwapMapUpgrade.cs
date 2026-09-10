@@ -82,6 +82,8 @@ public class RoomSwapMapUpgrade : Entity
 
     public RoomSwapMapUpgrade(EntityData data, Vector2 offset, EntityID id) : base(data.Position + offset)
     {
+        Utils_RoomSwap.UpdateEnablingRoomSwapHooks(true);
+
         entityID = id;
         entityData = data;
         gridID = data.Attr("gridId", "1");
@@ -90,7 +92,7 @@ public class RoomSwapMapUpgrade : Entity
         float floatAmplitude = data.Float("floatAmplitude", 0.1f);
         //int changeLevel = data.Int("changeLevel", 1);
         //bool setLevel = data.Bool("setLevel", false);
-        bool oneTime = data.Bool("oneTime", true);
+        //bool oneTime = data.Bool("oneTime", true);
 
         Depth = 20;
 

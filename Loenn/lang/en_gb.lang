@@ -299,7 +299,7 @@ triggers.EndersExtras/DeathHandlerDeathBypassTrigger.attributes.description.show
 
 # RoomSwap Controller
 entities.EndersExtras/RoomSwapController.placements.name.normal=Room-Swap Controller
-entities.EndersExtras/RoomSwapController.placements.description.normal=Informs the level on how many rows/cols to swap.\nThis should be loaded once before entering any swap-zones (load it at the start of the map, or global load it).\nRoom-Swap Respawn Force Same Room Triggers should be added in each template room for respawn points to work properly,\nand Room-Swap Change Respawn Triggers should be used in place of the regular ones.\n\nNote: Collectables/Gates/etc don't properly save between swaps, since the EntityID is used to track if they are obtained/used/etc\nand that is dependent on room name. Avoid including them in swapping rooms!
+entities.EndersExtras/RoomSwapController.placements.description.normal=Informs the level on how many rows/cols to swap.\nThis should be loaded once before entering any swap-zones (load it at the start of the map, or global load it).\nRoom-Swap Respawn Force Same Room Triggers should be added in each template room for respawn points to work properly,\nand Room-Swap Change Respawn Triggers should be used in place of the regular ones.
 entities.EndersExtras/RoomSwapController.attributes.description.gridId=The identifier (any string) for this set of moveable grid. One Room-Swap controller sets information for 1 moveable grid.
 entities.EndersExtras/RoomSwapController.attributes.description.totalRows=The total number of rows in the moveable grid.
 entities.EndersExtras/RoomSwapController.attributes.description.totalColumns=The total number of columns in the moveable grid.

@@ -65,7 +65,7 @@
 
 
 ###### Room-Swap
-- Create a grid of rooms that can swap positions with each other (baring some limitations: no collectables).
+- Create a grid of rooms that can swap positions with each other. (This is done by copying template rooms into the playable swap rooms.)
 - You can check out how they work in my [Crossroads Contest map](https://www.youtube.com/watch?v=xB6RLAKZC0g).
 	- Setup a grid with Room-Swap Controller (ensure it is loaded before entering the grid)
 	- Create template rooms (with names matching the controller) and actual rooms of the same size. Actual rooms are empty, template rooms have the actual room.
@@ -164,6 +164,7 @@ Changelog:
 	
 - Room-Swap:
 	- Foreground and Background Tiles are now copied during swaps.
+	- Collectables/Locks/Stuff dependent on EntityID now works properly with swaps. Probably. I hope.
 	- Fixed the Requested texture that does not exist warning appearing in logs, even when there are no missing textures.
 
 ### 1.0.1:

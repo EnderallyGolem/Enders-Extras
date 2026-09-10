@@ -65,6 +65,8 @@ public class RoomSwapBox : Solid
     public RoomSwapBox(EntityData data, Vector2 levelOffset)
         : this(data.Position + levelOffset)
     {
+        Utils_RoomSwap.UpdateEnablingRoomSwapHooks(true);
+
         entityData = data;
         gridId = data.Attr("gridId", "1");
 

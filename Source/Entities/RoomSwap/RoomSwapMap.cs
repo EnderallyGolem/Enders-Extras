@@ -46,6 +46,8 @@ public class RoomSwapMap : Entity
 
     public RoomSwapMap(EntityData data, Vector2 offset) : base(data.Position + offset)
     {
+        Utils_RoomSwap.UpdateEnablingRoomSwapHooks(true);
+
         entityData = data;
         this.offset = offset;
         gridID = data.Attr("gridId", "1");
