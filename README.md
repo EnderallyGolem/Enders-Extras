@@ -164,6 +164,7 @@ Changelog:
 	
 - Room-Swap:
 	- Foreground and Background Tiles are now copied during swaps.
+	- Fixed the Requested texture that does not exist warning appearing in logs, even when there are no missing textures.
 
 ### 1.0.1:
 - Sound Ripples: Fixed seeker bell detection of player persisting past screen transitions

@@ -1,13 +1,58 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Monocle;
+using MonoMod.RuntimeDetour;
 
 namespace Celeste.Mod.EndersExtras.Utils
 {
-    static internal class Utils_RoomSwap
+    internal static class Utils_RoomSwap
     {
+        // Hooks
+        #region Hooks
+
+        private static bool EnabledRoomSwapHooks { get; set; } = false;
+
+        internal static void UpdateEnablingRoomSwapHooks(bool enable)
+        {
+            if (enable && !EnabledRoomSwapHooks)
+            {
+                EnabledRoomSwapHooks = true;
+                LoadHooks();
+            }
+            if (!enable && EnabledRoomSwapHooks)
+            {
+                EnabledRoomSwapHooks = false;
+                UnloadHooks();
+            }
+        }
+
+        private static void LoadHooks()
+        {
+            Logger.Log(LogLevel.Info, "EndersExtras/Utils_RoomSwap", $"Enabling Room-Swap Hooks.");
+
+            On.Celeste.Player.IntroRespawnBegin += Hook_OnPlayerRespawn;
+        }
+        private static void UnloadHooks()
+        {
+            Logger.Log(LogLevel.Info, "EndersExtras/Utils_RoomSwap", $"Disabling Room-Swap Hooks.");
+
+            On.Celeste.Player.IntroRespawnBegin -= Hook_OnPlayerRespawn;
+        }
+
+        private static void Hook_OnPlayerRespawn(On.Celeste.Player.orig_IntroRespawnBegin orig, global::Celeste.Player self)
+        {
+            //Update the room-swap rooms. This is kind of here as a failsafe,
+            //and also otherwise warping with debug mode permanently empty the swap rooms.
+            ReupdateAllRoomsBasic();
+            orig(self);
+        }
+
+
+        #endregion
+
         // Event Listener for when room modification occurs
         internal static event EventHandler<RoomModificationEventArgs> RoomModificationEvent;
         internal class RoomModificationEventArgs : EventArgs
@@ -18,6 +63,8 @@ namespace Celeste.Mod.EndersExtras.Utils
                 this.gridID = gridID;
             }
         }
+
+        // Umm like literally everything else
 
         internal static void RoomModificationEventTrigger(string gridID)
         {
@@ -711,12 +758,12 @@ namespace Celeste.Mod.EndersExtras.Utils
         internal static List<int> GetPosFromRoomName(String roomName)
         {
             int len = roomName.Length;
-            int row; int col;
+            int row;
 
             if (char.IsDigit(roomName[len - 1]) && char.IsDigit(roomName[len - 2]))
             {
                 row = roomName[len - 2] - '0';
-                col = roomName[len - 1] - '0';
+                var col = roomName[len - 1] - '0';
                 return [row, col];
             }
             else

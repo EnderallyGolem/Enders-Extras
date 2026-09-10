@@ -189,10 +189,16 @@ public class RoomSwapMap : Entity
                         int frameIndex = -1;
                         MTexture iconTexture;
 
-                        // Check if animated, and if so, how many frames (idk if there's a better way of doing this that doesn't spam errors)
+                        // Check if animated, and if so, how many frames
+                        MTexture? DoNotTheCallbackSpam(Atlas atlas, string id)
+                        {
+                            return atlas.DefaultFallback != null || atlas.textures.TryGetValue("__fallback", out _) ? atlas.DefaultFallback : null;
+                        }
+
+                        Everest.Events.Atlas.OnGetCustomFallback += DoNotTheCallbackSpam;
                         while (true)
                         {
-                            iconTexture = GFX.Game[$"{folderPath}/{iconFilePrefixLevel}{roomPosSuffix}_{(frameIndex + 1)}"];
+                            iconTexture = GFX.Game[$"{folderPath}/{iconFilePrefixLevel}{roomPosSuffix}_{frameIndex + 1}"];
 
                             if (iconTexture.AtlasPath == "__fallback")
                             {
@@ -200,6 +206,7 @@ public class RoomSwapMap : Entity
                             }
                             frameIndex++;
                         }
+                        Everest.Events.Atlas.OnGetCustomFallback -= DoNotTheCallbackSpam;
 
                         // Set iconTexture depending on if its animated or not
                         if (frameIndex == -1)
@@ -258,7 +265,6 @@ public class RoomSwapMap : Entity
             else
             {
                 // A slightly less resource intensive version of the code above that takes animation into account
-
                 Components.RemoveAll<Image>();
 
                 //Background Image
@@ -267,7 +273,6 @@ public class RoomSwapMap : Entity
                 //Icons
                 for (int row = 1; row <= EndersExtrasModule.Session.roomSwapRow[gridID]; row++)
                 {
-                    List<int> iconAnimListRow = [];
                     for (int col = 1; col <= EndersExtrasModule.Session.roomSwapColumn[gridID]; col++)
                     {
                         string roomPosSuffix = roomPosSuffixList[row - 1][col - 1];

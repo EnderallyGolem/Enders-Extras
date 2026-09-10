@@ -16,7 +16,11 @@ public class EndersExtrasModuleSession : EverestModuleSession {
     public Dictionary<string, string> activateSoundEvent2 { get; set; } = new() { };
     public Dictionary<string, int> roomMapLevel { get; set; } = new() { };
 
-    public bool enableRoomSwapFuncs;
+
+    public Dictionary<string, bool> gimmickToggleTracker { get; set; } = new ()
+    {
+        {"enableRoomSwapFuncs", false},
+    };
 
     // 2D list containing template room names. The index matches up with the swap room locations.
     public Dictionary<string, List<List<string>>> roomSwapOrderList { get; set; } = new() { };

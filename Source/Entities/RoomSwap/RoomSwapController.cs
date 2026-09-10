@@ -28,7 +28,8 @@ public class RoomSwapController : Entity
         EndersExtrasModule.Session.activateSoundEvent1[gridID] = data.Attr("activateSoundEvent1", "");
         EndersExtrasModule.Session.activateSoundEvent2[gridID] = data.Attr("activateSoundEvent2", "");
 
-        EndersExtrasModule.Session.enableRoomSwapFuncs = true;
+        EndersExtrasModule.Session.gimmickToggleTracker["enableRoomSwapFuncs"] = true;
+        Utils_RoomSwap.UpdateEnablingRoomSwapHooks(true);
     }
     public override void Added(Scene scene)
     {

@@ -10,7 +10,6 @@ using System.Collections;
 using System.Reflection;
 using Celeste.Mod.EndersExtras.Entities.SoundRipple;
 using Celeste.Mod.EndersExtras.Entities.Utility;
-using MonoMod.Utils;
 
 // ReSharper disable PossibleInvalidCastExceptionInForeachLoop
 
@@ -75,7 +74,6 @@ public class EndersExtrasModule : EverestModule {
         On.Celeste.Player.Die += Hook_OnPlayerDeath;
         MethodInfo ILOrigDie = typeof(Player).GetMethod("orig_Die", BindingFlags.Public | BindingFlags.Instance)!;
         Loadhook_Player_OrigDie = new ILHook(ILOrigDie, Hook_ILOrigDie);
-        On.Celeste.Player.IntroRespawnBegin += Hook_OnPlayerRespawn;
         //On.Celeste.OuiChapterPanel.
         On.Celeste.OuiChapterPanel.Render += Hook_OuiChapterPanelRender;
         IL.Celeste.OuiChapterPanel.Render += ILHook_OuiChapterPanelRender;
@@ -102,7 +100,6 @@ public class EndersExtrasModule : EverestModule {
 
         On.Celeste.Player.Die -= Hook_OnPlayerDeath;
         Loadhook_Player_OrigDie?.Dispose(); Loadhook_Player_OrigDie = null;
-        On.Celeste.Player.IntroRespawnBegin -= Hook_OnPlayerRespawn;
         On.Celeste.OuiChapterPanel.Render -= Hook_OuiChapterPanelRender;
         IL.Celeste.OuiChapterPanel.Render -= ILHook_OuiChapterPanelRender;
         On.Celeste.OuiChapterPanel._FixTitleLength -= Hook_OuiChapterPanelFixTitleLength;
@@ -117,8 +114,10 @@ public class EndersExtrasModule : EverestModule {
 
     private static void UnloadTempHooks()
     {
+        // Ran on mod exit or entering new map
         Utils_CassetteManager.DisableHooks();
         Utils_DeathHandlerEntities.DisableHooks();
+        Utils_RoomSwap.UpdateEnablingRoomSwapHooks(false);
         DreamDroplet.DisableHooks();
     }
 
@@ -132,19 +131,20 @@ public class EndersExtrasModule : EverestModule {
             Utils_DeathHandlerEntities.ResetFullResetAndBypassBetweenRooms(level);
         }
 
-        if (EndersExtrasModule.Session.enableRoomSwapFuncs)
+        if (Session.gimmickToggleTracker["enableRoomSwapFuncs"])
         {
             // This only exists so it updates when you respawn from debug. It umm still requires a transition/respawn to work lol
             // Also runs if SessionResetCause is ReenterMap
+            Utils_RoomSwap.UpdateEnablingRoomSwapHooks(true);
             Utils_RoomSwap.ReupdateAllRooms(level, 0);
 
             if (lastSessionResetCause == SessionResetCause.Debug || lastSessionResetCause == SessionResetCause.ReenterMap)
             {
                 // Check if require double reload - if room the player is in a grid
                 String currentRoom = level.Session.LevelData.Name;
-                foreach (String gridID in EndersExtrasModule.Session.roomSwapOrderList.Keys)
+                foreach (String gridID in Session.roomSwapOrderList.Keys)
                 {
-                    String roomSwapPrefix = EndersExtrasModule.Session.roomSwapPrefix[gridID];
+                    String roomSwapPrefix = Session.roomSwapPrefix[gridID];
                     if (currentRoom.Contains(roomSwapPrefix))
                     {
                         // Is in one! Reload level again and break out of the loop.
@@ -275,14 +275,6 @@ public class EndersExtrasModule : EverestModule {
                 conditionalBirdTutorial.UpdateConditionTracking_Death();
             }
         }
-    }
-
-    public static void Hook_OnPlayerRespawn(On.Celeste.Player.orig_IntroRespawnBegin orig, global::Celeste.Player self)
-    {
-        //Update the room-swap rooms. This is kind of here as a failsafe,
-        //and also otherwise warping with debug mode permamently empty the swap rooms.
-        Utils_RoomSwap.ReupdateAllRoomsBasic();
-        orig(self);
     }
 
     private static void Hook_OuiChapterPanelRender(On.Celeste.OuiChapterPanel.orig_Render orig, OuiChapterPanel self)
