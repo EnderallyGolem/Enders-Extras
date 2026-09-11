@@ -177,7 +177,18 @@ public class CameraSplineTargetTrigger : CameraTargetTrigger
             { player.Die(Vector2.Zero); return; }
         }
 
-        if (killOffscreenVertical && player.Top > currCamera.Bottom && player.Top > finalCamera.Bottom) player.Die(Vector2.Zero);
+        if (killOffscreenVertical && player.Top > currCamera.Bottom && player.Top > finalCamera.Bottom)
+        {
+            if (SaveData.Instance.Assists.Invincible)
+            {
+                player.Play("event:/game/general/assist_screenbottom");
+                player.Bounce(finalCamera.Bottom);
+            }
+            else
+            {
+                player.Die(Vector2.Zero);
+            }
+        }
     }
 
     private float CalculateDistanceCoordLock(Vector2 vec1, Vector2 vec2)

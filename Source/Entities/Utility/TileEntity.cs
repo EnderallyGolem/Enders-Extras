@@ -32,14 +32,19 @@ public class TileEntity : Solid
 
     private TileEntity? master;
 
-    public List<TileEntity>? Group;
+    private List<TileEntity>? Group;
 
-    public Point GroupBoundsMin;
-    public Point GroupBoundsMax;
+    private Point GroupBoundsMin;
+    private Point GroupBoundsMax;
 
     private readonly bool dashBlock;
     private readonly bool dashBlockPermament;
     private readonly string dashBlockBreakSound;
+
+    private LightOcclude? lightOccludeComponent;
+    private readonly bool occludeLight;
+    private readonly bool collidableSetting;
+    private readonly string disableFlag;
 
     public bool HasGroup
     {
@@ -57,7 +62,7 @@ public class TileEntity : Solid
 
     public TileEntity(Vector2 position, float width, float height, EntityID id, char tileType, char tiletypeOffscreen, int depth, bool backgroundTiles, bool collidable, bool occludeLight, string colourStr, bool allowMergeDifferentType = false, bool allowMerge = true,
         bool extendOffscreen = false, bool noEdges = false, List<bool>? offDirecBoolList = null, bool locationSeeded = false,
-        bool dashBlock = false, bool dashBlockPermament = false, String dashBlockBreakSound = "")
+        bool dashBlock = false, bool dashBlockPermament = false, String dashBlockBreakSound = "", String disableFlag = "")
     : base(position, width, height, safe: true)
     {
         
@@ -77,9 +82,13 @@ public class TileEntity : Solid
         this.dashBlockBreakSound = dashBlockBreakSound;
         this.colour = Calc.HexToColorWithAlpha(colourStr);
 
+        this.occludeLight = occludeLight;
+        this.collidableSetting = collidable;
+        this.disableFlag = disableFlag;
+
         this.id = id;
 
-        if (occludeLight) Add(new LightOcclude());
+        if (occludeLight) Add(lightOccludeComponent = new LightOcclude());
         if (!collidable)
         {
             Collidable = false;
@@ -91,12 +100,43 @@ public class TileEntity : Solid
         OnDashCollide = OnDashed;
     }
 
+    public override void Update()
+    {
+        base.Update();
+        FlagDisableStuff();
+    }
+
+    float opacity = 1f;
+    private void FlagDisableStuff()
+    {
+        if (disableFlag == "") return;
+
+        // Flag controlled appearing/disappearing (ignore if no disableFlag)
+        bool deactivate = Utils_General.AreFlagsEnabled(SceneAs<Level>().Session, disableFlag, false);
+        if (deactivate)
+        {
+            if (opacity > 0) opacity += -0.1f;
+            Collidable = false; AllowStaticMovers = false;
+            lightOccludeComponent = null;
+        }
+        else {
+            if (opacity < 1) opacity += 0.1f;
+            Collidable = collidableSetting;
+            AllowStaticMovers = Collidable;
+            if (occludeLight && lightOccludeComponent == null)
+            {
+                Add(lightOccludeComponent = new LightOcclude());
+            }
+        }
+        if (tiles is not null) tiles.Color = colour * opacity;
+    }
+
     private Vector2 relativePos;
 
     public TileEntity(EntityData data, Vector2 offset, EntityID id)
         : this(data.Position + offset, data.Width, data.Height, id, data.Char("tiletype", '3'), data.Char("tiletypeOffscreen", '◯'), data.Int("Depth", -9000), data.Bool("backgroundTiles", false), data.Bool("collidable", true), data.Bool("occludeLight", true), data.Attr("colour", "ffffffff"), data.Bool("allowMergeDifferentType", false), data.Bool("allowMerge", true), data.Bool("extendOffscreen", true), data.Bool("noEdges", false),
               [data.Bool("offU", true), data.Bool("offUR", true), data.Bool("offR", true), data.Bool("offDR", true), data.Bool("offD", true), data.Bool("offDL", true), data.Bool("offL", true), data.Bool("offUL", true)], data.Bool("locationSeeded", false),
-              data.Bool("dashBlock", false), data.Bool("dashBlockPermament", true), data.Attr("dashBlockBreakSound", "")
+              data.Bool("dashBlock", false), data.Bool("dashBlockPermament", true), data.Attr("dashBlockBreakSound", ""), data.Attr("disableFlag", "")
         )
     {
         relativePos = data.Position;
@@ -214,6 +254,8 @@ public class TileEntity : Solid
             if (locationSeeded) { Calc.PopRandom(); }
 
         }
+
+        FlagDisableStuff(); // Force disable if disableFlag is set.
     }
 
     private void AddToGroupAndFindChildren(TileEntity from, List<Entity>? entities = null)

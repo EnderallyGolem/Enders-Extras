@@ -33,6 +33,7 @@ local tileEntity = {
                 dashBlock = false,
                 dashBlockPermament = true,
                 dashBlockBreakSound = "event:/game/general/wall_break_stone",
+                disableFlag = "",
             }
         }
     }
@@ -44,6 +45,7 @@ tileEntity.fieldOrder = {
     "backgroundTiles", "collidable", "occludeLight", "allowMerge", "allowMergeDifferentType",
     "locationSeeded", "Depth", "colour", "surfaceSoundIndex",
     "dashBlock", "dashBlockPermament", "dashBlockBreakSound",
+    "disableFlag",
     "offUL", "offU", "offUR", "offR", "offDR", "offD", "offDL", "offL",
     "noEdges", "extendOffscreen"
 }

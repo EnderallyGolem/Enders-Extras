@@ -34,6 +34,7 @@ entities.EndersExtras/TileEntity.attributes.description.offD=The offscreen tilet
 entities.EndersExtras/TileEntity.attributes.description.offDL=The offscreen tiletype will be used if it extends offscreen to the bottom left.
 entities.EndersExtras/TileEntity.attributes.description.offL=The offscreen tiletype will be used if it extends offscreen to the left.
 entities.EndersExtras/TileEntity.attributes.description.offUL=The offscreen tiletype will be used if it extends offscreen to the top left.
+entities.EndersExtras/TileEntity.attributes.description.disableFlag=If specified, the tile entity disappears (no light occlude, no collision, not visible) if this flag is enabled.\nA list of flags in the format "flagA, flagB, !flagC | flagD, flagE" can be specified.\nThis means (flagA and flagB and not flagC) or (flagD and flagE).
 
 
 # Conditional Tutorial Bird

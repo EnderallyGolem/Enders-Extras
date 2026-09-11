@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using Monocle;
+﻿using Monocle;
 using Microsoft.Xna.Framework;
 using Celeste.Mod.Entities;
 using Celeste.Mod.EndersExtras.Utils;

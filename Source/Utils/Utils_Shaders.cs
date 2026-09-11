@@ -26,11 +26,11 @@ namespace Celeste.Mod.EndersExtras.Utils
 
         internal static void LoadCustomShaders(bool forceReload = false)
         {
-            // Disable first
-            DisableShaders();
-
             if (!_loadedShaders || forceReload)
             {
+                // Disable first, just in case
+                DisableShaders();
+
                 tempRender = VirtualContent.CreateRenderTarget(
                     "tempRender",
                     width: 320,

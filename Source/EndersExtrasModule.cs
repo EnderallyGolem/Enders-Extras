@@ -134,7 +134,10 @@ public class EndersExtrasModule : EverestModule {
             }
         }
 
-        Utils_Shaders.LoadCustomShaders(forceReload: true);
+        // If resetcause is entermap, custom shaders has probably just loaded, so don't force
+        // Otherwise this should require a force reload
+        Utils_Shaders.LoadCustomShaders(forceReload: lastSessionResetCause != SessionResetCause.EnterMap);
+
         if (Session.gimmickToggleTracker["enableRoomSwapFuncs"])
         {
 
@@ -226,7 +229,7 @@ public class EndersExtrasModule : EverestModule {
 
     private static void Hook_EnterMap(On.Celeste.LevelLoader.orig_StartLevel orig, global::Celeste.LevelLoader self)
     {
-        //Utils_Shaders.LoadCustomShaders(forceReload: true);
+        Utils_Shaders.LoadCustomShaders(forceReload: true);
         if (timeSinceSessionReset > 2)
         {
             timeSinceSessionReset = 0;

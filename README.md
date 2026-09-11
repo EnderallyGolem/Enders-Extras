@@ -152,9 +152,13 @@ Changelog:
 ### 1.1.0:
 - Utilities:
 	- New entities: Mod Settings NPC, Flag Invisible Barrier, Dream Droplet
-	- Modified Camera Spline Trigger to work properly with extended camera dynamics
+	- Tile Entity: 
+		- Added Disable Flag option. Toggles whether if the tile entity is visible, collidable, and occludes light.
+	- Camera Spline Trigger:
+		- The camera now properly with extended camera dynamics
+		- With assist mode and Kill Offscreen Vertical, the player now bounces off the bottom of the screen
 
-- Death Handler
+- Death Handler:
 	- Fixed crash with newer blender versions
 	- Attempted to fixed bug that prevents some entities from working the first time you load a room with entities, 
 	  after leaving and reentering the map

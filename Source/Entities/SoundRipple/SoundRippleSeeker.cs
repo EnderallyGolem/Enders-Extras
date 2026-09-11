@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Celeste.Mod.EndersExtras.Entities.Misc;
 using Celeste.Mod.EndersExtras.Entities.Utility;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
@@ -26,7 +25,7 @@ public class SoundRippleSeeker : Seeker
     public override void Update()
     {
         base.Update();
-        this.canSeePlayer = false;
+        canSeePlayer = false;
         if (!hasSpotlight) Light.Color *= 0;
         if (dieInBarrier) KillIfInBarrier();
     }
@@ -46,16 +45,16 @@ public class SoundRippleSeeker : Seeker
 
     private void Kys()
     {
-        Entity entity = new Entity(this.Position);
-        entity.Add((Component) new DeathEffect(Color.HotPink, new Vector2?(this.Center - this.Position))
+        Entity entity = new Entity(Position);
+        entity.Add((Component) new DeathEffect(Color.HotPink, Center - Position)
         {
             OnEnd = (System.Action) (entity.RemoveSelf)
         });
         entity.Depth = -1000000;
-        this.Scene.Add(entity);
-        Audio.Play("event:/game/05_mirror_temple/seeker_death", this.Position);
-        this.RemoveSelf();
-        this.dead = true;
+        Scene.Add(entity);
+        Audio.Play("event:/game/05_mirror_temple/seeker_death", Position);
+        RemoveSelf();
+        dead = true;
     }
 
     internal bool CanSeePlayerHook(Player? player, bool returnVal)
@@ -77,7 +76,7 @@ public class SoundRippleSeeker : Seeker
                 // Line of sight check
                 bool origCollidable = tileEntity.Collidable;
                 tileEntity.Collidable = true;
-                bool viewBlocked = tileEntity.CollideLine(this.Center, player.Center);
+                bool viewBlocked = tileEntity.CollideLine(Center, player.Center);
                 tileEntity.Collidable = origCollidable;
                 if (viewBlocked) return false;
             }
