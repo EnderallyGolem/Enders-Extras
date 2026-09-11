@@ -3,7 +3,7 @@ local defaultTexture = "objects/EndersExtras/roomSwapMap/upgradeicon"
 
 local roomSwapMapUpgrade = {
     name = "EndersExtras/RoomSwapMapUpgrade",
-    depth = -10550,
+    depth = 20,
     -- offset = {-8, -8},
     texture = "objects/EndersExtras/roomSwapMap/upgradeicon",
     placements = {

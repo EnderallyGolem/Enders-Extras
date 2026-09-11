@@ -202,7 +202,7 @@ public class RoomSwapBox : Solid
 
             if (dir == -Vector2.UnitY)
             {
-                checkSucceed = Utils_RoomSwap.ModifyRooms(modifyTypeDown, modifySilently, player, SceneAs<Level>(), gridId, teleportDelayMilisecond: 1, flashEffect: flashEffect); //No delay otherwise clip inside
+                checkSucceed = Utils_RoomSwap.ModifyRooms(modifyTypeDown, modifySilently, player, SceneAs<Level>(), gridId, teleportDelayMilisecond: 1, flashEffect: flashEffect); //Little delay otherwise clip inside
             }
             if (checkSucceed) { hitEffects(); }
             return checkSucceed;

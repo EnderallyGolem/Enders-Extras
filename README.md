@@ -69,7 +69,6 @@
 - You can check out how they work in my [Crossroads Contest map](https://www.youtube.com/watch?v=xB6RLAKZC0g).
 	- Setup a grid with Room-Swap Controller (ensure it is loaded before entering the grid)
 	- Create template rooms (with names matching the controller) and actual rooms of the same size. Actual rooms are empty, template rooms have the actual room.
-	- Add Room-Swap Respawn Force Same Room Triggers in each template room.
 	- Use Updating Change Respawn Triggers instead of the regular trigger.
 	- Change room order using Room-Swap Breaker Box or Room-Swap Modify Room Trigger.
 	- Create a map with Room-Swap Map. Implement map upgrades with Room-Swap Map Upgrade.
@@ -163,9 +162,12 @@ Changelog:
 	- Modified Throwable Respawn Point's hitbox to match Theo Crystals in width. So uhh it doesn't fall through the ground when throwing it next to a wall.
 	
 - Room-Swap:
+	- Room-Swap Respawn Force Same Room Triggers have been removed - spawnpoints are automatically updated when using Room-Swap.
 	- Foreground and Background Tiles are now copied during swaps.
 	- Collectables/Locks/Stuff dependent on EntityID now works properly with swaps. Probably. I hope.
+	- Readded HUD Layer toggle for Room-Swap Maps. I don't know why it disappeared.
 	- Fixed the Requested texture that does not exist warning appearing in logs, even when there are no missing textures.
+	- Fixed wrong depth for Room-Swap maps and map upgrades in loenn
 
 ### 1.0.1:
 - Sound Ripples: Fixed seeker bell detection of player persisting past screen transitions

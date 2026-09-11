@@ -36,6 +36,7 @@ namespace Celeste.Mod.EndersExtras.Utils
         {
             Logger.Log(LogLevel.Info, "EndersExtras/Utils_RoomSwap", $"Enabling Room-Swap Hooks.");
 
+            Everest.Events.Level.OnLoadLevel += Event_LoadLevel;
             On.Celeste.Player.IntroRespawnBegin += Hook_OnPlayerRespawn;
             On.Celeste.Level.CreateEntityId += Hook_OnCreateEntityID;
             MethodInfo ILOrigLoadLevel = typeof(Level).GetMethod("orig_LoadLevel", BindingFlags.Public | BindingFlags.Instance)!;
@@ -45,9 +46,49 @@ namespace Celeste.Mod.EndersExtras.Utils
         {
             Logger.Log(LogLevel.Info, "EndersExtras/Utils_RoomSwap", $"Disabling Room-Swap Hooks.");
 
+            Everest.Events.Level.OnLoadLevel -= Event_LoadLevel;
             On.Celeste.Player.IntroRespawnBegin -= Hook_OnPlayerRespawn;
             On.Celeste.Level.CreateEntityId -= Hook_OnCreateEntityID;
             Loadhook_Level_OrigLoadLevel?.Dispose(); Loadhook_Level_OrigLoadLevel = null;
+        }
+
+        private static void Event_LoadLevel(Level level, Player.IntroTypes introType, bool isFromLoader)
+        {
+            DoTheRespawnPositionChangeThingy(level);
+        }
+
+        private static void DoTheRespawnPositionChangeThingy(Level level)
+        {
+            Vector2 respawnOffset = Vector2.Zero;
+
+            //Get random spawnpoint
+            Vector2 randomSpawnPos = level.Session.LevelData.Spawns[0];
+
+            //Check all rooms one by one for location of this room's spawnpoint.
+            //The spawnpoint pos is shuffled at this point and hence is likely in some random swap room.
+            foreach (LevelData levelData in level.Session.MapData.Levels)
+            {
+                //Logger.Log(LogLevel.Info, "EndersExtras/RoomSwap/TransitionChangeRespawnTrigger", $"Checking if spawnpoint at {randomSpawnPos.X} {randomSpawnPos.Y} are from {levelData.Name}");
+                //Logger.Log(LogLevel.Info, "EndersExtras/RoomSwap/TransitionChangeRespawnTrigger", $"level pos: {levelData.Position.X} {levelData.Position.Y}. Size: {levelData.Bounds.Width} {levelData.Bounds.Height}");
+                if (levelData.Position.X < randomSpawnPos.X && levelData.Position.Y < randomSpawnPos.Y &&
+                    levelData.Position.X + levelData.Bounds.Width > randomSpawnPos.X &&
+                    levelData.Position.Y + levelData.Bounds.Height > randomSpawnPos.Y)
+                {
+                    respawnOffset = level.LevelOffset - levelData.Position;
+                    //Logger.Log(LogLevel.Info, "EndersExtras/RoomSwap/TransitionChangeRespawnTrigger", $"Yes! Updating respawnOffset to {respawnOffset.Value.X} {respawnOffset.Value.Y}");
+                    break;
+                }
+            }
+
+            // Change spawnpoint location
+            for (int i = 0; i < level.Session.LevelData.Spawns.Count; i++)
+            {
+                level.Session.LevelData.Spawns[i] += respawnOffset;
+            }
+
+            // Same for DefaultSpawn, if it exists.
+            Vector2? defaultSpawnPos = level.Session.LevelData.DefaultSpawn;
+            if (defaultSpawnPos.HasValue) level.Session.LevelData.DefaultSpawn += respawnOffset;
         }
 
         private static void Hook_OnPlayerRespawn(On.Celeste.Player.orig_IntroRespawnBegin orig, global::Celeste.Player self)
@@ -61,7 +102,7 @@ namespace Celeste.Mod.EndersExtras.Utils
         private static EntityID Hook_OnCreateEntityID(On.Celeste.Level.orig_CreateEntityId orig, Level level, LevelData levelData, EntityData entityData)
         {
             EntityID entityId = orig(level, levelData, entityData);
-            entityId.Level = GetTemplateEntityID(entityId.Level, level);
+            entityId.Level = GetTemplateRoomFromSwapRoom(entityId.Level);
             return entityId;
         }
 
@@ -77,33 +118,30 @@ namespace Celeste.Mod.EndersExtras.Utils
                     instr => instr.MatchLdfld(typeof(global::Celeste.LevelData), "Name")
             ))
             {
-                cursor.Emit(OpCodes.Ldarg_0);
-                cursor.EmitDelegate<Func<string, Level, string>>(GetTemplateEntityID);
+                cursor.EmitDelegate<Func<string, string>>(GetTemplateRoomFromSwapRoom);
             }
         }
 
-        private static String GetTemplateEntityID(string origRoomName, Level level)
+        private static String GetTemplateRoomFromSwapRoom(string roomName)
         {
-            // Logger.Log(LogLevel.Info, "EndersExtras/Utils_RoomSwap", $"the ILChangeEntityIDs is looking at origLevelName {origRoomName}. Level Name {level.Session.LevelData.Name}");
-
-            String roomName = level.Session.LevelData.Name;
             List<int> roomPos = GetPosFromRoomName(roomName);
+            if (roomPos == new List<int>([1, 1])) return roomName; // Null roomPos
 
+            // Search all rooms for a template room which corresponds to this swap room
             foreach (String gridID in EndersExtrasModule.Session.roomSwapOrderList.Keys)
             {
                 String roomSwapPrefix = EndersExtrasModule.Session.roomSwapPrefix[gridID];
-
                 int row = roomPos[0]; int col = roomPos[1];
 
                 // Check if {roomSwapPrefix}{row}{column} matches current room name
                 String swapRoomName = $"{roomSwapPrefix}{row}{col}";
                 if (swapRoomName != roomName) continue;
 
-                // Found match! Replace that part with templateRoomName
+                // Found match! Return templateRoomName
                 String templateRoomName = EndersExtrasModule.Session.roomSwapOrderList[gridID][row - 1][col - 1];
                 return templateRoomName;
             }
-            return origRoomName;
+            return roomName;
         }
 
         private static void ChangeAllEntityIDsToTemplate(Level level)
@@ -264,6 +302,7 @@ namespace Celeste.Mod.EndersExtras.Utils
 
         private static async void CloneTiles(LevelData replaceSwapRoomData, LevelData replaceTemplateRoomData, Level level, int teleportDelayMilisecond)
         {
+            level.PauseLock = true;
             // Logger.Log(LogLevel.Info, "EndersExtras/Utils_RoomSwap", $"Template {replaceTemplateRoomData.Name} >> Swap {replaceSwapRoomData.Name}");
 
             Rectangle swapRoomBounds = replaceSwapRoomData.TileBounds;
@@ -281,7 +320,6 @@ namespace Celeste.Mod.EndersExtras.Utils
                 Point templateRoomPoint = new Point(templateRoomBounds.X + x, templateRoomBounds.Y + y);
                 Point swapRoomPoint = new Point(swapRoomBounds.X + x, swapRoomBounds.Y + y);
 
-                level.SolidTiles.Grid[swapRoomPoint.X, swapRoomPoint.Y] = level.SolidTiles.Grid[templateRoomPoint.X, templateRoomPoint.Y];
                 level.SolidsData[swapRoomPoint.X, swapRoomPoint.Y] = level.SolidsData[templateRoomPoint.X, templateRoomPoint.Y];
                 level.BgData[swapRoomPoint.X, swapRoomPoint.Y] = level.BgData[templateRoomPoint.X, templateRoomPoint.Y];
             }
@@ -307,7 +345,9 @@ namespace Celeste.Mod.EndersExtras.Utils
                 level.BgTiles.Tiles.Tiles[swapRoomPoint.X, swapRoomPoint.Y] = gennedBG.TileGrid.Tiles[x, y];
 
                 level.SolidTiles.AnimatedTiles.tiles[swapRoomPoint.X, swapRoomPoint.Y] = level.SolidTiles.AnimatedTiles.tiles[templateRoomPoint.X, templateRoomPoint.Y];
+                level.SolidTiles.Grid[swapRoomPoint.X, swapRoomPoint.Y] = level.SolidTiles.Grid[templateRoomPoint.X, templateRoomPoint.Y];
             }
+            level.PauseLock = false;
         }
 
         internal static async void TemporarilyDisableTrigger(int millisecondDelay, string gridID)

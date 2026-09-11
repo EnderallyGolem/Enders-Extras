@@ -299,7 +299,7 @@ triggers.EndersExtras/DeathHandlerDeathBypassTrigger.attributes.description.show
 
 # RoomSwap Controller
 entities.EndersExtras/RoomSwapController.placements.name.normal=Room-Swap Controller
-entities.EndersExtras/RoomSwapController.placements.description.normal=Informs the level on how many rows/cols to swap.\nThis should be loaded once before entering any swap-zones (load it at the start of the map, or global load it).\nRoom-Swap Respawn Force Same Room Triggers should be added in each template room for respawn points to work properly,\nand Room-Swap Change Respawn Triggers should be used in place of the regular ones.
+entities.EndersExtras/RoomSwapController.placements.description.normal=Informs the level on how many rows/cols to swap.\nThis should be loaded once before entering any swap-zones (load it at the start of the map, or global load it).\nUpdating Change Respawn Triggers should be used in place of the regular ones.
 entities.EndersExtras/RoomSwapController.attributes.description.gridId=The identifier (any string) for this set of moveable grid. One Room-Swap controller sets information for 1 moveable grid.
 entities.EndersExtras/RoomSwapController.attributes.description.totalRows=The total number of rows in the moveable grid.
 entities.EndersExtras/RoomSwapController.attributes.description.totalColumns=The total number of columns in the moveable grid.
@@ -336,7 +336,7 @@ entities.EndersExtras/RoomSwapMap.attributes.description.mapBackgroundFileName=T
 entities.EndersExtras/RoomSwapMap.attributes.description.mapCurrentPosFileName=The name of the file in the folder path used to show the current location.\nKeep it the same/slightly larger than the icon image!\nEmpty = No current position higlight.
 entities.EndersExtras/RoomSwapMap.attributes.description.mapIconFilePrefix=The PREFIX of the file in the folder path used for the map's icons.\nIcon size will be dependent on size of this image.\nEg: For prefix="icon_" the file name for row 2 col 3 room is "icon_23".
 entities.EndersExtras/RoomSwapMap.attributes.description.animationSpeedMultiplier=Change the rate animated map icons animate.\nYou can turn any icon into an animated icon by adding _{integer} to the end of it, starting from 0.\nEg: icon_23_0, icon_23_1, icon_23_2 for 3 frames of animation.\nNegative multipliers make the animation play backwards.
-entities.EndersExtras/RoomSwapMap.attributes.description.hudLayer=Causes the map to display on the SubHUD layer.\nThis means that it can be scaled down without looking pixelated.
+entities.EndersExtras/RoomSwapMap.attributes.description.hudLayer=Causes the map to display on the SubHUD layer.\nThis means that it can be scaled down without looking pixelated, but will render over everything.
 
 # RoomSwap MapUpgrade
 entities.EndersExtras/RoomSwapMapUpgrade.placements.name.normal=Room-Swap Map Upgrade
@@ -360,11 +360,6 @@ triggers.EndersExtras/RoomSwapModifyRoomTrigger.attributes.description.modifySil
 triggers.EndersExtras/RoomSwapModifyRoomTrigger.attributes.description.flashEffect=Flashes the screen when room modification occurs.
 entities.EndersExtras/RoomSwapModifyRoomTrigger.attributes.description.requireFlag=If specified, the trigger only activates if this flag is enabled.\nA list of flags in the format "flagA, flagB, !flagC | flagD, flagE" can be specified.\nThis means (flagA and flagB and not flagC) or (flagD and flagE).
 entities.EndersExtras/RoomSwapModifyRoomTrigger.attributes.description.toggleFlag=If specified, this flag's state will be toggled when the trigger activates and a swap successfully occurs.\nA list of flags seperated by commas can also be specified.
-
-# RoomSwap Respawn Force Same Room Trigger
-triggers.EndersExtras/RoomSwapRespawnForceSameRoomTrigger.placements.name.normal=Room-Swap Respawn Force Same Room Trigger
-triggers.EndersExtras/RoomSwapRespawnForceSameRoomTrigger.placements.description.normal=Corrects respawn positions set at a template room to the current room.\nJust place one of these in every template room.
-triggers.EndersExtras/RoomSwapRespawnForceSameRoomTrigger.attributes.description.onAwake=Does it corrects the spawn points when the trigger is awake (upon entering room) rather than when entering the trigger?\nYou should probably leave this on.
 
 # RoomSwap Change Respawn Trigger
 triggers.EndersExtras/RoomSwapChangeRespawnTrigger.placements.name.normal=Updating Change Respawn

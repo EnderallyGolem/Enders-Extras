@@ -63,10 +63,10 @@ public class EndersExtrasModule : EverestModule {
     private static ILHook? Loadhook_Player_OrigDie;
     public override void Load()
     {
-        Everest.Events.Level.OnEnter += EnterMapFunc;
-        Everest.Events.AssetReload.OnReloadLevel += AssetReloadLevelFunc;
-        Everest.Events.AssetReload.OnBeforeReload += ReloadBeginFunc;
-        Everest.Events.AssetReload.OnAfterReload += ReloadCompleteFunc;
+        Everest.Events.Level.OnEnter += Event_EnterLevel;
+        Everest.Events.AssetReload.OnReloadLevel += Event_AssetReloadLevel;
+        Everest.Events.AssetReload.OnBeforeReload += Event_AssetReloadBefore;
+        Everest.Events.AssetReload.OnAfterReload += Event_AssetReloadAfter;
         Everest.Events.Level.OnBeforeUpdate += OnBeforeLevelUpdate;
         On.Celeste.Level.TransitionRoutine += Hook_TransitionRoutine;
         On.Celeste.LevelLoader.StartLevel += Hook_EnterMap;
@@ -90,10 +90,10 @@ public class EndersExtrasModule : EverestModule {
 
     public override void Unload()
     {
-        Everest.Events.Level.OnEnter -= EnterMapFunc;
-        Everest.Events.AssetReload.OnReloadLevel -= AssetReloadLevelFunc;
-        Everest.Events.AssetReload.OnBeforeReload -= ReloadBeginFunc;
-        Everest.Events.AssetReload.OnAfterReload -= ReloadCompleteFunc;
+        Everest.Events.Level.OnEnter -= Event_EnterLevel;
+        Everest.Events.AssetReload.OnReloadLevel -= Event_AssetReloadLevel;
+        Everest.Events.AssetReload.OnBeforeReload -= Event_AssetReloadBefore;
+        Everest.Events.AssetReload.OnAfterReload -= Event_AssetReloadAfter;
         Everest.Events.Level.OnBeforeUpdate -= OnBeforeLevelUpdate;
         On.Celeste.Level.TransitionRoutine -= Hook_TransitionRoutine;
         On.Celeste.LevelLoader.StartLevel -= Hook_EnterMap;
@@ -163,14 +163,14 @@ public class EndersExtrasModule : EverestModule {
     }
 
 
-    private static void EnterMapFunc(global::Celeste.Session session, bool fromSaveData)
+    private static void Event_EnterLevel(global::Celeste.Session session, bool fromSaveData)
     {
         // Disable level-dependent hooks if enabled
         UnloadTempHooks();
     }
 
     public static bool reloadComplete;
-    public static void AssetReloadLevelFunc(global::Celeste.Level level)
+    public static void Event_AssetReloadLevel(global::Celeste.Level level)
     {
         // Yeah this exists solely so reloading a map midway through it doesn't break.
         // Solely this or solely EnterMapFunc doesn't work.
@@ -182,11 +182,11 @@ public class EndersExtrasModule : EverestModule {
             lastSessionResetCause = SessionResetCause.ReloadAssets;
         }
     }
-    private static void ReloadCompleteFunc(bool silent)
+    private static void Event_AssetReloadAfter(bool silent)
     {
         reloadComplete = true;
     }
-    private static void ReloadBeginFunc(bool silent)
+    private static void Event_AssetReloadBefore(bool silent)
     {
         reloadComplete = false;
     }

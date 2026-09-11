@@ -3,7 +3,7 @@ local defaultTexture = "objects/EndersExtras/roomSwapMap/lonnicon"
 
 local roomSwapMap = {
     name = "EndersExtras/RoomSwapMap",
-    depth = -10550,
+    depth = 20,
     -- offset = {0, 0},
     --texture = "objects/EndersExtras/roomSwapMap/lonnicon",
     placements = {
@@ -18,18 +18,33 @@ local roomSwapMap = {
                 mapCurrentPosFileName = "current",
                 mapIconFilePrefix = "icon_",
                 floatAmplitude = 0.1,
-                animationSpeedMultiplier = 0.1
+                animationSpeedMultiplier = 0.1,
+
+                hudLayer = false
             },
         },
     },
     fieldOrder = {
         "x", "y", "editorLayer",
-        "gridId"
+        "gridId",
+
+        "folderPath", "scale", "mapBackgroundFileName", "mapCurrentPosFileName", "mapIconFilePrefix", 
+        "floatAmplitude", "animationSpeedMultiplier",
+
+        "hudLayer"
     },
     fieldInformation = {
         folderPath = {fieldType = "path", allowFolders = true, allowFiles = false}
     }
 }
+
+function roomSwapMap.depth(room, entity)
+    if entity.hudLayer then
+        return -999999
+    else
+        return 20
+    end
+end
 
 function roomSwapMap.scale(room, entity)
     local scale = entity.scale
