@@ -1,6 +1,6 @@
 # Ender's Extras 
 [Source code](https://github.com/EnderallyGolem/Enders-Extras)
-[Gamebanana page](---)
+[Gamebanana page](https://gamebanana.com/mods/666460)
 
 # Features
 
@@ -154,6 +154,7 @@ Changelog:
 	- New entities: Mod Settings NPC, Flag Invisible Barrier, Dream Droplet
 	- Tile Entity: 
 		- Added Disable Flag option. Toggles whether if the tile entity is visible, collidable, and occludes light.
+		- If the tile becomes collidable if the player is inside, it stays uncollidable until the player leaves.
 	- Camera Spline Trigger:
 		- The camera now properly with extended camera dynamics
 		- With assist mode and Kill Offscreen Vertical, the player now bounces off the bottom of the screen

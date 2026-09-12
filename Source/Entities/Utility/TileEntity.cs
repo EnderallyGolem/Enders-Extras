@@ -107,26 +107,38 @@ public class TileEntity : Solid
     }
 
     float opacity = 1f;
+    bool? previousForceDisable = false; // Null is transitionary state. Keep checking!!!
     private void FlagDisableStuff()
     {
         if (disableFlag == "") return;
 
         // Flag controlled appearing/disappearing (ignore if no disableFlag)
         bool deactivate = Utils_General.AreFlagsEnabled(SceneAs<Level>().Session, disableFlag, false);
-        if (deactivate)
+        if (deactivate && previousForceDisable is false or null)
         {
             if (opacity > 0) opacity += -0.1f;
             Collidable = false; AllowStaticMovers = false;
-            lightOccludeComponent = null;
+            lightOccludeComponent?.RemoveSelf(); lightOccludeComponent = null;
+
+            if (opacity <= 0) previousForceDisable = true; // Done disabling
         }
-        else {
-            if (opacity < 1) opacity += 0.1f;
-            Collidable = collidableSetting;
-            AllowStaticMovers = Collidable;
-            if (occludeLight && lightOccludeComponent == null)
+        else if (!deactivate && previousForceDisable is true or null)
+        {
+            previousForceDisable = null;
+
+            float opacityCap = 1f;
+            if (collidableSetting && CollideCheck<Player>()) opacityCap = 0.5f; // Want to turn solid but player is inside
+            if (opacity < opacityCap) opacity += 0.1f;
+
+            bool collidableToSet = collidableSetting && !CollideCheck<Player>();
+            this.Collidable = collidableToSet;
+            this.AllowStaticMovers = this.Collidable;
+            if (occludeLight && lightOccludeComponent is null)
             {
                 Add(lightOccludeComponent = new LightOcclude());
             }
+
+            if (opacity >= 1) previousForceDisable = false; // Done enabling
         }
         if (tiles is not null) tiles.Color = colour * opacity;
     }
@@ -294,7 +306,7 @@ public class TileEntity : Solid
         }
         foreach (TileEntity entity in entities)
         {
-            if (allowMerge && entity.allowMerge && !entity.HasGroup && entity.dashBlock == dashBlock && entity.colour == colour && entity.backgroundTiles == backgroundTiles
+            if (allowMerge && entity.allowMerge && !entity.HasGroup && entity.dashBlock == dashBlock && entity.colour == colour && entity.backgroundTiles == backgroundTiles && entity.disableFlag == disableFlag
                 && (Scene.CollideCheckForce(new Rectangle((int)from.X - 1, (int)from.Y, (int)from.Width + 2, (int)from.Height), entity) || Scene.CollideCheckForce(new Rectangle((int)from.X, (int)from.Y - 1, (int)from.Width, (int)from.Height + 2), entity)))
             {
                 if (allowMergeDifferentType && entity.allowMergeDifferentType)

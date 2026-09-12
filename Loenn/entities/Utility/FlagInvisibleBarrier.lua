@@ -15,8 +15,9 @@ local FlagInvisibleBarrier = {
                 disableRight = false,
                 disableAbove = false,
                 disableBelow = false,
+                disablePlayerInside = true,
                 disablePermanently = false,
-                enablePermanently = false
+                enablePermanently = false,
             }
         }
     }
@@ -25,7 +26,7 @@ local FlagInvisibleBarrier = {
 FlagInvisibleBarrier.fieldOrder = {
     "x", "y", "width", "height",
     "requireFlag", "disableLeft", "disableRight", "disableAbove", "disableBelow",
-    "disablePermanently", "enablePermanently"
+    "disablePlayerInside", "disablePermanently", "enablePermanently"
 }
 
 

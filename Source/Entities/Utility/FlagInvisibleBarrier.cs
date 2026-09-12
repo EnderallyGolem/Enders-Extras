@@ -20,6 +20,8 @@ namespace Celeste.Mod.EndersExtras.Entities.Utility
         private bool lockState = false;
         private bool? enableBarrier = null;
 
+        private bool disablePlayerInside = true;
+
         public FlagInvisibleBarrier(EntityData data, Vector2 offset) : base(data, offset)
         {
             requireFlag = data.Attr("requireFlag", "");
@@ -28,6 +30,7 @@ namespace Celeste.Mod.EndersExtras.Entities.Utility
             disableAbove = data.Bool("disableAbove", false);
             disableBelow = data.Bool("disableBelow", false);
             disablePermanently = data.Bool("disablePermanently", false);
+            disablePlayerInside = data.Bool("disablePlayerInside", true);
             enablePermanently = data.Bool("enablePermanently", false);
         }
 
@@ -57,12 +60,12 @@ namespace Celeste.Mod.EndersExtras.Entities.Utility
                 if (enablePermanently && enableBarrier == true) lockState = true;
             }
 
-            // Disable if player inside (do not affect lock state for this one)
+            // Disable if player inside and disablePlayerInside (do not affect lock state for this one)
             bool tempEnable = enableBarrier ?? true;
             if (tempEnable)
             {
                 Collidable = true; // For collide check to work lol
-                if (CollideCheck<Player>()) tempEnable = false;
+                if (CollideCheck<Player>() && disablePlayerInside) tempEnable = false;
             }
 
             // Update collider

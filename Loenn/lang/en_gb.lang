@@ -34,7 +34,7 @@ entities.EndersExtras/TileEntity.attributes.description.offD=The offscreen tilet
 entities.EndersExtras/TileEntity.attributes.description.offDL=The offscreen tiletype will be used if it extends offscreen to the bottom left.
 entities.EndersExtras/TileEntity.attributes.description.offL=The offscreen tiletype will be used if it extends offscreen to the left.
 entities.EndersExtras/TileEntity.attributes.description.offUL=The offscreen tiletype will be used if it extends offscreen to the top left.
-entities.EndersExtras/TileEntity.attributes.description.disableFlag=If specified, the tile entity disappears (no light occlude, no collision, not visible) if this flag is enabled.\nA list of flags in the format "flagA, flagB, !flagC | flagD, flagE" can be specified.\nThis means (flagA and flagB and not flagC) or (flagD and flagE).
+entities.EndersExtras/TileEntity.attributes.description.disableFlag=If specified, the tile entity disappears (no light occlude, no collision, not visible) if this flag is enabled.\If the tile becomes collidable if the player is inside, it stays uncollidable until the player leaves.n\nA list of flags in the format "flagA, flagB, !flagC | flagD, flagE" can be specified.\nThis means (flagA and flagB and not flagC) or (flagD and flagE).
 
 
 # Conditional Tutorial Bird
@@ -91,6 +91,7 @@ entities.EndersExtras/FlagInvisibleBarrier.attributes.description.disableLeft=If
 entities.EndersExtras/FlagInvisibleBarrier.attributes.description.disableRight=If true, the barrier will be disabled if the player is to the right of it.
 entities.EndersExtras/FlagInvisibleBarrier.attributes.description.disableAbove=If true, the barrier will be disabled if the player is above it.
 entities.EndersExtras/FlagInvisibleBarrier.attributes.description.disableBelow=If true, the barrier will be disabled if the player is below it.
+entities.EndersExtras/FlagInvisibleBarrier.attributes.description.disablePlayerInside=If true, the barrier will be temporarily disabled if the player is inside it.\nThis does NOT count towards Disable Permanently.
 entities.EndersExtras/FlagInvisibleBarrier.attributes.description.disablePermanently=If true, if the barrier is disabled, it cannot be enabled (until the room is reloaded).\nThis does not count the barrier being disabled due to the player being inside it.
 entities.EndersExtras/FlagInvisibleBarrier.attributes.description.enablePermanently=If true, if the barrier is enabled, it cannot be disabled (until the room is reloaded).
 
