@@ -33,6 +33,8 @@ local tileEntity = {
                 dashBlock = false,
                 dashBlockPermament = true,
                 dashBlockBreakSound = "event:/game/general/wall_break_stone",
+                fallingBlock = false,
+                fallingBlockClimbFall = true,
                 disableFlag = "",
             }
         }
@@ -45,6 +47,7 @@ tileEntity.fieldOrder = {
     "backgroundTiles", "collidable", "occludeLight", "allowMerge", "allowMergeDifferentType",
     "locationSeeded", "Depth", "colour", "surfaceSoundIndex",
     "dashBlock", "dashBlockPermament", "dashBlockBreakSound",
+    "fallingBlock", "fallingBlockClimbFall",
     "disableFlag",
     "offUL", "offU", "offUR", "offR", "offDR", "offD", "offDL", "offL",
     "noEdges", "extendOffscreen"
@@ -60,6 +63,10 @@ local function canMergeGlobally(a, b)
     if a.colour ~= b.colour then return false end
     if a.backgroundTiles ~= b.backgroundTiles then return false end
     if a.disableFlag ~= b.disableFlag then return false end
+    if a.occludeLight ~= b.occludeLight then return false end
+    if a.collidable ~= b.collidable then return false end
+    if a.fallingBlock ~= b.fallingBlock then return false end
+    if a.fallingBlockClimbFall ~= b.fallingBlockClimbFall then return false end
     if not (a.tiletype == b.tiletype or (a.allowMergeDifferentType and b.allowMergeDifferentType)) then
         return false
     end
@@ -153,7 +160,6 @@ tileEntity.fieldInformation = function(entity)
     orig["Depth"] = {fieldType = "integer"}
     orig["surfaceSoundIndex"] = { fieldType = "integer", minimumValue = -1 }
     orig["colour"] = { fieldType = "color", allowEmpty = true, useAlpha = true }
-
     orig["dashBlockBreakSound"] = { fieldType = "string", 
         options = {
             {"None", ""},

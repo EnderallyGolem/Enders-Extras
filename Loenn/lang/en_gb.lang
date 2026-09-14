@@ -22,6 +22,8 @@ entities.EndersExtras/TileEntity.attributes.description.dashBlock=Turns the Tile
 entities.EndersExtras/TileEntity.attributes.name.dashBlockPermament=Dash Block Permanent
 entities.EndersExtras/TileEntity.attributes.description.dashBlockPermament=For Dash Blocks: If the block stays broken after room reload.\nIf connected blocks are partially permanent and partially not,\nonly the non-permanent parts will reappear on reload.
 entities.EndersExtras/TileEntity.attributes.description.dashBlockBreakSound=For Dash Blocks: Sound event which plays when broken.\nIf connected, the sound will depend on which segment was broken.
+entities.EndersExtras/TileEntity.attributes.description.fallingBlock=Turns the Tile Entity into a Falling Block.\nFalling Blocks will not connect with non-Falling Blocks!
+entities.EndersExtras/TileEntity.attributes.description.fallingBlockClimbFall=For Falling Blocks: If the block falls when climbed on.\nThis must match for connections!
 entities.EndersExtras/TileEntity.attributes.description.collidable=Affects whether the tile entity is solid, and if staticmovers can be attached to the solid.
 entities.EndersExtras/TileEntity.attributes.description.occludeLight=Affects whether the tile entity blocks light.
 entities.EndersExtras/TileEntity.attributes.description.colour=Colour of the Tile Entity. (White = normal)\nDifferent coloured entities cannot connect.

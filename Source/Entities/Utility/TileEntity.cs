@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Celeste.Mod.EndersExtras.Utils;
 using Celeste.Mod.Entities;
 using Microsoft.Xna.Framework;
 using Monocle;
+using Vector2 = Microsoft.Xna.Framework.Vector2;
 
 namespace Celeste.Mod.EndersExtras.Entities.Utility;
 [Tracked]
@@ -30,8 +33,6 @@ public class TileEntity : Solid
 
     private readonly List<bool> offDirecBoolList;
 
-    private TileEntity? master;
-
     private List<TileEntity>? Group;
 
     private Point GroupBoundsMin;
@@ -41,10 +42,20 @@ public class TileEntity : Solid
     private readonly bool dashBlockPermament;
     private readonly string dashBlockBreakSound;
 
-    private LightOcclude? lightOccludeComponent;
-    private readonly bool occludeLight;
+    private readonly bool fallingBlock;
+    private readonly bool fallingBlockClimbFall; //todo setting
+
+
+    private List<LightOcclude>? lightOccludeComponents;
+    private readonly bool occludeLightSetting;
     private readonly bool collidableSetting;
     private readonly string disableFlag;
+
+    private readonly float widthSingle = 0;
+    private readonly float heightSingle = 0;
+
+    private Collider[] collidersList; // For master - list of all hitboxes
+    private Vector2 masterPosOffset = Vector2.Zero; // Pos offset from master
 
     public bool HasGroup
     {
@@ -62,7 +73,7 @@ public class TileEntity : Solid
 
     public TileEntity(Vector2 position, float width, float height, EntityID id, char tileType, char tiletypeOffscreen, int depth, bool backgroundTiles, bool collidable, bool occludeLight, string colourStr, bool allowMergeDifferentType = false, bool allowMerge = true,
         bool extendOffscreen = false, bool noEdges = false, List<bool>? offDirecBoolList = null, bool locationSeeded = false,
-        bool dashBlock = false, bool dashBlockPermament = false, String dashBlockBreakSound = "", String disableFlag = "")
+        bool dashBlock = false, bool dashBlockPermament = false, String dashBlockBreakSound = "", bool fallingBlock = false, bool fallingBlockClimbFall = true, String disableFlag = "")
     : base(position, width, height, safe: true)
     {
         
@@ -80,34 +91,104 @@ public class TileEntity : Solid
         this.dashBlock = dashBlock;
         this.dashBlockPermament = dashBlockPermament;
         this.dashBlockBreakSound = dashBlockBreakSound;
+
+        this.fallingBlock = fallingBlock;
+        this.fallingBlockClimbFall = fallingBlockClimbFall;
+
         this.colour = Calc.HexToColorWithAlpha(colourStr);
 
-        this.occludeLight = occludeLight;
+        this.occludeLightSetting = occludeLight;
         this.collidableSetting = collidable;
         this.disableFlag = disableFlag;
 
+        this.widthSingle = width;
+        this.heightSingle = height;
+
+        // Temporary settings, for entities to look at and do stuff...
+        this.AllowStaticMovers = collidableSetting;
+        this.Collidable = collidableSetting;
+
         this.id = id;
 
-        if (occludeLight) Add(lightOccludeComponent = new LightOcclude());
-        if (!collidable)
+        // All collidable/visible/light occulude/etc settings to be done after grouping!
+        SurfaceSoundIndex = SurfaceIndex.TileToIndex.GetValueOrDefault(tileType, SurfaceIndex.Brick);
+    }
+
+    private void ChangeCollidable(bool? collidable)
+    {
+        if (!isMasterOfGroup) return;
+        if (collidable is null) collidable = collidableSetting;
+
+        //AllowStaticMovers = collidable.Value;
+        Collidable = collidable.Value;
+        if (collidable == true) EnableStaticMovers();
+        else DisableStaticMovers();
+    }
+    // private void ChangeVisiblity(bool? visiblity)
+    // {
+    //     if (!isMasterOfGroup) return;
+    //     if (visiblity is null) visiblity = true;
+    //
+    //     foreach (TileEntity tileEntity in Group!)
+    //     {
+    //         tileEntity.Visible = visiblity.Value;
+    //     }
+    // }
+    private void ChangeLightOcclude(bool? blockLight)
+    {
+        if (!isMasterOfGroup) return;
+        if (blockLight is null) blockLight = occludeLightSetting;
+
+        // Remove
+        if (blockLight == false && lightOccludeComponents is not null)
         {
-            Collidable = false;
-            AllowStaticMovers = false;
+            for (int i = 0; i < lightOccludeComponents!.Count; i++)
+            {
+                lightOccludeComponents[i].RemoveSelf();
+            }
+            lightOccludeComponents = null;
         }
 
-        SurfaceSoundIndex = SurfaceIndex.TileToIndex.GetValueOrDefault(tileType, SurfaceIndex.Brick);
+        // Add
+        if (blockLight == true && lightOccludeComponents is null)
+        {
+            lightOccludeComponents = [];
+            foreach (Collider colliderSeg in collidersList)
+            {
+                LightOcclude newLightOcc;
+                Rectangle colliderRect = colliderSeg.Bounds;
+                colliderRect.X -= (int)Position.X;
+                colliderRect.Y -= (int)Position.Y;
 
-        OnDashCollide = OnDashed;
+                Add(newLightOcc = new LightOcclude(colliderRect, 1f));
+                lightOccludeComponents.Add(newLightOcc);
+            }
+        }
     }
 
     public override void Update()
     {
         base.Update();
-        FlagDisableStuff();
+        if (isMasterOfGroup)
+        {
+            FlagDisableStuff(); // Force disable if disableFlag is set.
+        }
+    }
+    private void UpdatePos()
+    {
+        // Pos isn't used much apart from falling block particles
+        if (!isMasterOfGroup) return;
+
+        foreach (TileEntity tileEntity in Group!)
+        {
+            tileEntity.Position = this.Position + tileEntity.masterPosOffset;
+        }
     }
 
     float opacity = 1f;
     bool? previousForceDisable = false; // Null is transitionary state. Keep checking!!!
+
+    // This only runs for the master of the group!
     private void FlagDisableStuff()
     {
         if (disableFlag == "") return;
@@ -117,26 +198,28 @@ public class TileEntity : Solid
         if (deactivate && previousForceDisable is false or null)
         {
             if (opacity > 0) opacity += -0.1f;
-            Collidable = false; AllowStaticMovers = false;
-            lightOccludeComponent?.RemoveSelf(); lightOccludeComponent = null;
 
-            if (opacity <= 0) previousForceDisable = true; // Done disabling
+            if (opacity <= 0)
+            {
+                ChangeCollidable(false);
+                ChangeLightOcclude(false);
+                previousForceDisable = true; // Done disabling
+            }
         }
         else if (!deactivate && previousForceDisable is true or null)
         {
             previousForceDisable = null;
 
             float opacityCap = 1f;
-            if (collidableSetting && CollideCheck<Player>()) opacityCap = 0.5f; // Want to turn solid but player is inside
+            bool tileInGroupCollidePlayer = CollideCheck<Player>();
+
+            if (collidableSetting && tileInGroupCollidePlayer) opacityCap = 0.5f; // Want to turn solid but player is inside
             if (opacity < opacityCap) opacity += 0.1f;
 
-            bool collidableToSet = collidableSetting && !CollideCheck<Player>();
-            this.Collidable = collidableToSet;
-            this.AllowStaticMovers = this.Collidable;
-            if (occludeLight && lightOccludeComponent is null)
-            {
-                Add(lightOccludeComponent = new LightOcclude());
-            }
+            // Set the stuff
+            bool collidableToSet = collidableSetting && !tileInGroupCollidePlayer; // True only if setting is true and not colliding player
+            ChangeCollidable(collidableToSet);
+            ChangeLightOcclude(occludeLightSetting);
 
             if (opacity >= 1) previousForceDisable = false; // Done enabling
         }
@@ -148,7 +231,7 @@ public class TileEntity : Solid
     public TileEntity(EntityData data, Vector2 offset, EntityID id)
         : this(data.Position + offset, data.Width, data.Height, id, data.Char("tiletype", '3'), data.Char("tiletypeOffscreen", '◯'), data.Int("Depth", -9000), data.Bool("backgroundTiles", false), data.Bool("collidable", true), data.Bool("occludeLight", true), data.Attr("colour", "ffffffff"), data.Bool("allowMergeDifferentType", false), data.Bool("allowMerge", true), data.Bool("extendOffscreen", true), data.Bool("noEdges", false),
               [data.Bool("offU", true), data.Bool("offUR", true), data.Bool("offR", true), data.Bool("offDR", true), data.Bool("offD", true), data.Bool("offDL", true), data.Bool("offL", true), data.Bool("offUL", true)], data.Bool("locationSeeded", false),
-              data.Bool("dashBlock", false), data.Bool("dashBlockPermament", true), data.Attr("dashBlockBreakSound", ""), data.Attr("disableFlag", "")
+              data.Bool("dashBlock", false), data.Bool("dashBlockPermament", true), data.Attr("dashBlockBreakSound", ""),  data.Bool("fallingBlock", false), data.Bool("fallingBlockClimbFall", true), data.Attr("disableFlag", "")
         )
     {
         relativePos = data.Position;
@@ -163,7 +246,6 @@ public class TileEntity : Solid
 
     public override void Awake(Scene scene)
     {
-        base.Awake(scene);
         if (!HasGroup)
         {
             isMasterOfGroup = true;
@@ -265,9 +347,44 @@ public class TileEntity : Solid
             Add(tiles);
             if (locationSeeded) { Calc.PopRandom(); }
 
+            collidersList = new Collider[Group!.Count]; int county = 0;
+            foreach (TileEntity tileEntity in Group!)
+            {
+                // Add all colliders to this list
+                collidersList[county] = tileEntity.Collider.Clone();
+                collidersList[county].Position = tileEntity.Position - this.Position;
+                county++;
+
+                if (tileEntity != this)
+                {
+                    tileEntity.Collidable = false;
+                    tileEntity.Collider = null;
+                }
+            }
+            Collider colliderAll = new ColliderList(collidersList);
+            this.Collider = colliderAll;
+
+            foreach (TileEntity tileEntity in Group!)
+            {
+                tileEntity.Collidable = false; tileEntity.AllowStaticMovers = false;
+                tileEntity.masterPosOffset = tileEntity.Position - Position;
+            }
         }
 
-        FlagDisableStuff(); // Force disable if disableFlag is set.
+        // SETUP
+        if (isMasterOfGroup)
+        {
+            ChangeLightOcclude(occludeLightSetting);
+            ChangeCollidable(collidableSetting);
+
+            OnDashCollide = OnDashed;
+
+            if (fallingBlock) Add(new Coroutine(Sequence()));
+            FlagDisableStuff(); // Force disable if disableFlag is set.
+        }
+
+        AllowStaticMovers = collidableSetting;
+        base.Awake(scene);
     }
 
     private void AddToGroupAndFindChildren(TileEntity from, List<Entity>? entities = null)
@@ -294,19 +411,18 @@ public class TileEntity : Solid
             GroupBoundsMax.Y = (int)from.Bottom;
         }
         from.HasGroup = true;
-        Group.Add(from);
+        Group!.Add(from);
         if (from != this)
         {
-            from.master = this;
         }
         // Implement variable entities so that it doesn't pull from hash per tileentity in the chain
         if (entities == null && !Scene.Tracker.TryGetEntities<TileEntity>(out entities))
         {
             return;
         }
-        foreach (TileEntity entity in entities)
+        foreach (TileEntity entity in entities!)
         {
-            if (allowMerge && entity.allowMerge && !entity.HasGroup && entity.dashBlock == dashBlock && entity.colour == colour && entity.backgroundTiles == backgroundTiles && entity.disableFlag == disableFlag
+            if (allowMerge && entity.allowMerge && !entity.HasGroup && entity.dashBlock == dashBlock && entity.fallingBlock == fallingBlock && entity.fallingBlockClimbFall == fallingBlockClimbFall && entity.colour == colour && entity.backgroundTiles == backgroundTiles && entity.collidableSetting == collidableSetting && entity.occludeLightSetting == occludeLightSetting && entity.disableFlag == disableFlag
                 && (Scene.CollideCheckForce(new Rectangle((int)from.X - 1, (int)from.Y, (int)from.Width + 2, (int)from.Height), entity) || Scene.CollideCheckForce(new Rectangle((int)from.X, (int)from.Y - 1, (int)from.Width, (int)from.Height + 2), entity)))
             {
                 if (allowMergeDifferentType && entity.allowMergeDifferentType)
@@ -331,11 +447,11 @@ public class TileEntity : Solid
 
         if (isMasterOfGroup)
         {
-            foreach (TileEntity tileEntity in Group)
+            foreach (TileEntity tileEntity in Group!)
             {
-                for (int i = 0; (float)i < tileEntity.Width / 8f; i++)
+                for (int i = 0; (float)i < tileEntity.widthSingle / 8f; i++)
                 {
-                    for (int j = 0; (float)j < tileEntity.Height / 8f; j++)
+                    for (int j = 0; (float)j < tileEntity.heightSingle / 8f; j++)
                     {
                         base.Scene.Add(Engine.Pooler.Create<Debris>().Init(tileEntity.Position + new Vector2(4 + i * 8, 4 + j * 8), tileEntity.tileType, true).BlastFrom(from));
                     }
@@ -379,6 +495,176 @@ public class TileEntity : Solid
         Break(player.Center, direction);
         return DashCollisionResults.Rebound;
     }
+
+    #region fallBlock
+
+    // This is only ran by the master of the group!
+    private bool triggered;
+
+    private IEnumerator Sequence()
+    {
+        UpdatePos();
+         while (!this.triggered && !this.PlayerFallCheck())
+           yield return null;
+        label_6:
+         this.ShakeSfx();
+         this.StartShaking();
+         Input.Rumble(RumbleStrength.Medium, RumbleLength.Medium);
+         yield return 0.2f;
+         float timer = 0.4f;
+         for (; timer > 0.0 && this.PlayerWaitCheck(); timer -= Engine.DeltaTime)
+           yield return null;
+         this.StopShaking();
+
+        FallParticles();
+
+        float speed = 0.0f;
+        float maxSpeed = 160f;
+        Level? level;
+        while (true)
+        {
+            UpdatePos();
+            level = SceneAs<Level>();
+            speed = Calc.Approach(speed, maxSpeed, 500f * Engine.DeltaTime);
+
+            //Collidable = false;
+            bool moveSuccess = MoveVCollideSolids(speed * Engine.DeltaTime, true);
+
+            //Collidable = true;
+            if (!moveSuccess)
+            {
+                // Null checks:
+                // 1. If highest point is <= level.bounds.bottom+16
+                // 2. Any block collides with a solid below it (important to exclude colliding with itself!)
+
+                float topPos = float.PositiveInfinity;
+                foreach (TileEntity tileEntity in Group!)
+                {
+                    topPos = tileEntity.Top < topPos ? tileEntity.Top : topPos;
+                }
+
+                bool collidedWithSomething = CollideCheck<Solid>(Position + new Vector2(0.0f, 1.0f));
+
+                if (topPos <= (double)(level.Bounds.Bottom + 16 /*0x10*/) && (topPos <= (double)(level.Bounds.Bottom - 1) || !collidedWithSomething))
+                {
+                    yield return null;
+                    level = null;
+                }
+                else
+                    goto label_23;
+            }
+            else
+                break;
+        }
+
+        ImpactSfx();
+        Input.Rumble(RumbleStrength.Strong, RumbleLength.Medium);
+        SceneAs<Level>().DirectionalShake(Vector2.UnitY);
+        StartShaking();
+        LandParticles();
+        yield return 0.2f;
+        StopShaking();
+        if (CollideCheck<SolidTiles>(Position + new Vector2(0.0f, 1f)))
+        {
+            Safe = true;
+            yield break;
+        }
+
+        while (CollideCheck<Platform>(Position + new Vector2(0.0f, 1f)))
+            yield return 0.1f;
+        goto label_6;
+        label_23:
+        Collidable = Visible = false;
+        yield return 0.2f;
+        if (level.Session.MapData.CanTransitionTo(level, new Vector2(Center.X, Bottom + 12f)))
+        {
+            yield return 0.2f;
+            SceneAs<Level>().Shake();
+            Input.Rumble(RumbleStrength.Strong, RumbleLength.Medium);
+        }
+
+        RemoveSelf();
+        DestroyStaticMovers();
+    }
+
+    private void FallParticles()
+    {
+        foreach (TileEntity tileEntity in Group!)
+        {
+            for (int x = 2; x < (double)tileEntity.widthSingle; x += 4)
+            {
+                if (Scene.CollideCheck<Solid>(tileEntity.Position + new Vector2(x, -2f)))
+                    SceneAs<Level>().Particles.Emit(FallingBlock.P_FallDustA, 2, new Vector2(tileEntity.X + x, tileEntity.Y), Vector2.One * 4f, 1.5707964f);
+                SceneAs<Level>().Particles.Emit(FallingBlock.P_FallDustB, 2, new Vector2(tileEntity.X + x, tileEntity.Y), Vector2.One * 4f);
+            }
+        }
+    }
+
+    private void LandParticles()
+    {
+        bool oldCollidable = Collidable; Collidable = false;
+        foreach (TileEntity tileEntity in Group!)
+        {
+            //Logger.Log(LogLevel.Info, "EndersExtras/Misc/TileEntity", $"{tileEntity.Position} {tileEntity.widthSingle} {tileEntity.heightSingle} {tileEntity.Height}");
+
+            for (int x = 2; x <= (double)tileEntity.widthSingle; x += 4)
+            {
+                float bottomY = tileEntity.Position.Y + tileEntity.heightSingle;
+                if (tileEntity.Scene.CollideCheck<Solid>(tileEntity.Position + Vector2.UnitY*tileEntity.heightSingle + new Vector2(x, 3f)))
+                {
+                    SceneAs<Level>().ParticlesFG.Emit(FallingBlock.P_FallDustA, 1, new Vector2(tileEntity.X + x, bottomY), Vector2.One * 4f, -1.5707964f);
+                    float direction = x >= tileEntity.Width / 2.0 ? 0.0f : 3.1415927f;
+                    SceneAs<Level>().ParticlesFG.Emit(FallingBlock.P_LandDust, 1, new Vector2(tileEntity.X + x, bottomY), Vector2.One * 4f, direction);
+                }
+            }
+        }
+        Collidable = oldCollidable;
+    }
+
+    private void ShakeSfx()
+    {
+        if (this.tileType == '3')
+            Audio.Play("event:/game/01_forsaken_city/fallblock_ice_shake", this.Center);
+        else if (this.tileType == '9')
+            Audio.Play("event:/game/03_resort/fallblock_wood_shake", this.Center);
+        else if (this.tileType == 'g')
+            Audio.Play("event:/game/06_reflection/fallblock_boss_shake", this.Center);
+        else
+            Audio.Play("event:/game/general/fallblock_shake", this.Center);
+    }
+    private void ImpactSfx()
+    {
+        if (this.tileType == '3')
+            Audio.Play("event:/game/01_forsaken_city/fallblock_ice_impact", this.BottomCenter);
+        else if (this.tileType == '9')
+            Audio.Play("event:/game/03_resort/fallblock_wood_impact", this.BottomCenter);
+        else if (this.tileType == 'g')
+            Audio.Play("event:/game/06_reflection/fallblock_boss_impact", this.BottomCenter);
+        else
+            Audio.Play("event:/game/general/fallblock_impact", this.BottomCenter);
+    }
+    public override void OnStaticMoverTrigger(StaticMover sm)
+    {
+        this.triggered = true;
+        base.OnStaticMoverTrigger(sm);
+    }
+    private bool PlayerFallCheck() => this.fallingBlockClimbFall ? this.HasPlayerRider() : this.HasPlayerOnTop();
+    private bool PlayerWaitCheck()
+    {
+        if (triggered || PlayerFallCheck()) return true;
+        if (!fallingBlockClimbFall) return false;
+        return CollideCheck<Player>(Position - Vector2.UnitX) || CollideCheck<Player>(Position + Vector2.UnitX);
+    }
+    public override void OnShake(Vector2 amount)
+    {
+        base.OnShake(amount);
+        if (isMasterOfGroup && tiles is not null)
+        {
+            tiles.Position += amount;
+        }
+    }
+
+    #endregion
 }
 
 public static class Extensions

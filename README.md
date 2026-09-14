@@ -149,6 +149,20 @@ player if they're within a Tile Entity, and they are not detected by a Sound Rip
 
 Changelog:
 
+### 1.1.1:
+- Fixed some possible shader crashes
+
+- Utilities:
+	- Tile Entity:
+		- Added Falling Block and Falling Block Climb Fall options.
+		- Changed how collisions are handled internally - the whole block now has one collision.
+			- Sort of a breaking change but it shouldn't do anything unless you're joining weird stuff together...
+		- Some side effects are:
+			- Joined breakable blocks now break together (although their permanent-ness can be mismatched, which splits the blocks on reload)
+			- Collidable and non-collidable blocks can no longer be connected together (you can overlap invisible collidable tiles for the same effect)
+			- Light occlude and non-light occlude blocks can no longer be connected together
+		- Modified Disable Flag option to work properly with multiple connected tile entities
+
 ### 1.1.0:
 - Utilities:
 	- New entities: Mod Settings NPC, Flag Invisible Barrier, Dream Droplet
