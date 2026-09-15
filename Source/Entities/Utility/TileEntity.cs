@@ -18,6 +18,7 @@ public class TileEntity : Solid
 {
     private EntityID id;
     private TileGrid? tiles;
+    private AnimatedTiles? animTiles;
 
     private readonly char tileType;
     private readonly char tiletypeOffscreen;
@@ -224,6 +225,7 @@ public class TileEntity : Solid
             if (opacity >= 1) previousForceDisable = false; // Done enabling
         }
         if (tiles is not null) tiles.Color = colour * opacity;
+        if (animTiles is not null) animTiles.Color = colour * opacity;
     }
 
     private Vector2 relativePos;
@@ -335,16 +337,17 @@ public class TileEntity : Solid
             //Logger.Log(LogLevel.Info, "EndersExtras/Misc/TileEntity", $"{virtualMap}");
             if (locationSeeded) { Calc.PushRandom((int)(relativePos.X * relativePos.Y + Width + Height)); }
             Autotiler tiler = backgroundTiles ? GFX.BGAutotiler : GFX.FGAutotiler;
-            tiles = tiler.GenerateMap(virtualMap, new Autotiler.Behaviour
+            Autotiler.Generated map = tiler.GenerateMap(virtualMap, new Autotiler.Behaviour
             {
                 EdgesExtend = false,
                 EdgesIgnoreOutOfLevel = noEdgesAny,
                 PaddingIgnoreOutOfLevel = false,
-            }).TileGrid;
-            tiles.Position = new Vector2(GroupBoundsMin.X - X - 8, GroupBoundsMin.Y - Y - 8);
-            tiles.Color = colour;
+            });
+            tiles = map.TileGrid; animTiles = map.SpriteOverlay;
+            animTiles.Position = tiles.Position = new Vector2(GroupBoundsMin.X - X - 8, GroupBoundsMin.Y - Y - 8);
+            animTiles.Color = tiles.Color = colour;
             tiles.VisualExtend = 32;
-            Add(tiles);
+            Add(tiles); Add(animTiles);
             if (locationSeeded) { Calc.PopRandom(); }
 
             collidersList = new Collider[Group!.Count]; int county = 0;
@@ -422,8 +425,17 @@ public class TileEntity : Solid
         }
         foreach (TileEntity entity in entities!)
         {
-            if (allowMerge && entity.allowMerge && !entity.HasGroup && entity.dashBlock == dashBlock && entity.fallingBlock == fallingBlock && entity.fallingBlockClimbFall == fallingBlockClimbFall && entity.colour == colour && entity.backgroundTiles == backgroundTiles && entity.collidableSetting == collidableSetting && entity.occludeLightSetting == occludeLightSetting && entity.disableFlag == disableFlag
-                && (Scene.CollideCheckForce(new Rectangle((int)from.X - 1, (int)from.Y, (int)from.Width + 2, (int)from.Height), entity) || Scene.CollideCheckForce(new Rectangle((int)from.X, (int)from.Y - 1, (int)from.Width, (int)from.Height + 2), entity)))
+            bool disallowMerge = !allowMerge || !entity.allowMerge || entity.HasGroup
+                || entity.dashBlock != dashBlock || (entity.dashBlock && entity.dashBlockPermament != dashBlockPermament)
+                || entity.fallingBlock != fallingBlock || (entity.fallingBlock && entity.fallingBlockClimbFall != fallingBlockClimbFall)
+                || entity.colour != colour || entity.backgroundTiles != backgroundTiles
+                || entity.collidableSetting != collidableSetting || entity.occludeLightSetting != occludeLightSetting
+                || entity.disableFlag != disableFlag;
+
+            if (!disallowMerge &&
+                // Check if tile entity is next to other tile entity (horizontal +-1 or vertical +-1)
+                (Scene.CollideCheckForce(new Rectangle((int)from.X - 1, (int)from.Y, (int)from.Width + 2, (int)from.Height), entity)
+                 || Scene.CollideCheckForce(new Rectangle((int)from.X, (int)from.Y - 1, (int)from.Width, (int)from.Height + 2), entity)))
             {
                 if (allowMergeDifferentType && entity.allowMergeDifferentType)
                 {
@@ -434,26 +446,25 @@ public class TileEntity : Solid
                 {
                     AddToGroupAndFindChildren(entity, entities);
                 }
-
             }
         }
     }
-    public void Break(Vector2 from, Vector2 direction, bool playSound = true)
-    {
-        if (playSound && dashBlockBreakSound != "")
-        {
-            Audio.Play(dashBlockBreakSound, Position);
-        }
 
+    private void DashBlockBreak(Vector2 from, Vector2 direction, bool playSound = true)
+    {
+        if (playSound && dashBlockBreakSound != "") Audio.Play(dashBlockBreakSound, Position);
+
+        // Breaking is ran by master of group! If not master, get the master.
         if (isMasterOfGroup)
         {
+            // Run for every tile inside
             foreach (TileEntity tileEntity in Group!)
             {
-                for (int i = 0; (float)i < tileEntity.widthSingle / 8f; i++)
+                for (int i = 0; i < tileEntity.widthSingle / 8f; i++)
                 {
-                    for (int j = 0; (float)j < tileEntity.heightSingle / 8f; j++)
+                    for (int j = 0; j < tileEntity.heightSingle / 8f; j++)
                     {
-                        base.Scene.Add(Engine.Pooler.Create<Debris>().Init(tileEntity.Position + new Vector2(4 + i * 8, 4 + j * 8), tileEntity.tileType, true).BlastFrom(from));
+                        Scene.Add(Engine.Pooler.Create<Debris>().Init(tileEntity.Position + new Vector2(4 + i * 8, 4 + j * 8), tileEntity.tileType, true).BlastFrom(from));
                     }
                 }
 
@@ -463,21 +474,30 @@ public class TileEntity : Solid
                 }
                 else
                 {
+                    tileEntity.DestroyStaticMovers();
                     tileEntity.RemoveSelf();
                 }
             }
         }
         else if (getMasterOfGroup is not null)
         {
-            getMasterOfGroup.Break(from, direction, false);
+            getMasterOfGroup.DashBlockBreak(from, direction, false);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    public void RemoveAndFlagAsGone()
+    private void RemoveAndFlagAsGone()
     {
-        RemoveSelf();
+        foreach (StaticMover staticMover in staticMovers)
+        {
+            SceneAs<Level>().Session.DoNotLoad.Add(staticMover.Entity.SourceId);
+            Logger.Log(LogLevel.Info, "EndersExtras/Misc/TileEntity", $"uhh don't load {staticMover.Entity.SourceId}");
+        }
+        Logger.Log(LogLevel.Info, "EndersExtras/Misc/TileEntity", $"destroy static movers. {staticMovers.Count}");
+        DestroyStaticMovers();
+
         SceneAs<Level>().Session.DoNotLoad.Add(id);
+        RemoveSelf();
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -492,7 +512,7 @@ public class TileEntity : Solid
             return DashCollisionResults.NormalCollision;
         }
 
-        Break(player.Center, direction);
+        DashBlockBreak(player.Center, direction);
         return DashCollisionResults.Rebound;
     }
 
@@ -658,9 +678,10 @@ public class TileEntity : Solid
     public override void OnShake(Vector2 amount)
     {
         base.OnShake(amount);
-        if (isMasterOfGroup && tiles is not null)
+        if (isMasterOfGroup)
         {
-            tiles.Position += amount;
+            if (tiles is not null) tiles.Position += amount;
+            if (animTiles is not null) animTiles.Position += amount;
         }
     }
 

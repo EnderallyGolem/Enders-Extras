@@ -149,6 +149,15 @@ player if they're within a Tile Entity, and they are not detected by a Sound Rip
 
 Changelog:
 
+### 1.1.2:
+- Utilities:
+	- Tile Entity:
+		- Animated tiles now properly render.
+		- Fixed static movers for dash blocks not disappearing when broken. 
+		- Their static movers permanently disappear if a Dash Block Permanent block is broken too.
+		- Differing Dash Block Permanent blocks can no longer be connected together.
+	- Flag Invisible Barrier: Added toggle to turn it into a Death Barrier.
+
 ### 1.1.1:
 - Fixed some possible shader crashes
 

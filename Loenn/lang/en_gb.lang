@@ -93,10 +93,10 @@ entities.EndersExtras/FlagInvisibleBarrier.attributes.description.disableLeft=If
 entities.EndersExtras/FlagInvisibleBarrier.attributes.description.disableRight=If true, the barrier will be disabled if the player is to the right of it.
 entities.EndersExtras/FlagInvisibleBarrier.attributes.description.disableAbove=If true, the barrier will be disabled if the player is above it.
 entities.EndersExtras/FlagInvisibleBarrier.attributes.description.disableBelow=If true, the barrier will be disabled if the player is below it.
-entities.EndersExtras/FlagInvisibleBarrier.attributes.description.disablePlayerInside=If true, the barrier will be temporarily disabled if the player is inside it.\nThis does NOT count towards Disable Permanently.
+entities.EndersExtras/FlagInvisibleBarrier.attributes.description.disablePlayerInside=If true, the barrier will be temporarily disabled if the player is inside it.\nThis does NOT count towards Disable Permanently.\nHas no effect if Death Barrier is enabled.
 entities.EndersExtras/FlagInvisibleBarrier.attributes.description.disablePermanently=If true, if the barrier is disabled, it cannot be enabled (until the room is reloaded).\nThis does not count the barrier being disabled due to the player being inside it.
 entities.EndersExtras/FlagInvisibleBarrier.attributes.description.enablePermanently=If true, if the barrier is enabled, it cannot be disabled (until the room is reloaded).
-
+entities.EndersExtras/FlagInvisibleBarrier.attributes.description.deathBarrier=If true, instead of being solid, the barrier will kill the player instead.\nDisable Player Inside will have no effect.
 
 # Settings NPC
 entities.EndersExtras/SettingsNpc.placements.name.normal=Mod Settings NPC

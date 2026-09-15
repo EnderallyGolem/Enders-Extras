@@ -20,7 +20,8 @@ namespace Celeste.Mod.EndersExtras.Entities.Utility
         private bool lockState = false;
         private bool? enableBarrier = null;
 
-        private bool disablePlayerInside = true;
+        private readonly bool disablePlayerInside = true;
+        private readonly bool deathBarrier = false;
 
         public FlagInvisibleBarrier(EntityData data, Vector2 offset) : base(data, offset)
         {
@@ -32,11 +33,13 @@ namespace Celeste.Mod.EndersExtras.Entities.Utility
             disablePermanently = data.Bool("disablePermanently", false);
             disablePlayerInside = data.Bool("disablePlayerInside", true);
             enablePermanently = data.Bool("enablePermanently", false);
+            deathBarrier = data.Bool("deathBarrier", false);
         }
 
         public override void Update()
         {
             Active = true;
+            bool? oldEnableBarrier = enableBarrier;
 
             // Lock State Check
             if (!lockState || enableBarrier is null)
@@ -65,11 +68,37 @@ namespace Celeste.Mod.EndersExtras.Entities.Utility
             if (tempEnable)
             {
                 Collidable = true; // For collide check to work lol
-                if (CollideCheck<Player>() && disablePlayerInside) tempEnable = false;
+
+                // disablePlayerInside - disable if player inside
+                if (!deathBarrier && CollideCheck<Player>() && disablePlayerInside) tempEnable = false;
+
+                // deathBarrier - disable if player inside, AND previous enableBarrier is false
+                if (deathBarrier && CollideCheck<Player>() && oldEnableBarrier==false) tempEnable = false;
+                //Logger.Log(LogLevel.Info, "EndersExtras/FlagInvisibleBarrier", $"regain dash {deathBarrier} {CollideCheck<Player>()} {oldEnableBarrier==false}");
             }
 
             // Update collider
-            Collidable = tempEnable;
+            enableBarrier = Collidable = tempEnable;
+
+            // If deathBarrier, kill the player if they collide and otherwise shut the collision off
+            if (deathBarrier && Collidable)
+            {
+                Player? player = CollideFirst<Player>();
+                if (player is not null)
+                {
+                    player.Die(-player.Speed.SafeNormalize());
+                }
+                Collidable = false;
+            }
+        }
+
+        public override void DebugRender(Camera camera)
+        {
+            base.DebugRender(camera);
+            if (deathBarrier)
+            {
+                this.Collider.Render(camera, enableBarrier==true ? Color.Red : Color.DarkRed);
+            }
         }
     }
 }

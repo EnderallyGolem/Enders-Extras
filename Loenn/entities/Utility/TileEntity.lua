@@ -60,13 +60,14 @@ local function canMergeGlobally(a, b)
     if b._name ~= "EndersExtras/TileEntity" then return false end
     if not (a.allowMerge and b.allowMerge) then return false end
     if a.dashBlock ~= b.dashBlock then return false end
+    if a.dashBlock and (a.dashBlockPermament ~= b.dashBlockPermament) then return false end
     if a.colour ~= b.colour then return false end
     if a.backgroundTiles ~= b.backgroundTiles then return false end
     if a.disableFlag ~= b.disableFlag then return false end
     if a.occludeLight ~= b.occludeLight then return false end
     if a.collidable ~= b.collidable then return false end
     if a.fallingBlock ~= b.fallingBlock then return false end
-    if a.fallingBlockClimbFall ~= b.fallingBlockClimbFall then return false end
+    if a.fallingBlock and (a.fallingBlockClimbFall ~= b.fallingBlockClimbFall) then return false end
     if not (a.tiletype == b.tiletype or (a.allowMergeDifferentType and b.allowMergeDifferentType)) then
         return false
     end
